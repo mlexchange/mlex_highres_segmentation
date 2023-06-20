@@ -2,7 +2,22 @@
 ...
 
 ## How to use?
-...
+
+### Local development setup
+
+1. Create a new Python virtual environment and install the project dependencies:
+
+```
+pip install -r requirements.txt
+```
+
+2. Store any `.tiff` files in the `data/` directory for viewing in the app
+
+3. Start a local server: 
+
+```
+python app.py
+```
 
 # Copyright
 MLExchange Copyright (c) 2023, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Dept. of Energy). All rights reserved.
