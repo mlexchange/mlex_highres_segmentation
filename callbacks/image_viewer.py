@@ -1,13 +1,18 @@
-from dash import Input, Output, callback
+from dash import Input, Output, State, callback, ctx
 from tifffile import imread
 import plotly.express as px
 import numpy as np
+from utils import data_utils
 
 
-@callback(Output("image-viewer", "figure"), Input("image-src", "value"))
-def render_image(img):
-    if img:
-        tf = imread(f"data/{img}")
+@callback(
+    Output("image-viewer", "figure"),
+    Input("image-selection-slider", "value"),
+)
+def render_image(image_idx):
+    if image_idx:
+        img_name = data_utils.get_data_options()[image_idx - 1]
+        tf = imread(f"data/{img_name}")
     else:
         tf = np.zeros((500, 500))
     fig = px.imshow(tf, binary_string=True)
@@ -20,3 +25,68 @@ def render_image(img):
         width=620,
     )
     return fig
+
+
+@callback(
+    Output("image-src", "value"),
+    Output("image-selection-slider", "min"),
+    Output("image-selection-slider", "max"),
+    Output("image-selection-slider", "value"),
+    Output("image-selection-slider", "disabled"),
+    Input("image-src", "data"),
+)
+def update_slider_values(image_source_data):
+    """
+    When the data source is loaded, this callback will set the slider values and chain call
+        "update_selection_and_image" callback which will update image and slider selection component
+
+    ## todo - change Input("image-src", "data") to value when image-src will contain buckets of data and not just one image
+    ## todo - eg, when a different image source is selected, update slider values which is then used to select image within that source
+    """
+    disable_slider = image_source_data is None
+    select_first_image = None if disable_slider else image_source_data[0]
+    min_slider_value = 0 if disable_slider else 1
+    max_slider_value = 0 if disable_slider else len(image_source_data)
+    slider_value = 0 if disable_slider else 1
+    return (
+        select_first_image,
+        min_slider_value,
+        max_slider_value,
+        slider_value,
+        disable_slider,
+    )
+
+
+@callback(
+    Output("image-selection-slider", "value", allow_duplicate=True),
+    Output("image-selection-previous", "disabled"),
+    Output("image-selection-next", "disabled"),
+    Output("image-selection-text", "children"),
+    Input("image-selection-previous", "n_clicks"),
+    Input("image-selection-next", "n_clicks"),
+    Input("image-selection-slider", "value"),
+    State("image-selection-slider", "min"),
+    State("image-selection-slider", "max"),
+    prevent_initial_call=True,
+)
+def update_selection_and_image(
+    previous_image, next_image, slider_value, slider_min, slider_max
+):
+    """
+    This callback will update the slider value and the image when the user clicks on the previous or next image buttons
+    """
+    new_slider_value = slider_value
+    if ctx.triggered[0]["prop_id"] == "image-selection-previous.n_clicks":
+        new_slider_value -= 1
+    elif ctx.triggered[0]["prop_id"] == "image-selection-next.n_clicks":
+        new_slider_value += 1
+
+    disable_previous_image = new_slider_value == slider_min
+    disable_next_image = new_slider_value == slider_max
+
+    return (
+        new_slider_value,
+        disable_previous_image,
+        disable_next_image,
+        f"Selected image: {new_slider_value}",
+    )

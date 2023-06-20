@@ -1,5 +1,6 @@
 from dash import html, dcc
 import dash_mantine_components as dmc
+from dash_iconify import DashIconify
 
 COMPONENT_STYLE = {
     "width": "640px",
@@ -15,8 +16,59 @@ def layout():
     return html.Div(
         style=COMPONENT_STYLE,
         children=[
-            dcc.Graph(id="image-viewer", config={"scrollZoom": True}),
+            dmc.LoadingOverlay(
+                overlayOpacity=0.35,
+                loaderProps=dict(
+                    color=dmc.theme.DEFAULT_COLORS["blue"][6], variant="bars"
+                ),
+                children=[
+                    dcc.Graph(id="image-viewer", config={"scrollZoom": True}),
+                ],
+            ),
             dmc.Space(h=20),
-            dmc.Slider(min=1, max=1000, step=1, value=25),
+            dmc.Grid(
+                children=[
+                    dmc.Col(
+                        dmc.Tooltip(
+                            label="Previous image",
+                            children=dmc.ActionIcon(
+                                DashIconify(icon="ooui:previous-ltr", width=20),
+                                variant="filled",
+                                id="image-selection-previous",
+                                mt=15,
+                            ),
+                        ),
+                        span=1,
+                    ),
+                    dmc.Col(
+                        [
+                            dmc.Text(
+                                align="center",
+                                id="image-selection-text",
+                            ),
+                            dmc.Slider(
+                                min=1,
+                                max=1000,
+                                step=1,
+                                value=25,
+                                id="image-selection-slider",
+                            ),
+                        ],
+                        span="auto",
+                    ),
+                    dmc.Col(
+                        dmc.Tooltip(
+                            label="Next image",
+                            children=dmc.ActionIcon(
+                                DashIconify(icon="ooui:previous-rtl", width=20),
+                                variant="filled",
+                                id="image-selection-next",
+                                mt=15,
+                            ),
+                        ),
+                        span=1,
+                    ),
+                ],
+            ),
         ],
     )
