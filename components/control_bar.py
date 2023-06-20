@@ -124,10 +124,12 @@ def layout():
                             dmc.Group(
                                 spacing="xs",
                                 grow=True,
+                                id="annotation-class-selection",
                                 children=[
                                     dmc.ActionIcon(
                                         color=color,
                                         variant="filled",
+                                        className=f"{color}-icon",
                                         id={"type": "annotation-color", "index": color},
                                         w=30,
                                     )
