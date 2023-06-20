@@ -113,7 +113,7 @@ def layout():
                             dmc.Slider(
                                 id="annotation-opacity",
                                 value=1,
-                                min=0,
+                                min=0.1,
                                 max=1,
                                 step=0.1,
                                 color="gray",
