@@ -120,6 +120,32 @@ def layout():
                                 size="sm",
                             ),
                             dmc.Space(h=20),
+                            dmc.Text("Annotation class", size="sm"),
+                            dmc.Group(
+                                spacing="xs",
+                                grow=True,
+                                children=[
+                                    dmc.ActionIcon(
+                                        color=color,
+                                        variant="filled",
+                                        id={"type": "annotation-color", "index": color},
+                                        w=30,
+                                    )
+                                    for color in [
+                                        "gray",
+                                        "red",
+                                        # "pink",
+                                        "grape",
+                                        "violet",
+                                        # "indigo",
+                                        "blue",
+                                        # "lime",
+                                        # "yellow",
+                                        # "orange",
+                                    ]
+                                ],
+                            ),
+                            dmc.Space(h=20),
                             dmc.Center(
                                 dmc.Button(
                                     "Save annotation",
