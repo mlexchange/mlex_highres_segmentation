@@ -7,16 +7,16 @@ COMPONENT_STYLE = {
     "padding": "10px",
     "borderRadius": "5px",
     "border": "1px solid rgb(222, 226, 230)",
-    "overflowY": "scroll",
+    "overflowY": "auto",
 }
 
 
 def layout():
     return html.Div(
+        style=COMPONENT_STYLE,
         children=[
             dcc.Graph(id="image-viewer", config={"scrollZoom": True}),
             dmc.Space(h=20),
             dmc.Slider(min=1, max=1000, step=1, value=25),
         ],
-        style=COMPONENT_STYLE,
     )

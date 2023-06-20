@@ -10,7 +10,7 @@ COMPONENT_STYLE = {
     "padding": "10px",
     "borderRadius": "5px",
     "border": "1px solid rgb(222, 226, 230)",
-    "overflowY": "scroll",
+    "overflowY": "auto",
 }
 
 
@@ -50,11 +50,13 @@ def _accordion_item(title, icon, value, children):
 
 
 def layout():
-    return html.Div(
-        [
+    return dmc.Stack(
+        style=COMPONENT_STYLE,
+        children=[
             dmc.AccordionMultiple(
                 chevron=DashIconify(icon="ant-design:plus-outlined"),
                 disableChevronRotation=True,
+                value=["data-select", "image-transformations", "annotations"],
                 children=[
                     _accordion_item(
                         "Data selection",
@@ -138,5 +140,4 @@ def layout():
                 ],
             ),
         ],
-        style=COMPONENT_STYLE,
     )
