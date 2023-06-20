@@ -1,5 +1,5 @@
 import dash_mantine_components as dmc
-from dash import html
+from dash import html, dcc
 from dash_iconify import DashIconify
 from utils import data_utils
 
@@ -165,5 +165,6 @@ def layout():
                     ),
                 ],
             ),
+            dcc.Store(id="annotation-store", data={}),
         ],
     )
