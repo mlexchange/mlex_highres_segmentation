@@ -95,6 +95,7 @@ def layout():
                                     color="gray",
                                     label="View annotation layer",
                                     checked=True,
+                                    styles={"trackLabel": {"cursor": "pointer"}},
                                 )
                             ),
                             dmc.Space(h=20),
