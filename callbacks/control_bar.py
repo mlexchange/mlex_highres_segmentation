@@ -2,12 +2,17 @@ from dash import Input, Output, State, callback, Patch, MATCH, ALL, ctx
 import dash_mantine_components as dmc
 from dash.exceptions import PreventUpdate
 import json
-from utils.data_utils import convert_hex_to_rgba, DEV_load_exported_json_data
+from utils.data_utils import (
+    convert_hex_to_rgba,
+    DEV_load_exported_json_data,
+    DEV_filter_json_data_by_timestamp,
+)
 import json
 import os
 from PIL import Image
 import time
 
+EXPORT_FILE_PATH = "data/exported_user_data.json"
 USER_NAME = "user1"
 
 
@@ -94,7 +99,6 @@ def annotation_visibility(checked, store, figure, image_idx):
     prevent_initial_call=True,
 )
 def toggle_modal(n_clicks, opened):
-    print(not opened)
     return not opened
 
 
@@ -125,22 +129,20 @@ def save_data(modal_opened, store, figure, image_idx, image_src):
     export_data = {
         "user": USER_NAME,
         "source": image_src,
-        "time": time.strftime("%Y%m%d-%H%M%S"),
+        "time": time.strftime("%Y-%m-%d-%H:%M:%S"),
         "data": json.dumps(store),
     }
     # Convert export_data to JSON string
     export_data_json = json.dumps(export_data)
 
-    # Append export_data JSON string to the file
-    file_path = "data/exported_user_data.json"
-
-    if not os.path.exists(file_path):
-        with open(file_path, "w") as f:
+    if not os.path.exists(EXPORT_FILE_PATH):
+        with open(EXPORT_FILE_PATH, "w") as f:
             pass  # Create an empty file if it doesn't exist
 
     # Append export_data JSON string to the file
-    with open(file_path, "a+") as f:
-        f.write(export_data_json + ",\n")
+    if export_data["data"] != "{}":
+        with open(EXPORT_FILE_PATH, "a+") as f:
+            f.write(export_data_json + "\n")
     return "Data saved!", store
 
 
@@ -166,3 +168,69 @@ def export_annotations(n_clicks_json, n_clicks_tiff, store):
         mime_type = "image/tiff"
 
     return dict(content=data, filename=filename, type=mime_type)
+
+
+@callback(
+    Output("load-annotations-server-container", "children"),
+    Input("open-data-management-modal-button", "n_clicks"),
+    State("image-src", "value"),
+    prevent_initial_call=True,
+)
+def populate_load_server_annotations(modal_opened, image_src):
+    """
+    This callback is responsible for saving the annotation data the storage, and also creting a layout for selecting saved annotations so they are loaded.
+    """
+    if not modal_opened:
+        raise PreventUpdate
+
+    # TODO : when quering from the server, get (annotation save time) for user, source, order by time
+    data = DEV_load_exported_json_data(EXPORT_FILE_PATH, USER_NAME, image_src)
+    if not data:
+        return "No annotations found for the selected data source."
+    # TODO : when quering from the server, load data for user, source, order by time
+
+    buttons = [
+        dmc.Button(
+            f"{data_json['time']}",
+            id={"type": "load-server-annotations", "index": data_json["time"]},
+            variant="light",
+        )
+        for i, data_json in enumerate(data)
+    ]
+
+    return dmc.Stack(
+        buttons,
+        spacing="xs",
+        style={"overflow": "auto", "max-height": "300px"},
+    )
+
+
+@callback(
+    Output("image-viewer", "figure", allow_duplicate=True),
+    Output("annotation-store", "data", allow_duplicate=True),
+    Input({"type": "load-server-annotations", "index": ALL}, "n_clicks"),
+    State("image-src", "value"),
+    State("image-slider", "value"),
+    prevent_initial_call=True,
+)
+def load_and_apply_selected_annotations(selected_annotation, image_src, img_idx):
+    """
+    This callback is responsible for loading and applying the selected annotations when user selects them from the modal.
+    """
+    # this callback is triggered when the buttons are created, when that happens we can stop it
+    if all([x is None for x in selected_annotation]):
+        raise PreventUpdate
+
+    selected_annotation_timestamp = json.loads(
+        ctx.triggered[0]["prop_id"].split(".")[0]
+    )["index"]
+
+    # TODO : when quering from the server, load (data) for user, source, time
+    data = DEV_load_exported_json_data(EXPORT_FILE_PATH, USER_NAME, image_src)
+    data = DEV_filter_json_data_by_timestamp(data, str(selected_annotation_timestamp))
+    data = data[0]["data"]
+    # TODO : when quering from the server, load (data) for user, source, time
+
+    patched_figure = Patch()
+    patched_figure["layout"]["shapes"] = data[str(img_idx)]
+    return patched_figure, data

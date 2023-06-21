@@ -68,6 +68,7 @@ def layout():
                             dmc.Select(
                                 id="image-src",
                                 data=DATA_OPTIONS,
+                                value=DATA_OPTIONS[0],
                                 placeholder="Select an image to view...",
                             ),
                             dmc.Space(h=20),
@@ -212,14 +213,25 @@ def layout():
                                     dmc.Group(
                                         grow=True,
                                         children=[
-                                            dmc.Button(
-                                                "From server",
-                                                id="load-annotations-server",
-                                                variant="light",
-                                                style={
-                                                    "width": "160px",
-                                                    "margin": "5px",
-                                                },
+                                            dmc.HoverCard(
+                                                withArrow=True,
+                                                width=200,
+                                                shadow="md",
+                                                children=[
+                                                    dmc.HoverCardTarget(
+                                                        dmc.Button(
+                                                            "From server",
+                                                            variant="light",
+                                                            style={
+                                                                "width": "160px",
+                                                                "margin": "5px",
+                                                            },
+                                                        )
+                                                    ),
+                                                    dmc.HoverCardDropdown(
+                                                        id="load-annotations-server-container",
+                                                    ),
+                                                ],
                                             ),
                                             dmc.Button(
                                                 "Local file",
