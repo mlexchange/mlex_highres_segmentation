@@ -156,17 +156,83 @@ def layout():
                             dmc.Space(h=20),
                             dmc.Center(
                                 dmc.Button(
-                                    "Save annotation",
+                                    "Save/Load/Export",
+                                    id="open-data-management-modal-button",
                                     variant="light",
                                     style={"width": "160px", "margin": "5px"},
-                                )
+                                ),
                             ),
-                            dmc.Center(
-                                dmc.Button(
-                                    "Export annotation",
-                                    variant="light",
-                                    style={"width": "160px", "margin": "5px"},
-                                )
+                            dmc.Modal(
+                                title="Data Management",
+                                id="data-management-modal",
+                                centered=True,
+                                zIndex=10000,
+                                children=[
+                                    dmc.Text(
+                                        "Data is being saved.",
+                                        id="data-modal-save-status",
+                                        align="center",
+                                        italic=True,
+                                    ),
+                                    dmc.Space(h=20),
+                                    dmc.Divider(
+                                        variant="solid",
+                                        label="Export data",
+                                        labelPosition="center",
+                                    ),
+                                    dmc.Group(
+                                        grow=True,
+                                        children=[
+                                            dmc.Button(
+                                                "JSON",
+                                                id="export-annotations-json",
+                                                variant="light",
+                                                style={
+                                                    "width": "160px",
+                                                    "margin": "5px",
+                                                },
+                                            ),
+                                            dmc.Button(
+                                                "TIFF",
+                                                id="export-annotations-tiff",
+                                                variant="light",
+                                                style={
+                                                    "width": "160px",
+                                                    "margin": "5px",
+                                                },
+                                            ),
+                                        ],
+                                    ),
+                                    dmc.Divider(
+                                        variant="solid",
+                                        label="Load data",
+                                        labelPosition="center",
+                                    ),
+                                    dmc.Space(h=20),
+                                    dmc.Group(
+                                        grow=True,
+                                        children=[
+                                            dmc.Button(
+                                                "From server",
+                                                id="load-annotations-server",
+                                                variant="light",
+                                                style={
+                                                    "width": "160px",
+                                                    "margin": "5px",
+                                                },
+                                            ),
+                                            dmc.Button(
+                                                "Local file",
+                                                id="load-annotations-local",
+                                                variant="light",
+                                                style={
+                                                    "width": "160px",
+                                                    "margin": "5px",
+                                                },
+                                            ),
+                                        ],
+                                    ),
+                                ],
                             ),
                             dmc.Space(h=20),
                         ],
@@ -174,5 +240,6 @@ def layout():
                 ],
             ),
             dcc.Store(id="annotation-store", data={}),
+            dcc.Download(id="export-annotations"),
         ],
     )
