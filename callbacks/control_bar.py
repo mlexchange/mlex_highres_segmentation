@@ -11,7 +11,7 @@ import json
 def annotation_opacity(opacity_value):
     patched_figure = Patch()
     patched_figure["layout"]["newshape"]["opacity"] = opacity_value
-    return patched_figure, 3
+    return patched_figure
 
 
 @callback(
@@ -24,7 +24,7 @@ def annotation_width(width_value):
     This callback is responsible for changing the brush width.
     """
     patched_figure = Patch()
-    patched_figure["layout"]["newshape"]["line"]["width"] = 11
+    patched_figure["layout"]["newshape"]["line"]["width"] = width_value
     return patched_figure
 
 
@@ -41,7 +41,9 @@ def annotation_color(color_value):
     color_name = json.loads(ctx.triggered[0]["prop_id"].split(".")[0])["index"]
     hex_color = dmc.theme.DEFAULT_COLORS[color_name][7]
     patched_figure = Patch()
-    # patched_figure["layout"]["newshape"]["fillcolor"] = hex_color
+    patched_figure["layout"]["newshape"][
+        "fillcolor"
+    ] = f"rgba{tuple(int(hex_color[i:i+2], 16) for i in (1, 3, 5)) + (0.3,)}"
     patched_figure["layout"]["newshape"]["line"]["color"] = hex_color
     return patched_figure, color_name
 

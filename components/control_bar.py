@@ -127,24 +127,27 @@ def layout():
                                 id="annotation-class-selection",
                                 children=[
                                     dmc.ActionIcon(
+                                        children=(i + 1),
                                         color=color,
                                         variant="filled",
                                         className=f"{color}-icon",
                                         id={"type": "annotation-color", "index": color},
                                         w=30,
                                     )
-                                    for color in [
-                                        "gray",
-                                        "red",
-                                        # "pink",
-                                        "grape",
-                                        "violet",
-                                        # "indigo",
-                                        "blue",
-                                        # "lime",
-                                        # "yellow",
-                                        # "orange",
-                                    ]
+                                    for i, color in enumerate(
+                                        [
+                                            # "gray",
+                                            "red",
+                                            # "pink",
+                                            "grape",
+                                            "violet",
+                                            # "indigo",
+                                            "blue",
+                                            # "lime",
+                                            "yellow",
+                                            # "orange",
+                                        ]
+                                    )
                                 ],
                             ),
                             dmc.Space(h=20),
