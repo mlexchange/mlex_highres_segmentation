@@ -69,7 +69,9 @@ def annotation_visibility(checked, store, figure, image_idx):
         store["visible"] = True
         patched_figure["layout"]["shapes"] = store[image_idx]
     else:
-        annotation_data = figure["layout"]["shapes"]
+        annotation_data = (
+            [] if "shapes" not in figure["layout"] else figure["layout"]["shapes"]
+        )
         store[image_idx] = annotation_data
         patched_figure["layout"]["shapes"] = []
 
