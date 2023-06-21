@@ -1,0 +1,9 @@
+/* These css classes highlight the selected annotation color (class)  */
+
+.red>.red-icon,
+.grape>.grape-icon,
+.violet>.violet-icon,
+.blue>.blue-icon,
+.yellow>.yellow-icon {
+    border: 3px solid black;
+}

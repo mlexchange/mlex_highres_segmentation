@@ -10,13 +10,29 @@ COMPONENT_STYLE = {
     "overflowY": "auto",
 }
 
+FIGURE_CONFIG = {
+    "modeBarButtonsToAdd": [
+        "drawopenpath",
+        "drawclosedpath",
+        "eraseshape",
+    ],
+    "scrollZoom": True,
+    "modeBarButtonsToRemove": [
+        "zoom",
+        "zoomin",
+        "zoomout",
+        "resetScale2d",
+        "autoscale",
+    ],
+}
+
 
 def layout():
     return html.Div(
         style=COMPONENT_STYLE,
         children=[
-            dcc.Graph(id="image-viewer", config={"scrollZoom": True}),
+            dcc.Graph(id="image-viewer", config=FIGURE_CONFIG),
             dmc.Space(h=20),
-            dmc.Slider(min=1, max=1000, step=1, value=25),
+            dmc.Slider(min=1, max=1000, step=1, value=25, id="image-slider"),
         ],
     )

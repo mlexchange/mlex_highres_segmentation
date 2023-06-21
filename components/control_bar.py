@@ -1,5 +1,5 @@
 import dash_mantine_components as dmc
-from dash import html
+from dash import html, dcc
 from dash_iconify import DashIconify
 from utils import data_utils
 
@@ -12,6 +12,7 @@ COMPONENT_STYLE = {
     "border": "1px solid rgb(222, 226, 230)",
     "overflowY": "auto",
 }
+DEFAULT_ANNOTATION_CLASS = "red"
 
 
 def _color_selector_control(color):
@@ -95,6 +96,7 @@ def layout():
                                     color="gray",
                                     label="View annotation layer",
                                     checked=True,
+                                    styles={"trackLabel": {"cursor": "pointer"}},
                                 )
                             ),
                             dmc.Space(h=20),
@@ -113,11 +115,43 @@ def layout():
                             dmc.Slider(
                                 id="annotation-opacity",
                                 value=1,
-                                min=0,
+                                min=0.1,
                                 max=1,
                                 step=0.1,
                                 color="gray",
                                 size="sm",
+                            ),
+                            dmc.Space(h=20),
+                            dmc.Text("Annotation class", size="sm"),
+                            dmc.Group(
+                                spacing="xs",
+                                grow=True,
+                                id="annotation-class-selection",
+                                className=DEFAULT_ANNOTATION_CLASS,
+                                children=[
+                                    dmc.ActionIcon(
+                                        children=(i + 1),
+                                        color=color,
+                                        variant="filled",
+                                        className=f"{color}-icon",
+                                        id={"type": "annotation-color", "index": color},
+                                        w=30,
+                                    )
+                                    for i, color in enumerate(
+                                        [
+                                            # "gray",
+                                            "red",
+                                            # "pink",
+                                            "grape",
+                                            "violet",
+                                            # "indigo",
+                                            "blue",
+                                            # "lime",
+                                            "yellow",
+                                            # "orange",
+                                        ]
+                                    )
+                                ],
                             ),
                             dmc.Space(h=20),
                             dmc.Center(
@@ -139,5 +173,6 @@ def layout():
                     ),
                 ],
             ),
+            dcc.Store(id="annotation-store", data={}),
         ],
     )
