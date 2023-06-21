@@ -1,6 +1,7 @@
 from dash import Input, Output, State, callback, Patch, MATCH, ALL, ctx
 import dash_mantine_components as dmc
 import json
+from utils.data_utils import convert_hex_to_rgba
 
 
 @callback(
@@ -41,9 +42,9 @@ def annotation_color(color_value):
     color_name = json.loads(ctx.triggered[0]["prop_id"].split(".")[0])["index"]
     hex_color = dmc.theme.DEFAULT_COLORS[color_name][7]
     patched_figure = Patch()
-    patched_figure["layout"]["newshape"][
-        "fillcolor"
-    ] = f"rgba{tuple(int(hex_color[i:i+2], 16) for i in (1, 3, 5)) + (0.3,)}"
+    patched_figure["layout"]["newshape"]["fillcolor"] = convert_hex_to_rgba(
+        hex_color, 0.3
+    )
     patched_figure["layout"]["newshape"]["line"]["color"] = hex_color
     return patched_figure, color_name
 

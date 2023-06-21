@@ -12,6 +12,7 @@ COMPONENT_STYLE = {
     "border": "1px solid rgb(222, 226, 230)",
     "overflowY": "auto",
 }
+DEFAULT_ANNOTATION_CLASS = "red"
 
 
 def _color_selector_control(color):
@@ -126,6 +127,7 @@ def layout():
                                 spacing="xs",
                                 grow=True,
                                 id="annotation-class-selection",
+                                className=DEFAULT_ANNOTATION_CLASS,
                                 children=[
                                     dmc.ActionIcon(
                                         children=(i + 1),
