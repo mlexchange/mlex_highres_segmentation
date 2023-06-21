@@ -16,16 +16,6 @@ def layout():
     return html.Div(
         style=COMPONENT_STYLE,
         children=[
-            dmc.LoadingOverlay(
-                overlayOpacity=0.35,
-                loaderProps=dict(
-                    color=dmc.theme.DEFAULT_COLORS["blue"][6], variant="bars"
-                ),
-                children=[
-                    dcc.Graph(id="image-viewer", config={"scrollZoom": True}),
-                ],
-            ),
-            dmc.Space(h=20),
             dmc.Grid(
                 children=[
                     dmc.Col(
@@ -68,6 +58,16 @@ def layout():
                         ),
                         span=1,
                     ),
+                ],
+            ),
+            dmc.Space(h=20),
+            dmc.LoadingOverlay(
+                overlayOpacity=0.15,
+                loaderProps=dict(
+                    color=dmc.theme.DEFAULT_COLORS["blue"][6], variant="bars"
+                ),
+                children=[
+                    dcc.Graph(id="image-viewer", config={"scrollZoom": True}),
                 ],
             ),
         ],
