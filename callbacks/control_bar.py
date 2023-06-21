@@ -1,9 +1,14 @@
 from dash import Input, Output, State, callback, Patch, MATCH, ALL, ctx
 import dash_mantine_components as dmc
+from dash.exceptions import PreventUpdate
 import json
-from utils.data_utils import convert_hex_to_rgba
+from utils.data_utils import convert_hex_to_rgba, DEV_load_exported_json_data
 import json
+import os
 from PIL import Image
+import time
+
+USER_NAME = "user1"
 
 
 @callback(
@@ -100,12 +105,15 @@ def toggle_modal(n_clicks, opened):
     State("annotation-store", "data"),
     State("image-viewer", "figure"),
     State("image-slider", "value"),
+    State("image-src", "value"),
     prevent_initial_call=True,
 )
-def save_data(modal_trigger, store, figure, image_idx):
+def save_data(modal_opened, store, figure, image_idx, image_src):
     """
     This callback is responsible for saving the annotation data to the store.
     """
+    if not modal_opened:
+        raise PreventUpdate
     image_idx = str(image_idx)
     annotation_data = (
         [] if "shapes" not in figure["layout"] else figure["layout"]["shapes"]
@@ -113,7 +121,26 @@ def save_data(modal_trigger, store, figure, image_idx):
     if annotation_data:
         store[image_idx] = annotation_data
 
-    # TODO: save store to the server file-user system
+    # TODO: save store to the server file-user system, this will be changed to DB later
+    export_data = {
+        "user": USER_NAME,
+        "source": image_src,
+        "time": time.strftime("%Y%m%d-%H%M%S"),
+        "data": json.dumps(store),
+    }
+    # Convert export_data to JSON string
+    export_data_json = json.dumps(export_data)
+
+    # Append export_data JSON string to the file
+    file_path = "data/exported_user_data.json"
+
+    if not os.path.exists(file_path):
+        with open(file_path, "w") as f:
+            pass  # Create an empty file if it doesn't exist
+
+    # Append export_data JSON string to the file
+    with open(file_path, "a+") as f:
+        f.write(export_data_json + ",\n")
     return "Data saved!", store
 
 
