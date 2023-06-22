@@ -10,6 +10,7 @@ from utils.data_utils import DEV_download_google_sample_data
 DEV_download_google_sample_data()
 
 app = Dash(__name__)
+server = app.server
 
 app.layout = dmc.MantineProvider(
     theme={"colorScheme": "light"},
