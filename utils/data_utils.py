@@ -4,14 +4,12 @@ from urllib.parse import urlparse
 
 
 def get_data_project_names(dir="data"):
-    print(os.listdir(dir))
     return [
         folder for folder in os.listdir(dir) if os.path.isdir(os.path.join(dir, folder))
     ]
 
 
 def get_tiff_files(folder_path, dir="data"):
-    print(folder_path)
     return [
         file for file in os.listdir(f"{dir}/{folder_path}") if file.endswith(".tiff")
     ]
