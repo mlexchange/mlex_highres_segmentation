@@ -4,12 +4,14 @@ from urllib.parse import urlparse
 
 
 def get_data_project_names(dir="data"):
+    print(os.listdir(dir))
     return [
         folder for folder in os.listdir(dir) if os.path.isdir(os.path.join(dir, folder))
     ]
 
 
 def get_tiff_files(folder_path, dir="data"):
+    print(folder_path)
     return [
         file for file in os.listdir(f"{dir}/{folder_path}") if file.endswith(".tiff")
     ]
@@ -40,7 +42,7 @@ def DEV_download_google_sample_data():
     }
     base_directory = "data"
 
-    # print("Downloading sample data...")
+    print("Downloading sample data...")
     if not os.path.exists(base_directory):
         os.makedirs(base_directory)
 
@@ -54,13 +56,13 @@ def DEV_download_google_sample_data():
             destination = os.path.join(project_directory, f"{filename}_{i}.tiff")
 
             if os.path.exists(destination):
-                # print(f"File {destination} already exists. Skipping download.")
+                print(f"File {destination} already exists. Skipping download.")
                 continue
 
             download_file(url, destination)
-            # print(f"Downloaded {destination}")
+            print(f"Downloaded {destination}")
 
-    # print("All files downloaded successfully.")
+    print("All files downloaded successfully.")
 
 
 def convert_hex_to_rgba(hex, alpha=0.3):
