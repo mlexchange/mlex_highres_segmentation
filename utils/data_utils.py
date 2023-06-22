@@ -62,5 +62,6 @@ def DEV_download_google_sample_data():
 
     # print("All files downloaded successfully.")
 
+
 def convert_hex_to_rgba(hex, alpha=0.3):
     return f"rgba{tuple(int(hex[i:i+2], 16) for i in (1, 3, 5)) + (alpha,)}"
