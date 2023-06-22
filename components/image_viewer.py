@@ -16,13 +16,15 @@ FIGURE_CONFIG = {
         "drawopenpath",
         "drawclosedpath",
         "eraseshape",
+        "drawline",
+        "drawcircle",
+        "drawrect",
     ],
     "scrollZoom": True,
     "modeBarButtonsToRemove": [
         "zoom",
         "zoomin",
         "zoomout",
-        "resetScale2d",
         "autoscale",
     ],
 }
