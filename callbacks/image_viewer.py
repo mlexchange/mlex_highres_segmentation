@@ -1,8 +1,10 @@
 from dash import Input, Output, State, callback, ctx
+import dash_mantine_components as dmc
 from tifffile import imread
 import plotly.express as px
 import numpy as np
 from utils import data_utils
+from utils.data_utils import convert_hex_to_rgba
 
 
 @callback(
@@ -27,6 +29,16 @@ def render_image(image_idx, project_data):
         dragmode="pan",
         height=620,
         width=620,
+    )
+
+    # set the default annotation style
+    hex_color = dmc.theme.DEFAULT_COLORS[annotation_color][7]
+    fig.update_layout(
+        newshape=dict(
+            line=dict(color=annotation_color, width=annotation_width),
+            fillcolor=convert_hex_to_rgba(hex_color, 0.3),
+            opacity=annotation_opacity,
+        )
     )
     return fig
 

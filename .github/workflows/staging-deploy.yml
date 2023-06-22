@@ -1,0 +1,66 @@
+name: staging deployment
+
+on: pull_request
+
+jobs:
+  test-and-lint:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Set up Python 3.9.16
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.9.16'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      - name: Lint with flake8
+        run: |
+          # stop the build if there are Python syntax errors or undefined names
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+      - name: Test formatting with black
+        run: |
+          black . --check
+  staging-deploy:
+    needs: test-and-lint
+    uses: ./.github/workflows/deploy.yml
+    secrets:
+      DASH_SSH_KEY: ${{secrets.DASH_SSH_KEY}}
+      APP_NAME: ${{secrets.APP_NAME}}-staging
+      DASH_ENTERPRISE_URL: ${{secrets.DASH_ENTERPRISE_URL}}
+  comment-deploy-link:
+    needs: staging-deploy
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Check for existing comment
+        uses: peter-evans/find-comment@v1
+        id: fc
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+      - name: Post comment
+        if: steps.fc.outputs.comment-id == ''
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            Staging application has been deployed and is available at: https://${{secrets.DASH_ENTERPRISE_URL}}/${{secrets.APP_NAME}}-staging
+            Production app name: `${{secrets.APP_NAME}}`
+            Current branch name: `${{github.head_ref}}`
+            Commit: ${{github.sha}}
+      - name: Update comment
+        if: steps.fc.outputs.comment-id != ''
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          comment-id: ${{ steps.fc.outputs.comment-id }}
+          edit-mode: replace
+          body: |
+            Staging application has been deployed and is available at: https://${{secrets.DASH_ENTERPRISE_URL}}/${{secrets.APP_NAME}}-staging
+            Production app name: `${{secrets.APP_NAME}}`
+            Current branch name: `${{github.head_ref}}`
+            Commit: ${{github.sha}}

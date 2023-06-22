@@ -11,6 +11,22 @@ COMPONENT_STYLE = {
     "overflowY": "auto",
 }
 
+FIGURE_CONFIG = {
+    "modeBarButtonsToAdd": [
+        "drawopenpath",
+        "drawclosedpath",
+        "eraseshape",
+    ],
+    "scrollZoom": True,
+    "modeBarButtonsToRemove": [
+        "zoom",
+        "zoomin",
+        "zoomout",
+        "resetScale2d",
+        "autoscale",
+    ],
+}
+
 
 def layout():
     return html.Div(
@@ -67,7 +83,7 @@ def layout():
                     color=dmc.theme.DEFAULT_COLORS["blue"][6], variant="bars"
                 ),
                 children=[
-                    dcc.Graph(id="image-viewer", config={"scrollZoom": True}),
+                    dcc.Graph(id="image-viewer", config=FIGURE_CONFIG),
                 ],
             ),
         ],
