@@ -11,8 +11,13 @@ from utils.data_utils import convert_hex_to_rgba
     Output("image-viewer", "figure"),
     Input("image-selection-slider", "value"),
     State("project-data", "data"),
+    State("paintbrush-width", "value"),
+    State("annotation-opacity", "value"),
+    State("annotation-class-selection", "className"),
 )
-def render_image(image_idx, project_data):
+def render_image(
+    image_idx, project_data, annotation_width, annotation_opacity, annotation_color
+):
     if image_idx:
         image_idx -= 1  # slider starts at 1, so subtract 1 to get the correct index
 

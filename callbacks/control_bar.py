@@ -55,7 +55,7 @@ def annotation_color(color_value):
     Input("view-annotations", "checked"),
     State("annotation-store", "data"),
     State("image-viewer", "figure"),
-    State("image-slider", "value"),
+    State("image-selection-slider", "value"),
     prevent_initial_call=True,
 )
 def annotation_visibility(checked, store, figure, image_idx):
