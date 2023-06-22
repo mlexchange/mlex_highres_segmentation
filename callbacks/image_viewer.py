@@ -8,11 +8,15 @@ from utils import data_utils
 @callback(
     Output("image-viewer", "figure"),
     Input("image-selection-slider", "value"),
+    State("project-data", "data"),
 )
-def render_image(image_idx):
+def render_image(image_idx, project_data):
     if image_idx:
-        img_name = data_utils.get_data_options()[image_idx - 1]
-        tf = imread(f"data/{img_name}")
+        image_idx -= 1  # slider starts at 1, so subtract 1 to get the correct index
+
+        project_name = project_data["project_name"]
+        selected_file = project_data["project_files"][image_idx]
+        tf = imread(f"data/{project_name}/{selected_file}")
     else:
         tf = np.zeros((500, 500))
     fig = px.imshow(tf, binary_string=True)
@@ -28,32 +32,37 @@ def render_image(image_idx):
 
 
 @callback(
-    Output("image-src", "value"),
     Output("image-selection-slider", "min"),
     Output("image-selection-slider", "max"),
     Output("image-selection-slider", "value"),
     Output("image-selection-slider", "disabled"),
-    Input("image-src", "data"),
+    Output("project-data", "data"),
+    Input("project-name-src", "value"),
 )
-def update_slider_values(image_source_data):
+def update_slider_values(project_name):
     """
     When the data source is loaded, this callback will set the slider values and chain call
         "update_selection_and_image" callback which will update image and slider selection component
 
-    ## todo - change Input("image-src", "data") to value when image-src will contain buckets of data and not just one image
+    ## todo - change Input("project-name-src", "data") to value when image-src will contain buckets of data and not just one image
     ## todo - eg, when a different image source is selected, update slider values which is then used to select image within that source
     """
-    disable_slider = image_source_data is None
-    select_first_image = None if disable_slider else image_source_data[0]
+    project_tiff_files = data_utils.get_tiff_files(project_name)
+
+    disable_slider = project_tiff_files is None
     min_slider_value = 0 if disable_slider else 1
-    max_slider_value = 0 if disable_slider else len(image_source_data)
+    max_slider_value = 0 if disable_slider else len(project_tiff_files)
     slider_value = 0 if disable_slider else 1
+    project_data = {
+        "project_name": project_name,
+        "project_files": project_tiff_files,
+    }
     return (
-        select_first_image,
         min_slider_value,
         max_slider_value,
         slider_value,
         disable_slider,
+        project_data,
     )
 
 

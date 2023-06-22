@@ -11,6 +11,8 @@ pri-venv
 *.log
 .ipynb_checkpoints
 */.ipynb_checkpoints/*
+.tmp
+data/
 
 env
 *.hdf5
