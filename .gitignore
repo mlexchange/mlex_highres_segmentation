@@ -19,3 +19,6 @@ env
 .theia/
 *.tiff
 *.tif
+
+.env
+config.py
