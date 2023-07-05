@@ -3,7 +3,7 @@ from dash import html, dcc
 from dash_iconify import DashIconify
 from utils import data_utils
 
-DATA_OPTIONS = data_utils.get_data_options()
+DATA_OPTIONS = data_utils.get_data_project_names()
 COMPONENT_STYLE = {
     "width": "22.5vw",
     "height": "calc(100vh - 40px)",
@@ -66,8 +66,9 @@ def layout():
                         children=[
                             dmc.Text("Image"),
                             dmc.Select(
-                                id="image-src",
+                                id="project-name-src",
                                 data=DATA_OPTIONS,
+                                value=DATA_OPTIONS[0] if DATA_OPTIONS else None,
                                 placeholder="Select an image to view...",
                             ),
                             dmc.Space(h=20),
@@ -174,5 +175,6 @@ def layout():
                 ],
             ),
             dcc.Store(id="annotation-store", data={}),
+            dcc.Store(id="project-data"),
         ],
     )

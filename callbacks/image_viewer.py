@@ -1,21 +1,29 @@
-from dash import Input, Output, State, callback
+from dash import Input, Output, State, callback, ctx
 import dash_mantine_components as dmc
 from tifffile import imread
 import plotly.express as px
 import numpy as np
+from utils import data_utils
 from utils.data_utils import convert_hex_to_rgba
 
 
 @callback(
     Output("image-viewer", "figure"),
-    Input("image-src", "value"),
+    Input("image-selection-slider", "value"),
+    State("project-data", "data"),
     State("paintbrush-width", "value"),
     State("annotation-opacity", "value"),
     State("annotation-class-selection", "className"),
 )
-def render_image(img, annotation_width, annotation_opacity, annotation_color):
-    if img:
-        tf = imread(f"data/{img}")
+def render_image(
+    image_idx, project_data, annotation_width, annotation_opacity, annotation_color
+):
+    if image_idx:
+        image_idx -= 1  # slider starts at 1, so subtract 1 to get the correct index
+
+        project_name = project_data["project_name"]
+        selected_file = project_data["project_files"][image_idx]
+        tf = imread(f"data/{project_name}/{selected_file}")
     else:
         tf = np.zeros((500, 500))
     fig = px.imshow(tf, binary_string=True)
@@ -38,3 +46,73 @@ def render_image(img, annotation_width, annotation_opacity, annotation_color):
         )
     )
     return fig
+
+
+@callback(
+    Output("image-selection-slider", "min"),
+    Output("image-selection-slider", "max"),
+    Output("image-selection-slider", "value"),
+    Output("image-selection-slider", "disabled"),
+    Output("project-data", "data"),
+    Input("project-name-src", "value"),
+)
+def update_slider_values(project_name):
+    """
+    When the data source is loaded, this callback will set the slider values and chain call
+        "update_selection_and_image" callback which will update image and slider selection component
+
+    ## todo - change Input("project-name-src", "data") to value when image-src will contain buckets of data and not just one image
+    ## todo - eg, when a different image source is selected, update slider values which is then used to select image within that source
+    """
+    project_tiff_files = data_utils.get_tiff_files(project_name)
+
+    disable_slider = project_tiff_files is None
+    min_slider_value = 0 if disable_slider else 1
+    max_slider_value = 0 if disable_slider else len(project_tiff_files)
+    slider_value = 0 if disable_slider else 1
+    project_data = {
+        "project_name": project_name,
+        "project_files": project_tiff_files,
+    }
+    return (
+        min_slider_value,
+        max_slider_value,
+        slider_value,
+        disable_slider,
+        project_data,
+    )
+
+
+@callback(
+    Output("image-selection-slider", "value", allow_duplicate=True),
+    Output("image-selection-previous", "disabled"),
+    Output("image-selection-next", "disabled"),
+    Output("image-selection-text", "children"),
+    Input("image-selection-previous", "n_clicks"),
+    Input("image-selection-next", "n_clicks"),
+    Input("image-selection-slider", "value"),
+    State("image-selection-slider", "min"),
+    State("image-selection-slider", "max"),
+    prevent_initial_call=True,
+)
+def update_selection_and_image(
+    previous_image, next_image, slider_value, slider_min, slider_max
+):
+    """
+    This callback will update the slider value and the image when the user clicks on the previous or next image buttons
+    """
+    new_slider_value = slider_value
+    if ctx.triggered[0]["prop_id"] == "image-selection-previous.n_clicks":
+        new_slider_value -= 1
+    elif ctx.triggered[0]["prop_id"] == "image-selection-next.n_clicks":
+        new_slider_value += 1
+
+    disable_previous_image = new_slider_value == slider_min
+    disable_next_image = new_slider_value == slider_max
+
+    return (
+        new_slider_value,
+        disable_previous_image,
+        disable_next_image,
+        f"Selected image: {new_slider_value}",
+    )
