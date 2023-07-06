@@ -66,7 +66,7 @@ def annotation_color(color_value):
 
 
 @callback(
-    Output("annotation-store", "data"),
+    Output("annotation-store", "data", allow_duplicate=True),
     Output("image-viewer", "figure", allow_duplicate=True),
     Input("view-annotations", "checked"),
     State("annotation-store", "data"),

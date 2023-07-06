@@ -86,12 +86,14 @@ def locally_store_annotations(relayout_data, img_idx, annotation_data):
     Output("image-selection-slider", "value"),
     Output("image-selection-slider", "disabled"),
     Output("project-data", "data"),
+    Output("annotation-store", "data"),
     Input("project-name-src", "value"),
 )
 def update_slider_values(project_name):
     """
     When the data source is loaded, this callback will set the slider values and chain call
-        "update_selection_and_image" callback which will update image and slider selection component
+        "update_selection_and_image" callback which will update image and slider selection component.
+    It also resets "annotation-store" data to {} so that existing annotations don't carry over to the new project.
 
     ## todo - change Input("project-name-src", "data") to value when image-src will contain buckets of data and not just one image
     ## todo - eg, when a different image source is selected, update slider values which is then used to select image within that source
@@ -106,12 +108,14 @@ def update_slider_values(project_name):
         "project_name": project_name,
         "project_files": project_tiff_files,
     }
+    annotation_store = {}
     return (
         min_slider_value,
         max_slider_value,
         slider_value,
         disable_slider,
         project_data,
+        annotation_store,
     )
 
 

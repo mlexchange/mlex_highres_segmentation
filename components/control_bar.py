@@ -169,14 +169,16 @@ def layout():
                                 centered=True,
                                 zIndex=10000,
                                 children=[
-                                    dmc.Button(
-                                        "Save Annotations",
-                                        id="save-annotations",
-                                        variant="light",
-                                        style={
-                                            "width": "160px",
-                                            "margin": "5px",
-                                        },
+                                    dmc.Center(
+                                        dmc.Button(
+                                            "Save Annotations",
+                                            id="save-annotations",
+                                            variant="light",
+                                            style={
+                                                "width": "160px",
+                                                "margin": "5px",
+                                            },
+                                        ),
                                     ),
                                     dmc.Text(
                                         id="data-modal-save-status",
@@ -186,38 +188,10 @@ def layout():
                                     dmc.Space(h=20),
                                     dmc.Divider(
                                         variant="solid",
-                                        label="Export data",
-                                        labelPosition="center",
-                                    ),
-                                    dmc.Group(
-                                        grow=True,
-                                        children=[
-                                            dmc.Button(
-                                                "JSON",
-                                                id="export-annotations-json",
-                                                variant="light",
-                                                style={
-                                                    "width": "160px",
-                                                    "margin": "5px",
-                                                },
-                                            ),
-                                            dmc.Button(
-                                                "TIFF",
-                                                id="export-annotations-tiff",
-                                                variant="light",
-                                                style={
-                                                    "width": "160px",
-                                                    "margin": "5px",
-                                                },
-                                            ),
-                                        ],
-                                    ),
-                                    dmc.Divider(
-                                        variant="solid",
                                         label="Load data",
                                         labelPosition="center",
                                     ),
-                                    dmc.Space(h=20),
+                                    dmc.Space(h=10),
                                     dmc.Group(
                                         grow=True,
                                         children=[
@@ -250,6 +224,35 @@ def layout():
                                                     "margin": "5px",
                                                 },
                                                 disabled=True,
+                                            ),
+                                        ],
+                                    ),
+                                    dmc.Divider(
+                                        variant="solid",
+                                        label="Export data",
+                                        labelPosition="center",
+                                    ),
+                                    dmc.Space(h=10),
+                                    dmc.Group(
+                                        grow=True,
+                                        children=[
+                                            dmc.Button(
+                                                "JSON",
+                                                id="export-annotations-json",
+                                                variant="light",
+                                                style={
+                                                    "width": "160px",
+                                                    "margin": "5px",
+                                                },
+                                            ),
+                                            dmc.Button(
+                                                "TIFF",
+                                                id="export-annotations-tiff",
+                                                variant="light",
+                                                style={
+                                                    "width": "160px",
+                                                    "margin": "5px",
+                                                },
                                             ),
                                         ],
                                     ),
