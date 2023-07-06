@@ -108,8 +108,8 @@ def toggle_modal(n_clicks, opened):
     Input("data-management-modal", "opened"),
     State("annotation-store", "data"),
     State("image-viewer", "figure"),
-    State("image-slider", "value"),
-    State("image-src", "value"),
+    State("image-selection-slider", "value"),
+    State("project-name-src", "value"),
     prevent_initial_call=True,
 )
 def save_data(modal_opened, store, figure, image_idx, image_src):
@@ -118,12 +118,11 @@ def save_data(modal_opened, store, figure, image_idx, image_src):
     """
     if not modal_opened:
         raise PreventUpdate
-    image_idx = str(image_idx)
     annotation_data = (
         [] if "shapes" not in figure["layout"] else figure["layout"]["shapes"]
     )
     if annotation_data:
-        store[image_idx] = annotation_data
+        store[str(image_idx)] = annotation_data
 
     # TODO: save store to the server file-user system, this will be changed to DB later
     export_data = {
@@ -173,7 +172,7 @@ def export_annotations(n_clicks_json, n_clicks_tiff, store):
 @callback(
     Output("load-annotations-server-container", "children"),
     Input("open-data-management-modal-button", "n_clicks"),
-    State("image-src", "value"),
+    State("project-name-src", "value"),
     prevent_initial_call=True,
 )
 def populate_load_server_annotations(modal_opened, image_src):
@@ -209,8 +208,8 @@ def populate_load_server_annotations(modal_opened, image_src):
     Output("image-viewer", "figure", allow_duplicate=True),
     Output("annotation-store", "data", allow_duplicate=True),
     Input({"type": "load-server-annotations", "index": ALL}, "n_clicks"),
-    State("image-src", "value"),
-    State("image-slider", "value"),
+    State("project-name-src", "value"),
+    State("image-selection-slider", "value"),
     prevent_initial_call=True,
 )
 def load_and_apply_selected_annotations(selected_annotation, image_src, img_idx):
@@ -230,7 +229,7 @@ def load_and_apply_selected_annotations(selected_annotation, image_src, img_idx)
     data = DEV_filter_json_data_by_timestamp(data, str(selected_annotation_timestamp))
     data = data[0]["data"]
     # TODO : when quering from the server, load (data) for user, source, time
-
+    print(data)
     patched_figure = Patch()
     patched_figure["layout"]["shapes"] = data[str(img_idx)]
     return patched_figure, data

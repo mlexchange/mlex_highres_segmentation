@@ -14,15 +14,22 @@ from utils.data_utils import convert_hex_to_rgba
     State("paintbrush-width", "value"),
     State("annotation-opacity", "value"),
     State("annotation-class-selection", "className"),
+    State("annotation-store", "data"),
 )
 def render_image(
-    image_idx, project_data, annotation_width, annotation_opacity, annotation_color
+    image_idx,
+    project_data,
+    annotation_width,
+    annotation_opacity,
+    annotation_color,
+    annotation_data,
 ):
     if image_idx:
-        image_idx -= 1  # slider starts at 1, so subtract 1 to get the correct index
-
         project_name = project_data["project_name"]
-        selected_file = project_data["project_files"][image_idx]
+        img_idx = (
+            image_idx - 1
+        )  # slider starts at 1, so subtract 1 to get the correct index
+        selected_file = project_data["project_files"][img_idx]
         tf = imread(f"data/{project_name}/{selected_file}")
     else:
         tf = np.zeros((500, 500))
@@ -40,12 +47,37 @@ def render_image(
     hex_color = dmc.theme.DEFAULT_COLORS[annotation_color][7]
     fig.update_layout(
         newshape=dict(
-            line=dict(color=annotation_color, width=annotation_width),
+            line=dict(
+                color=convert_hex_to_rgba(hex_color, 0.3), width=annotation_width
+            ),
             fillcolor=convert_hex_to_rgba(hex_color, 0.3),
             opacity=annotation_opacity,
         )
     )
+    print("here", image_idx, annotation_data)
+    if annotation_data:
+        print(str(image_idx) in annotation_data)
+        if str(image_idx) in annotation_data:
+            fig["layout"]["shapes"] = annotation_data[str(image_idx)]
     return fig
+
+
+@callback(
+    Output("annotation-store", "data", allow_duplicate=True),
+    Input("image-viewer", "relayoutData"),
+    State("image-selection-slider", "value"),
+    State("annotation-store", "data"),
+    prevent_initial_call=True,
+)
+def locally_store_annotations(relayout_data, img_idx, annotation_data):
+    """
+    Upon finishing relayout event (drawing, but it also includes panning, zooming),
+    this function takes the annotation shapes, and stores it in the dcc.Store, which is then used elsewhere
+    to preserve drawn annotations, or to save them.
+    """
+    if "shapes" in relayout_data:
+        annotation_data[str(img_idx)] = relayout_data["shapes"]
+    return annotation_data
 
 
 @callback(

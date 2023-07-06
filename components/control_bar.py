@@ -241,6 +241,7 @@ def layout():
                                                     "width": "160px",
                                                     "margin": "5px",
                                                 },
+                                                disabled=True,
                                             ),
                                         ],
                                     ),
