@@ -12,6 +12,8 @@ pri-venv
 .ipynb_checkpoints
 */.ipynb_checkpoints/*
 exported_user_data.json
+.tmp
+data/
 
 env
 *.hdf5
