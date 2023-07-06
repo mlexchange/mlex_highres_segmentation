@@ -9,11 +9,15 @@ from utils.data_utils import (
 )
 import json
 import os
-from PIL import Image
 import time
 
-EXPORT_FILE_PATH = "data/exported_user_data.json"
+EXPORT_FILE_PATH = "data/exported_annotation_data.json"
 USER_NAME = "user1"
+
+# Create an empty file if it doesn't exist
+if not os.path.exists(EXPORT_FILE_PATH):
+    with open(EXPORT_FILE_PATH, "w") as f:
+        pass
 
 
 @callback(
@@ -70,7 +74,7 @@ def annotation_color(color_value):
     State("image-selection-slider", "value"),
     prevent_initial_call=True,
 )
-def annotation_visibility(checked, store, figure, image_idx):
+def annotation_visibility(checked, annotation_store, figure, image_idx):
     """
     This callback is responsible for toggling the visibility of the annotation layer.
     It also saves the annotation data to the store when the layer is hidden, and then loads it back in when the layer is shown again.
@@ -79,70 +83,67 @@ def annotation_visibility(checked, store, figure, image_idx):
 
     patched_figure = Patch()
     if checked:
-        store["visible"] = True
-        patched_figure["layout"]["shapes"] = store[image_idx]
+        annotation_store["visible"] = True
+        patched_figure["layout"]["shapes"] = annotation_store[image_idx]
     else:
         annotation_data = (
             [] if "shapes" not in figure["layout"] else figure["layout"]["shapes"]
         )
         if annotation_data:
-            store[image_idx] = annotation_data
+            annotation_store[image_idx] = annotation_data
         patched_figure["layout"]["shapes"] = []
 
-    return store, patched_figure
+    return annotation_store, patched_figure
 
 
 @callback(
     Output("data-management-modal", "opened"),
+    Output("data-modal-save-status", "children", allow_duplicate=True),
     Input("open-data-management-modal-button", "n_clicks"),
     State("data-management-modal", "opened"),
     prevent_initial_call=True,
 )
 def toggle_modal(n_clicks, opened):
-    return not opened
+    return not opened, ""
 
 
 @callback(
     Output("data-modal-save-status", "children"),
-    Output("annotation-store", "data", allow_duplicate=True),
-    Input("data-management-modal", "opened"),
+    # Output("annotation-store", "data", allow_duplicate=True),
+    Input("save-annotations", "n_clicks"),
     State("annotation-store", "data"),
-    State("image-viewer", "figure"),
-    State("image-selection-slider", "value"),
+    # State("image-viewer", "figure"),
+    # State("image-selection-slider", "value"),
     State("project-name-src", "value"),
     prevent_initial_call=True,
 )
-def save_data(modal_opened, store, figure, image_idx, image_src):
+def save_data(n_clicks, annotation_store, image_src):
     """
     This callback is responsible for saving the annotation data to the store.
     """
-    if not modal_opened:
+    if not n_clicks:
         raise PreventUpdate
-    annotation_data = (
-        [] if "shapes" not in figure["layout"] else figure["layout"]["shapes"]
-    )
-    if annotation_data:
-        store[str(image_idx)] = annotation_data
+    # annotation_data = (
+    #     [] if "shapes" not in figure["layout"] else figure["layout"]["shapes"]
+    # )
+    # if annotation_data:
+    # store[str(image_idx)] = annotation_data
 
     # TODO: save store to the server file-user system, this will be changed to DB later
     export_data = {
         "user": USER_NAME,
         "source": image_src,
         "time": time.strftime("%Y-%m-%d-%H:%M:%S"),
-        "data": json.dumps(store),
+        "data": json.dumps(annotation_store),
     }
     # Convert export_data to JSON string
     export_data_json = json.dumps(export_data)
-
-    if not os.path.exists(EXPORT_FILE_PATH):
-        with open(EXPORT_FILE_PATH, "w") as f:
-            pass  # Create an empty file if it doesn't exist
 
     # Append export_data JSON string to the file
     if export_data["data"] != "{}":
         with open(EXPORT_FILE_PATH, "a+") as f:
             f.write(export_data_json + "\n")
-    return "Data saved!", store
+    return "Data saved!"
 
 
 @callback(
@@ -207,6 +208,7 @@ def populate_load_server_annotations(modal_opened, image_src):
 @callback(
     Output("image-viewer", "figure", allow_duplicate=True),
     Output("annotation-store", "data", allow_duplicate=True),
+    Output("data-management-modal", "opened", allow_duplicate=True),
     Input({"type": "load-server-annotations", "index": ALL}, "n_clicks"),
     State("project-name-src", "value"),
     State("image-selection-slider", "value"),
@@ -232,4 +234,4 @@ def load_and_apply_selected_annotations(selected_annotation, image_src, img_idx)
     print(data)
     patched_figure = Patch()
     patched_figure["layout"]["shapes"] = data[str(img_idx)]
-    return patched_figure, data
+    return patched_figure, data, False

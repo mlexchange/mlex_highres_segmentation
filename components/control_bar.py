@@ -169,8 +169,16 @@ def layout():
                                 centered=True,
                                 zIndex=10000,
                                 children=[
+                                    dmc.Button(
+                                        "Save Annotations",
+                                        id="save-annotations",
+                                        variant="light",
+                                        style={
+                                            "width": "160px",
+                                            "margin": "5px",
+                                        },
+                                    ),
                                     dmc.Text(
-                                        "Data is being saved.",
                                         id="data-modal-save-status",
                                         align="center",
                                         italic=True,
