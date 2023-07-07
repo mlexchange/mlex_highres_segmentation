@@ -4,6 +4,9 @@ from urllib.parse import urlparse
 
 from tiled.client import from_uri
 from tiled.client.cache import Cache
+from dotenv import load_dotenv
+
+load_dotenv()
 
 TILED_URI = os.getenv("TILED_URI")
 API_KEY = os.getenv("API_KEY")
