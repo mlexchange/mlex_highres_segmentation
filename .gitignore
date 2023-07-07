@@ -21,4 +21,4 @@ env
 .theia/
 *.tiff
 *.tif
-config
+.env

@@ -27,3 +27,4 @@ flake8==6.0.0
 gunicorn==20.1.0
 requests==2.26.0
 tiled[client]==0.1.0a96
+python-dotenv
