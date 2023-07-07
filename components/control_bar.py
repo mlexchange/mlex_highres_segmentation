@@ -3,7 +3,7 @@ from dash import html, dcc
 from dash_iconify import DashIconify
 from utils import data_utils
 
-DATA_OPTIONS = data_utils.get_data_options()
+DATA_OPTIONS = data_utils.get_data_project_names()
 COMPONENT_STYLE = {
     "width": "22.5vw",
     "height": "calc(100vh - 40px)",
@@ -13,24 +13,6 @@ COMPONENT_STYLE = {
     "overflowY": "auto",
 }
 DEFAULT_ANNOTATION_CLASS = "red"
-
-
-def _color_selector_control(color):
-    return html.Div(
-        [
-            dmc.Text(f"{color.capitalize()} range", size="sm"),
-            dmc.RangeSlider(
-                id=f"{color}_scale",
-                value=[0, 255],
-                min=0,
-                max=255,
-                step=1,
-                color=color,
-                size="sm",
-            ),
-            dmc.Space(h=5),
-        ]
-    )
 
 
 def _accordion_item(title, icon, value, children):
@@ -66,8 +48,9 @@ def layout():
                         children=[
                             dmc.Text("Image"),
                             dmc.Select(
-                                id="image-src",
+                                id="project-name-src",
                                 data=DATA_OPTIONS,
+                                value=DATA_OPTIONS[0] if DATA_OPTIONS else None,
                                 placeholder="Select an image to view...",
                             ),
                             dmc.Space(h=20),
@@ -77,11 +60,22 @@ def layout():
                         "Image transformations",
                         "fluent-mdl2:image-pixel",
                         "image-transformations",
-                        children=[
-                            _color_selector_control("red"),
-                            _color_selector_control("blue"),
-                            _color_selector_control("green"),
-                        ],
+                        children=html.Div(
+                            [
+                                dmc.Text("Colormap scalar range", size="sm"),
+                                dmc.RangeSlider(
+                                    id=f"colormap-scale",
+                                    value=[0, 255],
+                                    min=0,
+                                    max=255,
+                                    minRange=0.00001,
+                                    step=0.00001,
+                                    color="gray",
+                                    size="sm",
+                                ),
+                                dmc.Space(h=5),
+                            ]
+                        ),
                     ),
                     _accordion_item(
                         "Annotation tools",
@@ -174,5 +168,6 @@ def layout():
                 ],
             ),
             dcc.Store(id="annotation-store", data={}),
+            dcc.Store(id="project-data"),
         ],
     )

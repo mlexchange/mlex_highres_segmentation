@@ -2,6 +2,29 @@ from dash import Input, Output, State, callback, Patch, MATCH, ALL, ctx
 import dash_mantine_components as dmc
 import json
 from utils.data_utils import convert_hex_to_rgba
+from tifffile import imread
+import numpy as np
+
+
+@callback(
+    Output("colormap-scale", "min"),
+    Output("colormap-scale", "max"),
+    Output("colormap-scale", "value"),
+    Input("image-selection-slider", "value"),
+    Input("project-data", "data"),
+)
+def set_color_range(image_idx, project_data):
+    if image_idx:
+        image_idx -= 1  # slider starts at 1, so subtract 1 to get the correct index
+
+        project_name = project_data["project_name"]
+        selected_file = project_data["project_files"][image_idx]
+        tf = imread(f"data/{project_name}/{selected_file}")
+        min_color = np.min(tf)
+        max_color = np.max(tf)
+        return min_color, max_color, [min_color, max_color]
+    else:
+        return 0, 255, [0, 255]
 
 
 @callback(
@@ -55,7 +78,7 @@ def annotation_color(color_value):
     Input("view-annotations", "checked"),
     State("annotation-store", "data"),
     State("image-viewer", "figure"),
-    State("image-slider", "value"),
+    State("image-selection-slider", "value"),
     prevent_initial_call=True,
 )
 def annotation_visibility(checked, store, figure, image_idx):

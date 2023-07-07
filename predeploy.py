@@ -1,0 +1,3 @@
+from utils.data_utils import DEV_download_google_sample_data
+
+DEV_download_google_sample_data()
