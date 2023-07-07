@@ -4,9 +4,11 @@ from urllib.parse import urlparse
 
 from tiled.client import from_uri
 from tiled.client.cache import Cache
-import config
 
-client = from_uri(config.tiled_uri, api_key=config.api_key)
+TILED_URI = os.getenv("TILED_URI")
+API_KEY = os.getenv("API_KEY")
+
+client = from_uri(TILED_URI, api_key=API_KEY)
 data = client["data"]
 
 
