@@ -3,7 +3,6 @@ from dash import html, dcc
 from dash_iconify import DashIconify
 from utils import data_utils
 
-DATA_OPTIONS = data_utils.get_data_project_names()
 COMPONENT_STYLE = {
     "width": "22.5vw",
     "height": "calc(100vh - 40px)",
@@ -33,6 +32,7 @@ def _accordion_item(title, icon, value, children):
 
 
 def layout():
+    DATA_OPTIONS = data_utils.get_data_project_names()
     return dmc.Stack(
         style=COMPONENT_STYLE,
         children=[
@@ -168,6 +168,5 @@ def layout():
                 ],
             ),
             dcc.Store(id="annotation-store", data={}),
-            dcc.Store(id="project-data"),
         ],
     )
