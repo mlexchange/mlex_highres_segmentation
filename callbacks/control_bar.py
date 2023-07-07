@@ -18,6 +18,29 @@ USER_NAME = "user1"
 if not os.path.exists(EXPORT_FILE_PATH):
     with open(EXPORT_FILE_PATH, "w") as f:
         pass
+from tifffile import imread
+import numpy as np
+
+
+@callback(
+    Output("colormap-scale", "min"),
+    Output("colormap-scale", "max"),
+    Output("colormap-scale", "value"),
+    Input("image-selection-slider", "value"),
+    Input("project-data", "data"),
+)
+def set_color_range(image_idx, project_data):
+    if image_idx:
+        image_idx -= 1  # slider starts at 1, so subtract 1 to get the correct index
+
+        project_name = project_data["project_name"]
+        selected_file = project_data["project_files"][image_idx]
+        tf = imread(f"data/{project_name}/{selected_file}")
+        min_color = np.min(tf)
+        max_color = np.max(tf)
+        return min_color, max_color, [min_color, max_color]
+    else:
+        return 0, 255, [0, 255]
 
 
 @callback(

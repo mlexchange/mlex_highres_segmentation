@@ -15,24 +15,6 @@ COMPONENT_STYLE = {
 DEFAULT_ANNOTATION_CLASS = "red"
 
 
-def _color_selector_control(color):
-    return html.Div(
-        [
-            dmc.Text(f"{color.capitalize()} range", size="sm"),
-            dmc.RangeSlider(
-                id=f"{color}_scale",
-                value=[0, 255],
-                min=0,
-                max=255,
-                step=1,
-                color=color,
-                size="sm",
-            ),
-            dmc.Space(h=5),
-        ]
-    )
-
-
 def _accordion_item(title, icon, value, children):
     return dmc.AccordionItem(
         [
@@ -78,11 +60,22 @@ def layout():
                         "Image transformations",
                         "fluent-mdl2:image-pixel",
                         "image-transformations",
-                        children=[
-                            _color_selector_control("red"),
-                            _color_selector_control("blue"),
-                            _color_selector_control("green"),
-                        ],
+                        children=html.Div(
+                            [
+                                dmc.Text("Colormap scalar range", size="sm"),
+                                dmc.RangeSlider(
+                                    id=f"colormap-scale",
+                                    value=[0, 255],
+                                    min=0,
+                                    max=255,
+                                    minRange=0.00001,
+                                    step=0.00001,
+                                    color="gray",
+                                    size="sm",
+                                ),
+                                dmc.Space(h=5),
+                            ]
+                        ),
                     ),
                     _accordion_item(
                         "Annotation tools",

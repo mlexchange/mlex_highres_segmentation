@@ -11,6 +11,7 @@ from utils.data_utils import convert_hex_to_rgba
     Output("image-viewer", "figure"),
     Input("image-selection-slider", "value"),
     State("project-data", "data"),
+    Input("colormap-scale", "value"),
     State("paintbrush-width", "value"),
     State("annotation-opacity", "value"),
     State("annotation-class-selection", "className"),
@@ -19,6 +20,7 @@ from utils.data_utils import convert_hex_to_rgba
 def render_image(
     image_idx,
     project_data,
+    zrange,
     annotation_width,
     annotation_opacity,
     annotation_color,
@@ -33,7 +35,7 @@ def render_image(
         tf = imread(f"data/{project_name}/{selected_file}")
     else:
         tf = np.zeros((500, 500))
-    fig = px.imshow(tf, binary_string=True)
+    fig = px.imshow(tf, binary_string=True, zmin=zrange[0], zmax=zrange[1])
     fig.update_layout(
         margin=dict(l=0, r=0, t=0, b=0),
         xaxis=dict(visible=False),
