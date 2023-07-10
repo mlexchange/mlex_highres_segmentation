@@ -85,6 +85,16 @@ def layout():
                                     size="sm",
                                 ),
                                 dmc.Space(h=5),
+                                dmc.Text("Contrast", size="sm"),
+                                dmc.Slider(
+                                    id=f"figure-contrast",
+                                    value=[0, 255],
+                                    min=0,
+                                    max=255,
+                                    step=1,
+                                    color="gray",
+                                    size="sm",
+                                ),
                             ]
                         ),
                     ),
