@@ -37,7 +37,10 @@ def render_image(
         dragmode="pan",
         height=620,
         width=620,
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
     )
+    fig.update_traces(hovertemplate=None, hoverinfo="skip")
 
     # set the default annotation style
     hex_color = dmc.theme.DEFAULT_COLORS[annotation_color][7]
