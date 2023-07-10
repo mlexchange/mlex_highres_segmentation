@@ -1,4 +1,4 @@
-from dash import Input, Output, State, callback, Patch, MATCH, ALL, ctx
+from dash import Input, Output, State, callback, Patch, ALL, ctx, clientside_callback
 import dash_mantine_components as dmc
 import json
 from utils.data_utils import convert_hex_to_rgba
@@ -100,3 +100,17 @@ def annotation_visibility(checked, store, figure, image_idx):
         patched_figure["layout"]["shapes"] = []
 
     return store, patched_figure
+
+
+clientside_callback(
+    """
+    function dash_brigthness_clientside(brightness) {
+        console.log(brightness)
+        js_path = "#image-viewer > div.js-plotly-plot > div > div > svg:nth-child(1) > g.cartesianlayer > g > g.plot > g"
+        changeBrightness(js_path, brightness)
+        return ""
+    }
+    """,
+    Output("dummy-output", "children"),
+    Input("figure-brightness", "value"),
+)

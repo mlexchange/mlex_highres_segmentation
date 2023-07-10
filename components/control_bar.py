@@ -74,6 +74,17 @@ def layout():
                                     size="sm",
                                 ),
                                 dmc.Space(h=5),
+                                dmc.Text("Brightness", size="sm"),
+                                dmc.Slider(
+                                    id=f"figure-brightness",
+                                    value=[0, 255],
+                                    min=0,
+                                    max=255,
+                                    step=1,
+                                    color="gray",
+                                    size="sm",
+                                ),
+                                dmc.Space(h=5),
                             ]
                         ),
                     ),
@@ -169,5 +180,6 @@ def layout():
             ),
             dcc.Store(id="annotation-store", data={}),
             dcc.Store(id="project-data"),
+            html.Div(id="dummy-output"),
         ],
     )
