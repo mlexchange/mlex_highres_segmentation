@@ -254,7 +254,6 @@ def load_and_apply_selected_annotations(selected_annotation, image_src, img_idx)
     data = DEV_filter_json_data_by_timestamp(data, str(selected_annotation_timestamp))
     data = data[0]["data"]
     # TODO : when quering from the server, load (data) for user, source, time
-    print(data)
     patched_figure = Patch()
     patched_figure["layout"]["shapes"] = data[str(img_idx)]
     return patched_figure, data, False

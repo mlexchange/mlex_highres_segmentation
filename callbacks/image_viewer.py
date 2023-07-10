@@ -56,9 +56,7 @@ def render_image(
             opacity=annotation_opacity,
         )
     )
-    print("here", image_idx, annotation_data)
     if annotation_data:
-        print(str(image_idx) in annotation_data)
         if str(image_idx) in annotation_data:
             fig["layout"]["shapes"] = annotation_data[str(image_idx)]
     return fig
