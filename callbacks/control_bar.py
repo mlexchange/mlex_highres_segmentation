@@ -127,3 +127,19 @@ clientside_callback(
     Input("figure-contrast", "value"),
     prevent_initial_call=True,
 )
+
+
+@callback(
+    Output("figure-brightness", "value", allow_duplicate=True),
+    Output("figure-contrast", "value", allow_duplicate=True),
+    Output("colormap-scale", "value", allow_duplicate=True),
+    Input("filters-reset", "n_clicks"),
+    State("colormap-scale", "min"),
+    State("colormap-scale", "max"),
+    prevent_initial_call=True,
+)
+def reset_filters(n_clicks, min_color, max_color):
+    default_brightness = 100
+    default_contrast = 100
+    default_colormap_scale = [min_color, max_color]
+    return default_brightness, default_contrast, default_colormap_scale

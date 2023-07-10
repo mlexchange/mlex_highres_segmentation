@@ -62,9 +62,26 @@ def layout():
                         "image-transformations",
                         children=html.Div(
                             [
+                                dmc.ActionIcon(
+                                    dmc.Tooltip(
+                                        label="Reset filters",
+                                        children=[
+                                            DashIconify(
+                                                icon="fluent:arrow-reset-32-regular",
+                                                width=20,
+                                            ),
+                                        ],
+                                    ),
+                                    size="lg",
+                                    variant="filled",
+                                    id="filters-reset",
+                                    n_clicks=0,
+                                    mb=10,
+                                    ml="auto",
+                                ),
                                 dmc.Text("Colormap scalar range", size="sm"),
                                 dmc.RangeSlider(
-                                    id=f"colormap-scale",
+                                    id="colormap-scale",
                                     value=[0, 255],
                                     min=0,
                                     max=255,
@@ -77,7 +94,7 @@ def layout():
                                 dmc.Text("Brightness", size="sm"),
                                 dmc.Slider(
                                     id=f"figure-brightness",
-                                    value=[0, 255],
+                                    value=100,
                                     min=0,
                                     max=255,
                                     step=1,
@@ -88,7 +105,7 @@ def layout():
                                 dmc.Text("Contrast", size="sm"),
                                 dmc.Slider(
                                     id=f"figure-contrast",
-                                    value=[0, 255],
+                                    value=100,
                                     min=0,
                                     max=255,
                                     step=1,
