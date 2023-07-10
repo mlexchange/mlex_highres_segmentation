@@ -104,27 +104,16 @@ def annotation_visibility(checked, store, figure, image_idx):
 
 clientside_callback(
     """
-    function dash_brigthness_clientside(brightness) {
+    function dash_filters_clientside(brightness, contrast) {
+    console.log(brightness, contrast)
         js_path = "#image-viewer > div.js-plotly-plot > div > div > svg:nth-child(1) > g.cartesianlayer > g > g.plot > g"
-        changeBrightness(js_path, brightness)
-        return ""
-    }
-    """,
-    Output("dummy-output", "children", allow_duplicate=True),
-    Input("figure-brightness", "value"),
-    prevent_initial_call=True,
-)
-
-clientside_callback(
-    """
-    function dash_contrast_clientside(contrast) {
-        js_path = "#image-viewer > div.js-plotly-plot > div > div > svg:nth-child(1) > g.cartesianlayer > g > g.plot > g"
-        changeContrast(js_path, contrast)
+        changeFilters(js_path, brightness, contrast)
         return ""
     }
     """,
     Output("dummy-output", "children", allow_duplicate=True),
     Input("figure-contrast", "value"),
+    Input("figure-brightness", "value"),
     prevent_initial_call=True,
 )
 
