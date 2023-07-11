@@ -1,7 +1,5 @@
 import os
 import json
-import requests
-from urllib.parse import urlparse
 
 from tiled.client import from_uri
 from tiled.client.cache import Cache

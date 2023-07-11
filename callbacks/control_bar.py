@@ -1,4 +1,4 @@
-from dash import Input, Output, State, callback, Patch, MATCH, ALL, ctx
+from dash import Input, Output, State, callback, Patch, ALL, ctx
 import dash_mantine_components as dmc
 from dash.exceptions import PreventUpdate
 import json
@@ -19,7 +19,6 @@ USER_NAME = "user1"
 if not os.path.exists(EXPORT_FILE_PATH):
     with open(EXPORT_FILE_PATH, "w") as f:
         pass
-from tifffile import imread
 import numpy as np
 
 

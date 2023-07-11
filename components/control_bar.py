@@ -46,7 +46,7 @@ def layout():
                         "majesticons:data-line",
                         "data-select",
                         children=[
-                            dmc.Text("Image"),
+                            dmc.Text("Project"),
                             dmc.Select(
                                 id="project-name-src",
                                 data=DATA_OPTIONS,
@@ -258,7 +258,6 @@ def layout():
                 ],
             ),
             dcc.Store(id="annotation-store", data={}),
-            dcc.Store(id="project-data"),
             dcc.Download(id="export-annotations"),
         ],
     )

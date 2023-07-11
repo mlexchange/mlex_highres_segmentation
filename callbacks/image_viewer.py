@@ -3,7 +3,6 @@ import dash_mantine_components as dmc
 from tifffile import imread
 import plotly.express as px
 import numpy as np
-from utils import data_utils
 from utils.data_utils import convert_hex_to_rgba, data
 
 
@@ -28,10 +27,6 @@ def render_image(
 ):
     if image_idx:
         image_idx -= 1  # slider starts at 1, so subtract 1 to get the correct index
-
-        # project_name = project_data["project_name"]
-        # selected_file = project_data["project_files"][image_idx]
-        # tf = imread(f"data/{project_name}/{selected_file}")
         tf = data[project_name][image_idx]
     else:
         tf = np.zeros((500, 500))
@@ -59,6 +54,7 @@ def render_image(
     if annotation_data:
         if str(image_idx) in annotation_data:
             fig["layout"]["shapes"] = annotation_data[str(image_idx)]
+
     return fig
 
 
@@ -85,7 +81,6 @@ def locally_store_annotations(relayout_data, img_idx, annotation_data):
     Output("image-selection-slider", "max"),
     Output("image-selection-slider", "value"),
     Output("image-selection-slider", "disabled"),
-    Output("project-data", "data"),
     Output("annotation-store", "data"),
     Input("project-name-src", "value"),
 )
@@ -98,24 +93,18 @@ def update_slider_values(project_name):
     ## todo - change Input("project-name-src", "data") to value when image-src will contain buckets of data and not just one image
     ## todo - eg, when a different image source is selected, update slider values which is then used to select image within that source
     """
-
     disable_slider = project_name is None
     if not disable_slider:
         tiff_file = data[project_name]
     min_slider_value = 0 if disable_slider else 1
     max_slider_value = 0 if disable_slider else len(tiff_file)
     slider_value = 0 if disable_slider else 1
-    project_data = {
-        "project_name": project_name,
-        "project_files": project_tiff_files,
-    }
     annotation_store = {}
     return (
         min_slider_value,
         max_slider_value,
         slider_value,
         disable_slider,
-        project_data,
         annotation_store,
     )
 
