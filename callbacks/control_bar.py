@@ -1,4 +1,4 @@
-from dash import Input, Output, State, callback, Patch, MATCH, ALL, ctx
+from dash import Input, Output, State, callback, Patch, ALL, ctx, clientside_callback
 import dash_mantine_components as dmc
 import json
 from utils.data_utils import convert_hex_to_rgba, data
@@ -97,3 +97,35 @@ def annotation_visibility(checked, store, figure, image_idx):
         patched_figure["layout"]["shapes"] = []
 
     return store, patched_figure
+
+
+clientside_callback(
+    """
+    function dash_filters_clientside(brightness, contrast) {
+    console.log(brightness, contrast)
+        js_path = "#image-viewer > div.js-plotly-plot > div > div > svg:nth-child(1) > g.cartesianlayer > g > g.plot > g"
+        changeFilters(js_path, brightness, contrast)
+        return ""
+    }
+    """,
+    Output("dummy-output", "children", allow_duplicate=True),
+    Input("figure-brightness", "value"),
+    Input("figure-contrast", "value"),
+    prevent_initial_call=True,
+)
+
+
+@callback(
+    Output("figure-brightness", "value", allow_duplicate=True),
+    Output("figure-contrast", "value", allow_duplicate=True),
+    Output("colormap-scale", "value", allow_duplicate=True),
+    Input("filters-reset", "n_clicks"),
+    State("colormap-scale", "min"),
+    State("colormap-scale", "max"),
+    prevent_initial_call=True,
+)
+def reset_filters(n_clicks, min_color, max_color):
+    default_brightness = 100
+    default_contrast = 100
+    default_colormap_scale = [min_color, max_color]
+    return default_brightness, default_contrast, default_colormap_scale
