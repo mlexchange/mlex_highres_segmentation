@@ -109,8 +109,8 @@ clientside_callback(
     }
     """,
     Output("dummy-output", "children", allow_duplicate=True),
-    Input("figure-contrast", "value"),
     Input("figure-brightness", "value"),
+    Input("figure-contrast", "value"),
     prevent_initial_call=True,
 )
 
