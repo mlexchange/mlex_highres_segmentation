@@ -79,17 +79,6 @@ def layout():
                                     mb=10,
                                     ml="auto",
                                 ),
-                                dmc.Text("Colormap scalar range", size="sm"),
-                                dmc.RangeSlider(
-                                    id="colormap-scale",
-                                    value=[0, 255],
-                                    min=0,
-                                    max=255,
-                                    minRange=0.00001,
-                                    step=0.00001,
-                                    color="gray",
-                                    size="sm",
-                                ),
                                 dmc.Space(h=5),
                                 dmc.Text("Brightness", size="sm"),
                                 dmc.Slider(
