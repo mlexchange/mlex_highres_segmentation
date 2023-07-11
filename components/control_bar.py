@@ -100,7 +100,7 @@ def layout():
                                     n_clicks=0,
                                     mb=10,
                                     ml="auto",
-                                    style={"margin": "auto"}
+                                    style={"margin": "auto"},
                                 ),
                             ]
                         ),

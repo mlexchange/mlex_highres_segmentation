@@ -40,7 +40,7 @@ def render_image(
     fig.update_layout(
         newshape=dict(
             line=dict(color=annotation_color, width=annotation_width),
-            fillcolor=convert_hex_to_rgba(hex_color, 0.3)
+            fillcolor=convert_hex_to_rgba(hex_color, 0.3),
         )
     )
     return fig
