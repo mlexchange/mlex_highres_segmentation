@@ -12,14 +12,12 @@ from utils.data_utils import convert_hex_to_rgba, data
     Input("image-selection-slider", "value"),
     State("project-name-src", "value"),
     State("paintbrush-width", "value"),
-    State("annotation-opacity", "value"),
     State("annotation-class-selection", "className"),
 )
 def render_image(
     image_idx,
     project_name,
     annotation_width,
-    annotation_opacity,
     annotation_color,
 ):
     if image_idx:
@@ -42,8 +40,7 @@ def render_image(
     fig.update_layout(
         newshape=dict(
             line=dict(color=annotation_color, width=annotation_width),
-            fillcolor=convert_hex_to_rgba(hex_color, 0.3),
-            opacity=annotation_opacity,
+            fillcolor=convert_hex_to_rgba(hex_color, 0.3)
         )
     )
     return fig

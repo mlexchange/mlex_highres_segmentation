@@ -132,17 +132,6 @@ def layout():
                                 color="gray",
                                 size="sm",
                             ),
-                            dmc.Space(h=5),
-                            dmc.Text("Annotation opacity", size="sm"),
-                            dmc.Slider(
-                                id="annotation-opacity",
-                                value=1,
-                                min=0.1,
-                                max=1,
-                                step=0.1,
-                                color="gray",
-                                size="sm",
-                            ),
                             dmc.Space(h=20),
                             dmc.Text("Annotation class", size="sm"),
                             dmc.Group(

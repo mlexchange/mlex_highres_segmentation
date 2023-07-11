@@ -6,17 +6,6 @@ from utils.data_utils import convert_hex_to_rgba, data
 
 @callback(
     Output("image-viewer", "figure", allow_duplicate=True),
-    Input("annotation-opacity", "value"),
-    prevent_initial_call=True,
-)
-def annotation_opacity(opacity_value):
-    patched_figure = Patch()
-    patched_figure["layout"]["newshape"]["opacity"] = opacity_value
-    return patched_figure
-
-
-@callback(
-    Output("image-viewer", "figure", allow_duplicate=True),
     Input("paintbrush-width", "value"),
     prevent_initial_call=True,
 )
