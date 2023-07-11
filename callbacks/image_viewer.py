@@ -4,13 +4,13 @@ from tifffile import imread
 import plotly.express as px
 import numpy as np
 from utils import data_utils
-from utils.data_utils import convert_hex_to_rgba
+from utils.data_utils import convert_hex_to_rgba, data
 
 
 @callback(
     Output("image-viewer", "figure"),
     Input("image-selection-slider", "value"),
-    State("project-data", "data"),
+    State("project-name-src", "value"),
     Input("colormap-scale", "value"),
     State("paintbrush-width", "value"),
     State("annotation-opacity", "value"),
@@ -19,7 +19,7 @@ from utils.data_utils import convert_hex_to_rgba
 )
 def render_image(
     image_idx,
-    project_data,
+    project_name,
     zrange,
     annotation_width,
     annotation_opacity,
@@ -27,12 +27,12 @@ def render_image(
     annotation_data,
 ):
     if image_idx:
-        project_name = project_data["project_name"]
-        img_idx = (
-            image_idx - 1
-        )  # slider starts at 1, so subtract 1 to get the correct index
-        selected_file = project_data["project_files"][img_idx]
-        tf = imread(f"data/{project_name}/{selected_file}")
+        image_idx -= 1  # slider starts at 1, so subtract 1 to get the correct index
+
+        # project_name = project_data["project_name"]
+        # selected_file = project_data["project_files"][image_idx]
+        # tf = imread(f"data/{project_name}/{selected_file}")
+        tf = data[project_name][image_idx]
     else:
         tf = np.zeros((500, 500))
     fig = px.imshow(tf, binary_string=True, zmin=zrange[0], zmax=zrange[1])
@@ -98,11 +98,12 @@ def update_slider_values(project_name):
     ## todo - change Input("project-name-src", "data") to value when image-src will contain buckets of data and not just one image
     ## todo - eg, when a different image source is selected, update slider values which is then used to select image within that source
     """
-    project_tiff_files = data_utils.get_tiff_files(project_name)
 
-    disable_slider = project_tiff_files is None
+    disable_slider = project_name is None
+    if not disable_slider:
+        tiff_file = data[project_name]
     min_slider_value = 0 if disable_slider else 1
-    max_slider_value = 0 if disable_slider else len(project_tiff_files)
+    max_slider_value = 0 if disable_slider else len(tiff_file)
     slider_value = 0 if disable_slider else 1
     project_data = {
         "project_name": project_name,
