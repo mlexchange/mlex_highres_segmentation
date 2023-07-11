@@ -11,7 +11,12 @@
 pip install -r requirements.txt
 ```
 
-2. Store any `.tiff` files in the `data/` directory for viewing in the app
+2. Configure a connection to the Tiled server via a `.env` file with the following environment variables:
+
+```
+TILED_URI='https://mlex-segmentation.als.lbl.gov'
+API_KEY='<key-provided-on-request>'
+```
 
 3. Start a local server: 
 
