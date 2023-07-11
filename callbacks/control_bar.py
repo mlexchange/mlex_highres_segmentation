@@ -2,37 +2,6 @@ from dash import Input, Output, State, callback, Patch, ALL, ctx, clientside_cal
 import dash_mantine_components as dmc
 import json
 from utils.data_utils import convert_hex_to_rgba, data
-from tifffile import imread
-import numpy as np
-
-
-@callback(
-    Output("colormap-scale", "min"),
-    Output("colormap-scale", "max"),
-    Output("colormap-scale", "value"),
-    Input("image-selection-slider", "value"),
-    Input("project-name-src", "value"),
-)
-def set_color_range(image_idx, project_name):
-    if image_idx:
-        image_idx -= 1  # slider starts at 1, so subtract 1 to get the correct index
-        tf = data[project_name][image_idx]
-        min_color = np.min(tf)
-        max_color = np.max(tf)
-        return min_color, max_color, [min_color, max_color]
-    else:
-        return 0, 255, [0, 255]
-
-
-@callback(
-    Output("image-viewer", "figure", allow_duplicate=True),
-    Input("annotation-opacity", "value"),
-    prevent_initial_call=True,
-)
-def annotation_opacity(opacity_value):
-    patched_figure = Patch()
-    patched_figure["layout"]["newshape"]["opacity"] = opacity_value
-    return patched_figure
 
 
 @callback(
@@ -118,14 +87,10 @@ clientside_callback(
 @callback(
     Output("figure-brightness", "value", allow_duplicate=True),
     Output("figure-contrast", "value", allow_duplicate=True),
-    Output("colormap-scale", "value", allow_duplicate=True),
     Input("filters-reset", "n_clicks"),
-    State("colormap-scale", "min"),
-    State("colormap-scale", "max"),
     prevent_initial_call=True,
 )
-def reset_filters(n_clicks, min_color, max_color):
+def reset_filters(n_clicks):
     default_brightness = 100
     default_contrast = 100
-    default_colormap_scale = [min_color, max_color]
-    return default_brightness, default_contrast, default_colormap_scale
+    return default_brightness, default_contrast

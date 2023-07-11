@@ -62,35 +62,6 @@ def layout():
                         "image-transformations",
                         children=html.Div(
                             [
-                                dmc.ActionIcon(
-                                    dmc.Tooltip(
-                                        label="Reset filters",
-                                        children=[
-                                            DashIconify(
-                                                icon="fluent:arrow-reset-32-regular",
-                                                width=20,
-                                            ),
-                                        ],
-                                    ),
-                                    size="lg",
-                                    variant="filled",
-                                    id="filters-reset",
-                                    n_clicks=0,
-                                    mb=10,
-                                    ml="auto",
-                                ),
-                                dmc.Text("Colormap scalar range", size="sm"),
-                                dmc.RangeSlider(
-                                    id="colormap-scale",
-                                    value=[0, 255],
-                                    min=0,
-                                    max=255,
-                                    minRange=0.00001,
-                                    step=0.00001,
-                                    color="gray",
-                                    size="sm",
-                                ),
-                                dmc.Space(h=5),
                                 dmc.Text("Brightness", size="sm"),
                                 dmc.Slider(
                                     id=f"figure-brightness",
@@ -111,6 +82,25 @@ def layout():
                                     step=1,
                                     color="gray",
                                     size="sm",
+                                ),
+                                dmc.Space(h=10),
+                                dmc.ActionIcon(
+                                    dmc.Tooltip(
+                                        label="Reset filters",
+                                        children=[
+                                            DashIconify(
+                                                icon="fluent:arrow-reset-32-regular",
+                                                width=20,
+                                            ),
+                                        ],
+                                    ),
+                                    size="lg",
+                                    variant="filled",
+                                    id="filters-reset",
+                                    n_clicks=0,
+                                    mb=10,
+                                    ml="auto",
+                                    style={"margin": "auto"},
                                 ),
                             ]
                         ),
@@ -139,17 +129,6 @@ def layout():
                                 min=1,
                                 max=20,
                                 step=1,
-                                color="gray",
-                                size="sm",
-                            ),
-                            dmc.Space(h=5),
-                            dmc.Text("Annotation opacity", size="sm"),
-                            dmc.Slider(
-                                id="annotation-opacity",
-                                value=1,
-                                min=0.1,
-                                max=1,
-                                step=0.1,
                                 color="gray",
                                 size="sm",
                             ),
