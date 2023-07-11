@@ -62,24 +62,6 @@ def layout():
                         "image-transformations",
                         children=html.Div(
                             [
-                                dmc.ActionIcon(
-                                    dmc.Tooltip(
-                                        label="Reset filters",
-                                        children=[
-                                            DashIconify(
-                                                icon="fluent:arrow-reset-32-regular",
-                                                width=20,
-                                            ),
-                                        ],
-                                    ),
-                                    size="lg",
-                                    variant="filled",
-                                    id="filters-reset",
-                                    n_clicks=0,
-                                    mb=10,
-                                    ml="auto",
-                                ),
-                                dmc.Space(h=5),
                                 dmc.Text("Brightness", size="sm"),
                                 dmc.Slider(
                                     id=f"figure-brightness",
@@ -100,6 +82,25 @@ def layout():
                                     step=1,
                                     color="gray",
                                     size="sm",
+                                ),
+                                dmc.Space(h=10),
+                                dmc.ActionIcon(
+                                    dmc.Tooltip(
+                                        label="Reset filters",
+                                        children=[
+                                            DashIconify(
+                                                icon="fluent:arrow-reset-32-regular",
+                                                width=20,
+                                            ),
+                                        ],
+                                    ),
+                                    size="lg",
+                                    variant="filled",
+                                    id="filters-reset",
+                                    n_clicks=0,
+                                    mb=10,
+                                    ml="auto",
+                                    style={"margin": "auto"}
                                 ),
                             ]
                         ),
