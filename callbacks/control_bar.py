@@ -1,7 +1,7 @@
 from dash import Input, Output, State, callback, Patch, ALL, ctx, clientside_callback
 import dash_mantine_components as dmc
 import json
-from utils.data_utils import convert_hex_to_rgba
+from utils.data_utils import convert_hex_to_rgba, data
 from tifffile import imread
 import numpy as np
 
@@ -11,15 +11,12 @@ import numpy as np
     Output("colormap-scale", "max"),
     Output("colormap-scale", "value"),
     Input("image-selection-slider", "value"),
-    Input("project-data", "data"),
+    Input("project-name-src", "value"),
 )
-def set_color_range(image_idx, project_data):
+def set_color_range(image_idx, project_name):
     if image_idx:
         image_idx -= 1  # slider starts at 1, so subtract 1 to get the correct index
-
-        project_name = project_data["project_name"]
-        selected_file = project_data["project_files"][image_idx]
-        tf = imread(f"data/{project_name}/{selected_file}")
+        tf = data[project_name][image_idx]
         min_color = np.min(tf)
         max_color = np.max(tf)
         return min_color, max_color, [min_color, max_color]
