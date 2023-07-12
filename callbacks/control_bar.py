@@ -6,6 +6,32 @@ from utils.data_utils import convert_hex_to_rgba, data
 
 @callback(
     Output("image-viewer", "figure", allow_duplicate=True),
+    Input("open-freeform", "n_clicks"),
+    Input("closed-freeform", "n_clicks"),
+    Input("circle", "n_clicks"),
+    Input("rectangle", "n_clicks"),
+    Input("drawing-off", "n_clicks"),
+    prevent_initial_call=True,
+)
+def annotation_mode(open, closed, circle, rect, off_mode):
+    """This callback determines which drawing mode the graph is in"""
+    patched_figure = Patch()
+    triggered = ctx.triggered_id
+    if triggered == "open-freeform" and open > 0:
+        patched_figure["layout"]["dragmode"] = "drawopenpath"
+    if triggered == "closed-freeform" and closed > 0:
+        patched_figure["layout"]["dragmode"] = "drawclosedpath"
+    if triggered == "circle" and circle > 0:
+        patched_figure["layout"]["dragmode"] = "drawcircle"
+    if triggered == "rectangle" and rect > 0:
+        patched_figure["layout"]["dragmode"] = "drawrect"
+    if triggered == "drawing-off" and off_mode > 0:
+        patched_figure["layout"]["dragmode"] = "pan"
+    return patched_figure
+
+
+@callback(
+    Output("image-viewer", "figure", allow_duplicate=True),
     Input("paintbrush-width", "value"),
     prevent_initial_call=True,
 )
