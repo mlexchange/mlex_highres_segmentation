@@ -30,7 +30,7 @@ def render_image(
         margin=dict(l=0, r=0, t=0, b=0),
         xaxis=dict(visible=False),
         yaxis=dict(visible=False),
-        dragmode="pan",
+        dragmode="drawopenpath",
         height=620,
         width=620,
         paper_bgcolor="rgba(0,0,0,0)",

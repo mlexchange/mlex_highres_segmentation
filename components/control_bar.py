@@ -4,7 +4,7 @@ from dash_iconify import DashIconify
 from utils import data_utils
 
 COMPONENT_STYLE = {
-    "width": "22.5vw",
+    "width": "25vw",
     "height": "calc(100vh - 40px)",
     "padding": "10px",
     "borderRadius": "5px",
@@ -120,6 +120,66 @@ def layout():
                                     checked=True,
                                     styles={"trackLabel": {"cursor": "pointer"}},
                                 )
+                            ),
+                            dmc.Space(h=20),
+                            dmc.Text("Annotation mode", size="sm"),
+                            dmc.Group(
+                                spacing="xs",
+                                grow=True,
+                                children=[
+                                    dmc.Tooltip(
+                                        dmc.ActionIcon(
+                                            id="open-freeform",
+                                            variant="outline",
+                                            color="gray",
+                                            children=DashIconify(icon="mdi:draw"),
+                                            style={"border": "3px solid black"},
+                                        ),
+                                        label="Open Freeform",
+                                    ),
+                                    dmc.Tooltip(
+                                        dmc.ActionIcon(
+                                            id="closed-freeform",
+                                            variant="outline",
+                                            color="gray",
+                                            children=DashIconify(
+                                                icon="fluent:draw-shape-20-regular"
+                                            ),
+                                        ),
+                                        label="Closed Freeform",
+                                    ),
+                                    dmc.Tooltip(
+                                        dmc.ActionIcon(
+                                            id="circle",
+                                            variant="outline",
+                                            color="gray",
+                                            children=DashIconify(
+                                                icon="gg:shape-circle"
+                                            ),
+                                        ),
+                                        label="Circle",
+                                    ),
+                                    dmc.Tooltip(
+                                        dmc.ActionIcon(
+                                            id="rectangle",
+                                            variant="outline",
+                                            color="gray",
+                                            children=DashIconify(
+                                                icon="gg:shape-square"
+                                            ),
+                                        ),
+                                        label="Rectangle",
+                                    ),
+                                    dmc.Tooltip(
+                                        dmc.ActionIcon(
+                                            id="drawing-off",
+                                            variant="outline",
+                                            color="gray",
+                                            children=DashIconify(icon="el:off"),
+                                        ),
+                                        label="Stop Drawing",
+                                    ),
+                                ],
                             ),
                             dmc.Space(h=20),
                             dmc.Text("Paintbrush size", size="sm"),
