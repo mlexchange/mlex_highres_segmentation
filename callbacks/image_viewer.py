@@ -10,18 +10,14 @@ from utils.data_utils import convert_hex_to_rgba, data
     Output("image-viewer", "figure"),
     Input("image-selection-slider", "value"),
     State("project-name-src", "value"),
-    Input("colormap-scale", "value"),
     State("paintbrush-width", "value"),
-    State("annotation-opacity", "value"),
     State("annotation-class-selection", "className"),
     State("annotation-store", "data"),
 )
 def render_image(
     image_idx,
     project_name,
-    zrange,
     annotation_width,
-    annotation_opacity,
     annotation_color,
     annotation_data,
 ):
@@ -30,7 +26,7 @@ def render_image(
         tf = data[project_name][image_idx]
     else:
         tf = np.zeros((500, 500))
-    fig = px.imshow(tf, binary_string=True, zmin=zrange[0], zmax=zrange[1])
+    fig = px.imshow(tf, binary_string=True)
     fig.update_layout(
         margin=dict(l=0, r=0, t=0, b=0),
         xaxis=dict(visible=False),
@@ -38,7 +34,10 @@ def render_image(
         dragmode="pan",
         height=620,
         width=620,
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
     )
+    fig.update_traces(hovertemplate=None, hoverinfo="skip")
 
     # set the default annotation style
     hex_color = dmc.theme.DEFAULT_COLORS[annotation_color][7]
@@ -48,7 +47,6 @@ def render_image(
                 color=convert_hex_to_rgba(hex_color, 0.3), width=annotation_width
             ),
             fillcolor=convert_hex_to_rgba(hex_color, 0.3),
-            opacity=annotation_opacity,
         )
     )
     if annotation_data:
