@@ -123,68 +123,63 @@ def layout():
                             ),
                             dmc.Space(h=20),
                             dmc.Text("Annotation mode", size="sm"),
-                            dmc.Grid(
+                            dmc.Group(
+                                spacing="xs",
+                                grow=True,
                                 children=[
-                                    dmc.Col(
-                                        span=7,
-                                        children=[
-                                            dmc.Button(
-                                                "Open Freeform",
-                                                id="open-freeform",
-                                                variant="outline",
-                                                color="gray",
-                                                leftIcon=DashIconify(icon="mdi:draw"),
-                                                style={"width": "100%"},
-                                            ),
-                                            dmc.Space(h=5),
-                                            dmc.Button(
-                                                "Closed Freeform",
-                                                id="closed-freeform",
-                                                variant="outline",
-                                                color="gray",
-                                                leftIcon=DashIconify(
-                                                    icon="fluent:draw-shape-20-regular"
-                                                ),
-                                                style={"width": "100%"},
-                                            ),
-                                        ],
+                                    dmc.Tooltip(
+                                        dmc.ActionIcon(
+                                            id="open-freeform",
+                                            variant="outline",
+                                            color="gray",
+                                            children=DashIconify(icon="mdi:draw"),
+                                            style={"border": "3px solid black"},
+                                        ),
+                                        label="Open Freeform",
                                     ),
-                                    dmc.Col(
-                                        span=5,
-                                        children=[
-                                            dmc.Button(
-                                                "Circle",
-                                                id="circle",
-                                                variant="outline",
-                                                color="gray",
-                                                leftIcon=DashIconify(
-                                                    icon="gg:shape-circle"
-                                                ),
-                                                style={"width": "100%"},
+                                    dmc.Tooltip(
+                                        dmc.ActionIcon(
+                                            id="closed-freeform",
+                                            variant="outline",
+                                            color="gray",
+                                            children=DashIconify(
+                                                icon="fluent:draw-shape-20-regular"
                                             ),
-                                            dmc.Space(h=5),
-                                            dmc.Button(
-                                                "Rectangle",
-                                                id="rectangle",
-                                                variant="outline",
-                                                color="gray",
-                                                leftIcon=DashIconify(
-                                                    icon="gg:shape-square"
-                                                ),
-                                                style={"width": "100%"},
-                                            ),
-                                        ],
+                                        ),
+                                        label="Closed Freeform",
                                     ),
-                                ]
-                            ),
-                            dmc.Space(h=5),
-                            dmc.Button(
-                                "Stop Drawing",
-                                id="drawing-off",
-                                variant="outline",
-                                color="gray",
-                                leftIcon=DashIconify(icon="el:off"),
-                                style={"width": "100%"},
+                                    dmc.Tooltip(
+                                        dmc.ActionIcon(
+                                            id="circle",
+                                            variant="outline",
+                                            color="gray",
+                                            children=DashIconify(
+                                                icon="gg:shape-circle"
+                                            ),
+                                        ),
+                                        label="Circle",
+                                    ),
+                                    dmc.Tooltip(
+                                        dmc.ActionIcon(
+                                            id="rectangle",
+                                            variant="outline",
+                                            color="gray",
+                                            children=DashIconify(
+                                                icon="gg:shape-square"
+                                            ),
+                                        ),
+                                        label="Rectangle",
+                                    ),
+                                    dmc.Tooltip(
+                                        dmc.ActionIcon(
+                                            id="drawing-off",
+                                            variant="outline",
+                                            color="gray",
+                                            children=DashIconify(icon="el:off"),
+                                        ),
+                                        label="Stop Drawing",
+                                    ),
+                                ],
                             ),
                             dmc.Space(h=20),
                             dmc.Text("Paintbrush size", size="sm"),

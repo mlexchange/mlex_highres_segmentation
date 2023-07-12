@@ -1,4 +1,14 @@
-from dash import Input, Output, State, callback, Patch, ALL, ctx, clientside_callback
+from dash import (
+    Input,
+    Output,
+    State,
+    callback,
+    Patch,
+    ALL,
+    ctx,
+    clientside_callback,
+    no_update,
+)
 import dash_mantine_components as dmc
 import json
 from utils.data_utils import convert_hex_to_rgba, data
@@ -6,6 +16,11 @@ from utils.data_utils import convert_hex_to_rgba, data
 
 @callback(
     Output("image-viewer", "figure", allow_duplicate=True),
+    Output("open-freeform", "style"),
+    Output("closed-freeform", "style"),
+    Output("circle", "style"),
+    Output("rectangle", "style"),
+    Output("drawing-off", "style"),
     Input("open-freeform", "n_clicks"),
     Input("closed-freeform", "n_clicks"),
     Input("circle", "n_clicks"),
@@ -17,17 +32,27 @@ def annotation_mode(open, closed, circle, rect, off_mode):
     """This callback determines which drawing mode the graph is in"""
     patched_figure = Patch()
     triggered = ctx.triggered_id
+    open_style = {"border": "1px solid"}
+    close_style = {"border": "1px solid"}
+    circle_style = {"border": "1px solid"}
+    rect_style = {"border": "1px solid"}
+    pan_style = {"border": "1px solid"}
     if triggered == "open-freeform" and open > 0:
         patched_figure["layout"]["dragmode"] = "drawopenpath"
+        open_style = {"border": "3px solid black"}
     if triggered == "closed-freeform" and closed > 0:
         patched_figure["layout"]["dragmode"] = "drawclosedpath"
+        close_style = {"border": "3px solid black"}
     if triggered == "circle" and circle > 0:
         patched_figure["layout"]["dragmode"] = "drawcircle"
+        circle_style = {"border": "3px solid black"}
     if triggered == "rectangle" and rect > 0:
         patched_figure["layout"]["dragmode"] = "drawrect"
+        rect_style = {"border": "3px solid black"}
     if triggered == "drawing-off" and off_mode > 0:
         patched_figure["layout"]["dragmode"] = "pan"
-    return patched_figure
+        pan_style = {"border": "3px solid black"}
+    return patched_figure, open_style, close_style, circle_style, rect_style, pan_style
 
 
 @callback(
