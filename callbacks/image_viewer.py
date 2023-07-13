@@ -3,7 +3,6 @@ import dash_mantine_components as dmc
 from tifffile import imread
 import plotly.express as px
 import numpy as np
-from utils import data_utils
 from utils.data_utils import convert_hex_to_rgba, data
 
 
@@ -20,7 +19,7 @@ def render_image(
     project_name,
     annotation_width,
     annotation_color,
-    annotation_data,
+    annotation_store,
 ):
     if image_idx:
         image_idx -= 1  # slider starts at 1, so subtract 1 to get the correct index
@@ -50,16 +49,16 @@ def render_image(
             fillcolor=convert_hex_to_rgba(hex_color, 0.3),
         )
     )
+    if annotation_store:
+        if not annotation_store["visible"]:
+            fig["layout"]["shapes"] = []
+            fig["layout"]["dragmode"] = False
+            return fig
 
-    if annotation_data:
-        if "visible" in annotation_data:
-            print("visible" in annotation_data, not annotation_data["visible"])
-            if not annotation_data["visible"]:
-                fig["layout"]["shapes"] = []
-                fig["layout"]["dragmode"] = False
-                return fig
-        if str(image_idx) in annotation_data:
-            fig["layout"]["shapes"] = annotation_data[str(image_idx)]
+        fig["layout"]["dragmode"] = annotation_store["dragmode"]
+
+        if str(image_idx) in annotation_store["annotations"]:
+            fig["layout"]["shapes"] = annotation_store["annotations"][str(image_idx)]
 
     return fig
 
@@ -71,15 +70,15 @@ def render_image(
     State("annotation-store", "data"),
     prevent_initial_call=True,
 )
-def locally_store_annotations(relayout_data, img_idx, annotation_data):
+def locally_store_annotations(relayout_data, img_idx, annotation_store):
     """
     Upon finishing relayout event (drawing, but it also includes panning, zooming),
     this function takes the annotation shapes, and stores it in the dcc.Store, which is then used elsewhere
     to preserve drawn annotations, or to save them.
     """
     if "shapes" in relayout_data:
-        annotation_data[str(img_idx - 1)] = relayout_data["shapes"]
-    return annotation_data
+        annotation_store["annotations"][str(img_idx - 1)] = relayout_data["shapes"]
+    return annotation_store
 
 
 @callback(
@@ -89,8 +88,9 @@ def locally_store_annotations(relayout_data, img_idx, annotation_data):
     Output("image-selection-slider", "disabled"),
     Output("annotation-store", "data"),
     Input("project-name-src", "value"),
+    State("annotation-store", "data"),
 )
-def update_slider_values(project_name):
+def update_slider_values(project_name, annotation_store):
     """
     When the data source is loaded, this callback will set the slider values and chain call
         "update_selection_and_image" callback which will update image and slider selection component
@@ -106,7 +106,7 @@ def update_slider_values(project_name):
     min_slider_value = 0 if disable_slider else 1
     max_slider_value = 0 if disable_slider else len(tiff_file)
     slider_value = 0 if disable_slider else 1
-    annotation_store = {}
+    annotation_store["annotations"] = {}
     return (
         min_slider_value,
         max_slider_value,

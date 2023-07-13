@@ -244,7 +244,10 @@ def layout():
                     ),
                 ],
             ),
-            dcc.Store(id="annotation-store", data={}),
+            dcc.Store(
+                id="annotation-store",
+                data={"dragmode": "drawopenpath", "visible": True, "annotations": {}},
+            ),
             dcc.Store(id="project-data"),
             html.Div(id="dummy-output"),
         ],

@@ -21,6 +21,7 @@ from utils.data_utils import convert_hex_to_rgba, data
     Output("circle", "style"),
     Output("rectangle", "style"),
     Output("drawing-off", "style"),
+    Output("annotation-store", "data", allow_duplicate=True),
     Input("open-freeform", "n_clicks"),
     Input("closed-freeform", "n_clicks"),
     Input("circle", "n_clicks"),
@@ -31,9 +32,8 @@ from utils.data_utils import convert_hex_to_rgba, data
 )
 def annotation_mode(open, closed, circle, rect, off_mode, annotation_store):
     """This callback determines which drawing mode the graph is in"""
-    if "visible" in annotation_store:
-        if not annotation_store["visible"]:
-            raise PreventUpdate
+    if not annotation_store["visible"]:
+        raise PreventUpdate
 
     patched_figure = Patch()
     triggered = ctx.triggered_id
@@ -45,20 +45,33 @@ def annotation_mode(open, closed, circle, rect, off_mode, annotation_store):
 
     if triggered == "open-freeform" and open > 0:
         patched_figure["layout"]["dragmode"] = "drawopenpath"
+        annotation_store["dragmode"] = "drawopenpath"
         open_style = {"border": "3px solid black"}
     if triggered == "closed-freeform" and closed > 0:
         patched_figure["layout"]["dragmode"] = "drawclosedpath"
+        annotation_store["dragmode"] = "drawclosedpath"
         close_style = {"border": "3px solid black"}
     if triggered == "circle" and circle > 0:
         patched_figure["layout"]["dragmode"] = "drawcircle"
+        annotation_store["dragmode"] = "drawcircle"
         circle_style = {"border": "3px solid black"}
     if triggered == "rectangle" and rect > 0:
         patched_figure["layout"]["dragmode"] = "drawrect"
+        annotation_store["dragmode"] = "drawrect"
         rect_style = {"border": "3px solid black"}
     if triggered == "drawing-off" and off_mode > 0:
         patched_figure["layout"]["dragmode"] = "pan"
+        annotation_store["dragmode"] = "pan"
         pan_style = {"border": "3px solid black"}
-    return patched_figure, open_style, close_style, circle_style, rect_style, pan_style
+    return (
+        patched_figure,
+        open_style,
+        close_style,
+        circle_style,
+        rect_style,
+        pan_style,
+        annotation_store,
+    )
 
 
 @callback(
@@ -113,16 +126,19 @@ def annotation_visibility(checked, annotation_store, figure, image_idx):
     patched_figure = Patch()
     if checked:
         annotation_store["visible"] = True
-        patched_figure["layout"]["dragmode"] = True
-        if str(image_idx) in annotation_store:
-            patched_figure["layout"]["shapes"] = annotation_store[image_idx]
+        patched_figure["layout"]["visible"] = True
+        if str(image_idx) in annotation_store["annotations"]:
+            patched_figure["layout"]["shapes"] = annotation_store["annotations"][
+                image_idx
+            ]
+        patched_figure["layout"]["dragmode"] = annotation_store["dragmode"]
     else:
         new_annotation_data = (
             [] if "shapes" not in figure["layout"] else figure["layout"]["shapes"]
         )
         annotation_store["visible"] = False
         patched_figure["layout"]["dragmode"] = False
-        annotation_store[image_idx] = new_annotation_data
+        annotation_store["annotations"][image_idx] = new_annotation_data
         patched_figure["layout"]["shapes"] = []
 
     return annotation_store, patched_figure
