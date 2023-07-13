@@ -135,7 +135,8 @@ def layout():
                                             children=DashIconify(icon="mdi:draw"),
                                             style={"border": "3px solid black"},
                                         ),
-                                        label="Open Freeform",
+                                        label="Open Freeform: draw any open shape",
+                                        multiline=True,
                                     ),
                                     dmc.Tooltip(
                                         dmc.ActionIcon(
@@ -146,7 +147,8 @@ def layout():
                                                 icon="fluent:draw-shape-20-regular"
                                             ),
                                         ),
-                                        label="Closed Freeform",
+                                        label="Closed Freeform: draw a shape that will auto-complete",
+                                        multiline=True,
                                     ),
                                     dmc.Tooltip(
                                         dmc.ActionIcon(
@@ -157,7 +159,8 @@ def layout():
                                                 icon="gg:shape-circle"
                                             ),
                                         ),
-                                        label="Circle",
+                                        label="Circle: create a filled circle",
+                                        multiline=True,
                                     ),
                                     dmc.Tooltip(
                                         dmc.ActionIcon(
@@ -168,7 +171,31 @@ def layout():
                                                 icon="gg:shape-square"
                                             ),
                                         ),
-                                        label="Rectangle",
+                                        label="Rectangle: create a filled rectangle",
+                                        multiline=True,
+                                    ),
+                                    html.Div(id="test"),
+                                    dmc.Tooltip(
+                                        dmc.ActionIcon(
+                                            id="eraser",
+                                            variant="outline",
+                                            color="gray",
+                                            children=DashIconify(icon="ph:eraser"),
+                                        ),
+                                        label="Eraser: click on shapes to delete them",
+                                        multiline=True,
+                                    ),
+                                    dmc.Tooltip(
+                                        dmc.ActionIcon(
+                                            id="delete-all",
+                                            variant="outline",
+                                            color="gray",
+                                            children=DashIconify(
+                                                icon="octicon:trash-24"
+                                            ),
+                                        ),
+                                        label="Clear All Annotations",
+                                        multiline=True,
                                     ),
                                     dmc.Tooltip(
                                         dmc.ActionIcon(
@@ -177,7 +204,32 @@ def layout():
                                             color="gray",
                                             children=DashIconify(icon="el:off"),
                                         ),
-                                        label="Stop Drawing",
+                                        label="Stop Drawing: pan, zoom, select annotations and edit them using the nodes",
+                                        multiline=True,
+                                    ),
+                                ],
+                            ),
+                            dmc.Modal(
+                                title="Warning",
+                                id="delete-all-warning",
+                                children=[
+                                    dmc.Text(
+                                        "This action will permanently clear all annotations on this image frame. Are you sure you want to proceed?"
+                                    ),
+                                    dmc.Space(h=20),
+                                    dmc.Group(
+                                        [
+                                            dmc.Button(
+                                                "Cancel", id="modal-cancel-button"
+                                            ),
+                                            dmc.Button(
+                                                "Continue",
+                                                color="red",
+                                                variant="outline",
+                                                id="modal-delete-button",
+                                            ),
+                                        ],
+                                        position="right",
                                     ),
                                 ],
                             ),
