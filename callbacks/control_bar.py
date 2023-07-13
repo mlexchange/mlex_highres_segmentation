@@ -121,16 +121,17 @@ def annotation_visibility(checked, store, figure, image_idx):
 
 clientside_callback(
     """
-    function dash_filters_clientside(brightness, contrast) {
+    function dash_filters_clientside(brightness, contrast, hue_rotate) {
     console.log(brightness, contrast)
         js_path = "#image-viewer > div.js-plotly-plot > div > div > svg:nth-child(1) > g.cartesianlayer > g > g.plot > g"
-        changeFilters(js_path, brightness, contrast)
+        changeFilters(js_path, brightness, contrast, hue_rotate)
         return ""
     }
     """,
     Output("dummy-output", "children", allow_duplicate=True),
     Input("figure-brightness", "value"),
     Input("figure-contrast", "value"),
+    Input("figure-hue-rotate", "value"),
     prevent_initial_call=True,
 )
 

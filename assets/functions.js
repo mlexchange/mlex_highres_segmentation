@@ -1,7 +1,10 @@
-function changeFilters(js_path, brightness, contrast) {
+function changeFilters(js_path, brightness, contrast, hue_rotate) {
     const element = document.querySelector(js_path);
     if (element) {
-        // Apply the new brightness value to the element
-        element.style.filter = `brightness(${brightness}%) contrast(${contrast}%)`;
+        if (hue_rotate == 0) {
+            element.style.filter = `brightness(${brightness}%) contrast(${contrast}%)`;
+        } else {
+            element.style.filter = `brightness(${brightness}%) contrast(${contrast}%) sepia(100%) hue-rotate(${hue_rotate}deg)`;
+        }
     }
 }

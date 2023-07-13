@@ -83,7 +83,25 @@ def layout():
                                     color="gray",
                                     size="sm",
                                 ),
-                                dmc.Space(h=10),
+                                dmc.Text("Color", size="sm"),
+                                dmc.Slider(
+                                    id=f"figure-hue-rotate",
+                                    value=0,
+                                    min=0,
+                                    max=360,
+                                    step=1,
+                                    color="gray",
+                                    size="sm",
+                                    styles={"label": {"display": "none"}},
+                                    marks=[
+                                        {"value": 0, "label": "Gray"},
+                                        {"value": 80, "label": "Green"},
+                                        {"value": 160, "label": "Blue"},
+                                        {"value": 240, "label": "Purple"},
+                                        {"value": 320, "label": "Red"},
+                                    ],
+                                ),
+                                dmc.Space(h=35),
                                 dmc.ActionIcon(
                                     dmc.Tooltip(
                                         label="Reset filters",
@@ -98,8 +116,6 @@ def layout():
                                     variant="filled",
                                     id="filters-reset",
                                     n_clicks=0,
-                                    mb=10,
-                                    ml="auto",
                                     style={"margin": "auto"},
                                 ),
                             ]
