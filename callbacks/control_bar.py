@@ -139,10 +139,12 @@ clientside_callback(
 @callback(
     Output("figure-brightness", "value", allow_duplicate=True),
     Output("figure-contrast", "value", allow_duplicate=True),
+    Output("figure-hue-rotate", "value", allow_duplicate=True),
     Input("filters-reset", "n_clicks"),
     prevent_initial_call=True,
 )
 def reset_filters(n_clicks):
     default_brightness = 100
     default_contrast = 100
-    return default_brightness, default_contrast
+    default_color = 0
+    return default_brightness, default_contrast, default_color
