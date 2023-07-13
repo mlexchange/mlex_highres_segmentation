@@ -94,7 +94,7 @@ def layout():
                                     size="sm",
                                     styles={"label": {"display": "none"}},
                                     marks=[
-                                        {"value": 0, "label": "Gray"},
+                                        {"value": 0, "label": "Original"},
                                         {"value": 80, "label": "Green"},
                                         {"value": 160, "label": "Blue"},
                                         {"value": 240, "label": "Purple"},
