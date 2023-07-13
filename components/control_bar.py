@@ -4,7 +4,7 @@ from dash_iconify import DashIconify
 from utils import data_utils
 
 COMPONENT_STYLE = {
-    "width": "22.5vw",
+    "width": "25vw",
     "height": "calc(100vh - 40px)",
     "padding": "10px",
     "borderRadius": "5px",
@@ -62,18 +62,46 @@ def layout():
                         "image-transformations",
                         children=html.Div(
                             [
-                                dmc.Text("Colormap scalar range", size="sm"),
-                                dmc.RangeSlider(
-                                    id=f"colormap-scale",
-                                    value=[0, 255],
+                                dmc.Text("Brightness", size="sm"),
+                                dmc.Slider(
+                                    id=f"figure-brightness",
+                                    value=100,
                                     min=0,
                                     max=255,
-                                    minRange=0.00001,
-                                    step=0.00001,
+                                    step=1,
                                     color="gray",
                                     size="sm",
                                 ),
                                 dmc.Space(h=5),
+                                dmc.Text("Contrast", size="sm"),
+                                dmc.Slider(
+                                    id=f"figure-contrast",
+                                    value=100,
+                                    min=0,
+                                    max=255,
+                                    step=1,
+                                    color="gray",
+                                    size="sm",
+                                ),
+                                dmc.Space(h=10),
+                                dmc.ActionIcon(
+                                    dmc.Tooltip(
+                                        label="Reset filters",
+                                        children=[
+                                            DashIconify(
+                                                icon="fluent:arrow-reset-32-regular",
+                                                width=20,
+                                            ),
+                                        ],
+                                    ),
+                                    size="lg",
+                                    variant="filled",
+                                    id="filters-reset",
+                                    n_clicks=0,
+                                    mb=10,
+                                    ml="auto",
+                                    style={"margin": "auto"},
+                                ),
                             ]
                         ),
                     ),
@@ -94,6 +122,66 @@ def layout():
                                 )
                             ),
                             dmc.Space(h=20),
+                            dmc.Text("Annotation mode", size="sm"),
+                            dmc.Group(
+                                spacing="xs",
+                                grow=True,
+                                children=[
+                                    dmc.Tooltip(
+                                        dmc.ActionIcon(
+                                            id="open-freeform",
+                                            variant="outline",
+                                            color="gray",
+                                            children=DashIconify(icon="mdi:draw"),
+                                            style={"border": "3px solid black"},
+                                        ),
+                                        label="Open Freeform",
+                                    ),
+                                    dmc.Tooltip(
+                                        dmc.ActionIcon(
+                                            id="closed-freeform",
+                                            variant="outline",
+                                            color="gray",
+                                            children=DashIconify(
+                                                icon="fluent:draw-shape-20-regular"
+                                            ),
+                                        ),
+                                        label="Closed Freeform",
+                                    ),
+                                    dmc.Tooltip(
+                                        dmc.ActionIcon(
+                                            id="circle",
+                                            variant="outline",
+                                            color="gray",
+                                            children=DashIconify(
+                                                icon="gg:shape-circle"
+                                            ),
+                                        ),
+                                        label="Circle",
+                                    ),
+                                    dmc.Tooltip(
+                                        dmc.ActionIcon(
+                                            id="rectangle",
+                                            variant="outline",
+                                            color="gray",
+                                            children=DashIconify(
+                                                icon="gg:shape-square"
+                                            ),
+                                        ),
+                                        label="Rectangle",
+                                    ),
+                                    dmc.Tooltip(
+                                        dmc.ActionIcon(
+                                            id="drawing-off",
+                                            variant="outline",
+                                            color="gray",
+                                            children=DashIconify(icon="el:off"),
+                                        ),
+                                        label="Stop Drawing",
+                                    ),
+                                ],
+                            ),
+                            dmc.Space(h=20),
                             dmc.Text("Paintbrush size", size="sm"),
                             dmc.Slider(
                                 id="paintbrush-width",
@@ -101,17 +189,6 @@ def layout():
                                 min=1,
                                 max=20,
                                 step=1,
-                                color="gray",
-                                size="sm",
-                            ),
-                            dmc.Space(h=5),
-                            dmc.Text("Annotation opacity", size="sm"),
-                            dmc.Slider(
-                                id="annotation-opacity",
-                                value=1,
-                                min=0.1,
-                                max=1,
-                                step=0.1,
                                 color="gray",
                                 size="sm",
                             ),
@@ -168,5 +245,7 @@ def layout():
                 ],
             ),
             dcc.Store(id="annotation-store", data={}),
+            dcc.Store(id="project-data"),
+            html.Div(id="dummy-output"),
         ],
     )

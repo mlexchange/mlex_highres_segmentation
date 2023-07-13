@@ -11,17 +11,13 @@ from utils.data_utils import convert_hex_to_rgba, data
     Output("image-viewer", "figure"),
     Input("image-selection-slider", "value"),
     State("project-name-src", "value"),
-    Input("colormap-scale", "value"),
     State("paintbrush-width", "value"),
-    State("annotation-opacity", "value"),
     State("annotation-class-selection", "className"),
 )
 def render_image(
     image_idx,
     project_name,
-    zrange,
     annotation_width,
-    annotation_opacity,
     annotation_color,
 ):
     if image_idx:
@@ -29,12 +25,12 @@ def render_image(
         tf = data[project_name][image_idx]
     else:
         tf = np.zeros((500, 500))
-    fig = px.imshow(tf, binary_string=True, zmin=zrange[0], zmax=zrange[1])
+    fig = px.imshow(tf, binary_string=True)
     fig.update_layout(
         margin=dict(l=0, r=0, t=0, b=0),
         xaxis=dict(visible=False),
         yaxis=dict(visible=False),
-        dragmode="pan",
+        dragmode="drawopenpath",
         height=620,
         width=620,
         paper_bgcolor="rgba(0,0,0,0)",
@@ -48,7 +44,6 @@ def render_image(
         newshape=dict(
             line=dict(color=annotation_color, width=annotation_width),
             fillcolor=convert_hex_to_rgba(hex_color, 0.3),
-            opacity=annotation_opacity,
         )
     )
     return fig
