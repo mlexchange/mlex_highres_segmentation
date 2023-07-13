@@ -7,8 +7,8 @@ from dash import (
     ALL,
     ctx,
     clientside_callback,
-    no_update,
 )
+from dash.exceptions import PreventUpdate
 import dash_mantine_components as dmc
 import json
 from utils.data_utils import convert_hex_to_rgba, data
@@ -26,10 +26,15 @@ from utils.data_utils import convert_hex_to_rgba, data
     Input("circle", "n_clicks"),
     Input("rectangle", "n_clicks"),
     Input("drawing-off", "n_clicks"),
+    State("annotation-store", "data"),
     prevent_initial_call=True,
 )
-def annotation_mode(open, closed, circle, rect, off_mode):
+def annotation_mode(open, closed, circle, rect, off_mode, annotation_store):
     """This callback determines which drawing mode the graph is in"""
+    if "visible" in annotation_store:
+        if not annotation_store["visible"]:
+            raise PreventUpdate
+
     patched_figure = Patch()
     triggered = ctx.triggered_id
     open_style = {"border": "1px solid"}
@@ -37,6 +42,7 @@ def annotation_mode(open, closed, circle, rect, off_mode):
     circle_style = {"border": "1px solid"}
     rect_style = {"border": "1px solid"}
     pan_style = {"border": "1px solid"}
+
     if triggered == "open-freeform" and open > 0:
         patched_figure["layout"]["dragmode"] = "drawopenpath"
         open_style = {"border": "3px solid black"}
@@ -90,7 +96,7 @@ def annotation_color(color_value):
 
 
 @callback(
-    Output("annotation-store", "data"),
+    Output("annotation-store", "data", allow_duplicate=True),
     Output("image-viewer", "figure", allow_duplicate=True),
     Input("view-annotations", "checked"),
     State("annotation-store", "data"),
@@ -98,25 +104,28 @@ def annotation_color(color_value):
     State("image-selection-slider", "value"),
     prevent_initial_call=True,
 )
-def annotation_visibility(checked, store, figure, image_idx):
+def annotation_visibility(checked, annotation_store, figure, image_idx):
     """
     This callback is responsible for toggling the visibility of the annotation layer.
     It also saves the annotation data to the store when the layer is hidden, and then loads it back in when the layer is shown again.
     """
-    image_idx = str(image_idx)
-
+    image_idx = str(image_idx - 1)
     patched_figure = Patch()
     if checked:
-        store["visible"] = True
-        patched_figure["layout"]["shapes"] = store[image_idx]
+        annotation_store["visible"] = True
+        patched_figure["layout"]["dragmode"] = True
+        if str(image_idx) in annotation_store:
+            patched_figure["layout"]["shapes"] = annotation_store[image_idx]
     else:
-        annotation_data = (
+        new_annotation_data = (
             [] if "shapes" not in figure["layout"] else figure["layout"]["shapes"]
         )
-        store[image_idx] = annotation_data
+        annotation_store["visible"] = False
+        patched_figure["layout"]["dragmode"] = False
+        annotation_store[image_idx] = new_annotation_data
         patched_figure["layout"]["shapes"] = []
 
-    return store, patched_figure
+    return annotation_store, patched_figure
 
 
 clientside_callback(
