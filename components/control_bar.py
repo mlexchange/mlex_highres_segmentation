@@ -2,6 +2,7 @@ import dash_mantine_components as dmc
 from dash import html, dcc
 from dash_iconify import DashIconify
 from utils import data_utils
+from dash_extensions import EventListener
 
 COMPONENT_STYLE = {
     "width": "25vw",
@@ -250,5 +251,15 @@ def layout():
             ),
             dcc.Store(id="project-data"),
             html.Div(id="dummy-output"),
+            EventListener(
+                events=[
+                    {
+                        "event": "keydown",
+                        "props": ["key"],
+                    }
+                ],
+                logging=True,
+                id="keybind-event-listener",
+            ),
         ],
     )

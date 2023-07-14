@@ -27,10 +27,13 @@ from utils.data_utils import convert_hex_to_rgba, data
     Input("circle", "n_clicks"),
     Input("rectangle", "n_clicks"),
     Input("drawing-off", "n_clicks"),
+    Input("keybind-event-listener", "event"),
     State("annotation-store", "data"),
     prevent_initial_call=True,
 )
-def annotation_mode(open, closed, circle, rect, off_mode, annotation_store):
+def annotation_mode(
+    open, closed, circle, rect, off_mode, keybind_event_listener, annotation_store
+):
     """This callback determines which drawing mode the graph is in"""
     if not annotation_store["visible"]:
         raise PreventUpdate
@@ -43,23 +46,49 @@ def annotation_mode(open, closed, circle, rect, off_mode, annotation_store):
     rect_style = {"border": "1px solid"}
     pan_style = {"border": "1px solid"}
 
-    if triggered == "open-freeform" and open > 0:
+    (
+        key_open_freeform,
+        key_closed_freeform,
+        key_circle,
+        key_rectangle,
+        key_drawing_off,
+    ) = (
+        False,
+        False,
+        False,
+        False,
+        False,
+    )
+    if triggered == "keybind-event-listener":
+        pressed_key = keybind_event_listener["key"]
+        if pressed_key == "1":
+            key_open_freeform = True
+        elif pressed_key == "2":
+            key_closed_freeform = True
+        elif pressed_key == "3":
+            key_circle = True
+        elif pressed_key == "4":
+            key_rectangle = True
+        elif pressed_key == "5":
+            key_drawing_off = True
+
+    if key_open_freeform or (triggered == "open-freeform" and open > 0):
         patched_figure["layout"]["dragmode"] = "drawopenpath"
         annotation_store["dragmode"] = "drawopenpath"
         open_style = {"border": "3px solid black"}
-    if triggered == "closed-freeform" and closed > 0:
+    if key_closed_freeform or (triggered == "closed-freeform" and closed > 0):
         patched_figure["layout"]["dragmode"] = "drawclosedpath"
         annotation_store["dragmode"] = "drawclosedpath"
         close_style = {"border": "3px solid black"}
-    if triggered == "circle" and circle > 0:
+    if key_circle or (triggered == "circle" and circle > 0):
         patched_figure["layout"]["dragmode"] = "drawcircle"
         annotation_store["dragmode"] = "drawcircle"
         circle_style = {"border": "3px solid black"}
-    if triggered == "rectangle" and rect > 0:
+    if key_rectangle or (triggered == "rectangle" and rect > 0):
         patched_figure["layout"]["dragmode"] = "drawrect"
         annotation_store["dragmode"] = "drawrect"
         rect_style = {"border": "3px solid black"}
-    if triggered == "drawing-off" and off_mode > 0:
+    if key_drawing_off or (triggered == "drawing-off" and off_mode > 0):
         patched_figure["layout"]["dragmode"] = "pan"
         annotation_store["dragmode"] = "pan"
         pan_style = {"border": "3px solid black"}
