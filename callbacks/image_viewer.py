@@ -1,4 +1,4 @@
-from dash import Input, Output, State, callback, ctx
+from dash import Input, Output, State, callback, ctx, clientside_callback
 import dash_mantine_components as dmc
 from tifffile import imread
 import plotly.express as px
@@ -8,11 +8,13 @@ from utils.data_utils import convert_hex_to_rgba, data
 
 @callback(
     Output("image-viewer", "figure"),
+    Output("image-viewer-loading", "zIndex", allow_duplicate=True),
     Input("image-selection-slider", "value"),
     State("project-name-src", "value"),
     State("paintbrush-width", "value"),
     State("annotation-class-selection", "className"),
     State("annotation-store", "data"),
+    prevent_initial_call=True,
 )
 def render_image(
     image_idx,
@@ -60,7 +62,19 @@ def render_image(
         if str(image_idx) in annotation_store["annotations"]:
             fig["layout"]["shapes"] = annotation_store["annotations"][str(image_idx)]
 
-    return fig
+    fig_loading_overlay = -1
+    return fig, fig_loading_overlay
+
+
+clientside_callback(
+    """
+    function EnableImageLoadingOverlay(zIndex) {
+        return 9999;
+    }
+    """,
+    Output("image-viewer-loading", "zIndex"),
+    Input("image-selection-slider", "value"),
+)
 
 
 @callback(
