@@ -1,0 +1,11 @@
+version: '3.7'
+
+services:
+  app:
+    build: .
+    command: 'gunicorn -b 0.0.0.0:8050 --reload app:server'
+    environment:
+      TILED_URI: '${TILED_URI}'
+      API_KEY: '${API_KEY}'
+    ports:
+      - '8050:8050'
