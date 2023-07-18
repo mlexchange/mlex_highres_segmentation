@@ -34,8 +34,8 @@ def render_image(
         xaxis=dict(visible=False),
         yaxis=dict(visible=False),
         dragmode="drawopenpath",
-        height=620,
-        width=620,
+        height=560,
+        width=560,
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
     )

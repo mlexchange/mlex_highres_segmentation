@@ -4,7 +4,7 @@ from dash_iconify import DashIconify
 from utils.plot_utils import blank_fig
 
 COMPONENT_STYLE = {
-    "width": "640px",
+    "width": "650px",
     "height": "calc(100vh - 40px)",
     "padding": "10px",
     "borderRadius": "5px",
@@ -86,11 +86,14 @@ def layout():
                 loaderProps=dict(
                     color=dmc.theme.DEFAULT_COLORS["blue"][6], variant="bars"
                 ),
-                children=[
-                    dcc.Graph(
-                        id="image-viewer", config=FIGURE_CONFIG, figure=blank_fig()
-                    ),
-                ],
+   
+                    children=[
+                        dcc.Graph(
+                            id="image-viewer", config=FIGURE_CONFIG, figure=blank_fig(), style={"margin": "auto"}
+                        ),
+                    ],
+                    style={"display": "flex"}
+              
             ),
         ],
     )
