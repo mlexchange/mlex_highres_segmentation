@@ -86,14 +86,15 @@ def layout():
                 loaderProps=dict(
                     color=dmc.theme.DEFAULT_COLORS["blue"][6], variant="bars"
                 ),
-   
-                    children=[
-                        dcc.Graph(
-                            id="image-viewer", config=FIGURE_CONFIG, figure=blank_fig(), style={"margin": "auto"}
-                        ),
-                    ],
-                    style={"display": "flex"}
-              
+                children=[
+                    dcc.Graph(
+                        id="image-viewer",
+                        config=FIGURE_CONFIG,
+                        figure=blank_fig(),
+                        style={"margin": "auto"},
+                    ),
+                ],
+                style={"display": "flex"},
             ),
         ],
     )
