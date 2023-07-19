@@ -4,7 +4,7 @@ from dash_iconify import DashIconify
 from utils import data_utils
 
 COMPONENT_STYLE = {
-    "width": "25vw",
+    "width": "400px",
     "height": "calc(100vh - 40px)",
     "padding": "10px",
     "borderRadius": "5px",
