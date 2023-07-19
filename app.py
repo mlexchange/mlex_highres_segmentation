@@ -16,7 +16,6 @@ app.layout = dmc.MantineProvider(
                 control_bar_layout(),
                 image_viewer_layout(),
             ],
-            position="center",
         )
     ],
 )
