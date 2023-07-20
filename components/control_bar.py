@@ -4,7 +4,7 @@ from dash_iconify import DashIconify
 from utils import data_utils
 
 COMPONENT_STYLE = {
-    "width": "25vw",
+    "width": "400px",
     "height": "calc(100vh - 40px)",
     "padding": "10px",
     "borderRadius": "5px",
@@ -360,7 +360,13 @@ def layout():
             ),
             dcc.Store(
                 id="annotation-store",
-                data={"dragmode": "drawopenpath", "visible": True, "annotations": {}},
+                data={
+                    "dragmode": "drawopenpath",
+                    "visible": True,
+                    "annotations": {},
+                    "view": {},
+                    "image_size": [],
+                },
             ),
             dcc.Store(id="project-data"),
             html.Div(id="dummy-output"),
