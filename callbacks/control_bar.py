@@ -14,6 +14,7 @@ import dash_mantine_components as dmc
 from dash_iconify import DashIconify
 import json
 from utils.data_utils import convert_hex_to_rgba, data
+from utils.annotations import Annotations
 
 
 @callback(
@@ -188,8 +189,10 @@ def export_annotation(n_clicks, annotation_store):
         notification_message = "Please annotate an image before exporting."
         notification_color = "red"
     else:
+        annotations = Annotations(annotation_store["annotations"])
+        annotations.process_annotation_data()
         data = {
-            "content": json.dumps(annotation_store["annotations"]),
+            "content": json.dumps(annotations.get_annotations()),
             "filename": "annotations.json",
             "type": "application/json",
         }
