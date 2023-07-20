@@ -24,6 +24,15 @@ API_KEY='<key-provided-on-request>'
 python app.py
 ```
 
+### Local tiled connection
+
+To start local tiled connection:
+1. Add `SERVE_LOCALLY=True` flag to `env` file (or to your environmental variables)
+2. Start the app once, which will create `data/` directory and download 2 sample projects with 2 images each.
+3. Open a second terminal and run `tiled serve directory --public data`.
+
+The app will now connect to the local tiled server.
+
 # Copyright
 MLExchange Copyright (c) 2023, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Dept. of Energy). All rights reserved.
 
