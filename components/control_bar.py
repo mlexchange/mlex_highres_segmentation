@@ -174,7 +174,6 @@ def layout():
                                         label="Rectangle: create a filled rectangle",
                                         multiline=True,
                                     ),
-                                    html.Div(id="test"),
                                     dmc.Tooltip(
                                         dmc.ActionIcon(
                                             id="eraser",
@@ -250,30 +249,93 @@ def layout():
                                 spacing="xs",
                                 grow=True,
                                 id="annotation-class-selection",
-                                className=DEFAULT_ANNOTATION_CLASS,
                                 children=[
                                     dmc.ActionIcon(
-                                        children=(i + 1),
-                                        color=color,
-                                        variant="filled",
-                                        className=f"{color}-icon",
-                                        id={"type": "annotation-color", "index": color},
+                                        id={
+                                            "type": "annotation-color",
+                                            "index": "rgb(249,82,82)",
+                                        },
                                         w=30,
-                                    )
-                                    for i, color in enumerate(
+                                        variant="filled",
+                                        style={
+                                            "background-color": "rgb(249,82,82)",
+                                            "border": "3px solid black",
+                                        },
+                                        children="1",
+                                    ),
+                                ],
+                            ),
+                            dmc.Space(h=5),
+                            html.Div(
+                                [
+                                    dmc.Button(
+                                        id="generate-annotation-class",
+                                        children="Generate Class",
+                                        variant="outline",
+                                        leftIcon=DashIconify(icon="ic:baseline-plus"),
+                                    ),
+                                    dmc.Button(
+                                        id="delete-annotation-class",
+                                        children="Delete Class",
+                                        variant="outline",
+                                        style={"margin-left": "auto"},
+                                        leftIcon=DashIconify(icon="octicon:trash-24"),
+                                    ),
+                                ],
+                                className="flex-row",
+                            ),
+                            dmc.Modal(
+                                id="generate-annotation-class-modal",
+                                title="Generate a Custom Annotation Class",
+                                children=[
+                                    dmc.Center(
+                                        dmc.ColorPicker(
+                                            id="annotation-class-colorpicker",
+                                            format="rgb",
+                                        ),
+                                    ),
+                                    dmc.Space(h=10),
+                                    dmc.Center(
+                                        dmc.TextInput(
+                                            id="annotation-class-label",
+                                            placeholder="Annotation Class Label",
+                                        ),
+                                    ),
+                                    dmc.Space(h=10),
+                                    dmc.Center(
+                                        dmc.Button(
+                                            id="create-annotation-class",
+                                            children="Create Annotation Class",
+                                            variant="light",
+                                        ),
+                                    ),
+                                ],
+                            ),
+                            dmc.Modal(
+                                id="delete-annotation-class-modal",
+                                title="Delete Custom Annotation Class(es)",
+                                children=[
+                                    dmc.Text("Select all generated classes to remove:"),
+                                    dmc.Group(
+                                        spacing="xs",
+                                        grow=True,
+                                        id="current-annotation-classes",
+                                    ),
+                                    dmc.Space(h=10),
+                                    dmc.Center(
                                         [
-                                            # "gray",
-                                            "red",
-                                            # "pink",
-                                            "grape",
-                                            "violet",
-                                            # "indigo",
-                                            "blue",
-                                            # "lime",
-                                            "yellow",
-                                            # "orange",
+                                            dmc.Button(
+                                                id="remove-annotation-class",
+                                                children="Delete Selected Class(es)",
+                                                variant="light",
+                                            ),
                                         ]
-                                    )
+                                    ),
+                                    dmc.Text(
+                                        "There must be at least one annotation class!",
+                                        color="red",
+                                        id="at-least-one",
+                                    ),
                                 ],
                             ),
                             dmc.Space(h=20),
