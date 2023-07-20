@@ -235,9 +235,10 @@ def layout():
                             dmc.Center(
                                 dmc.Button(
                                     "Export annotation",
+                                    id="export-annotation",
                                     variant="light",
                                     style={"width": "160px", "margin": "5px"},
-                                )
+                                ),
                             ),
                             dmc.Space(h=20),
                         ],
@@ -248,6 +249,8 @@ def layout():
                 id="annotation-store",
                 data={"dragmode": "drawopenpath", "visible": True, "annotations": {}},
             ),
+            dmc.NotificationsProvider(html.Div(id="notifications-container")),
+            dcc.Download(id="export-annotations"),
             dcc.Store(id="project-data"),
             html.Div(id="dummy-output"),
         ],

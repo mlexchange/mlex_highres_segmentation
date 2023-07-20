@@ -7,9 +7,11 @@ from dash import (
     ALL,
     ctx,
     clientside_callback,
+    no_update,
 )
 from dash.exceptions import PreventUpdate
 import dash_mantine_components as dmc
+from dash_iconify import DashIconify
 import json
 from utils.data_utils import convert_hex_to_rgba, data
 
@@ -170,3 +172,37 @@ def reset_filters(n_clicks):
     default_brightness = 100
     default_contrast = 100
     return default_brightness, default_contrast
+
+
+@callback(
+    Output("notifications-container", "children"),
+    Output("export-annotations", "data"),
+    Input("export-annotation", "n_clicks"),
+    State("annotation-store", "data"),
+    prevent_initial_call=True,
+)
+def export_annotation(n_clicks, annotation_store):
+    if not annotation_store["annotations"]:
+        data = no_update
+        notification_title = "No Annotations to Export!"
+        notification_message = "Please annotate an image before exporting."
+        notification_color = "red"
+    else:
+        data = {
+            "content": json.dumps(annotation_store["annotations"]),
+            "filename": "annotations.json",
+            "type": "application/json",
+        }
+        notification_title = "Annotation Exported!"
+        notification_message = "Succesfully exported in .json format."
+        notification_color = "green"
+
+    notification = dmc.Notification(
+        title=notification_title,
+        message=notification_message,
+        color=notification_color,
+        id="export-annotation-notification",
+        action="show",
+        icon=DashIconify(icon="entypo:export"),
+    )
+    return notification, data
