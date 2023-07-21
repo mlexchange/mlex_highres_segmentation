@@ -71,6 +71,7 @@ def layout():
                                     step=1,
                                     color="gray",
                                     size="sm",
+                                    disabled=True,
                                 ),
                                 dmc.Space(h=5),
                                 dmc.Text("Contrast", size="sm"),
@@ -82,6 +83,7 @@ def layout():
                                     step=1,
                                     color="gray",
                                     size="sm",
+                                    disabled=True,
                                 ),
                                 dmc.Space(h=10),
                                 dmc.ActionIcon(
@@ -101,6 +103,7 @@ def layout():
                                     mb=10,
                                     ml="auto",
                                     style={"margin": "auto"},
+                                    disabled=True,
                                 ),
                             ]
                         ),
@@ -119,6 +122,7 @@ def layout():
                                     label="View annotation layer",
                                     checked=True,
                                     styles={"trackLabel": {"cursor": "pointer"}},
+                                    disabled=True,
                                 )
                             ),
                             dmc.Space(h=20),
@@ -134,6 +138,7 @@ def layout():
                                             color="gray",
                                             children=DashIconify(icon="mdi:draw"),
                                             style={"border": "3px solid black"},
+                                            disabled=True,
                                         ),
                                         label="Open Freeform",
                                     ),
@@ -145,6 +150,7 @@ def layout():
                                             children=DashIconify(
                                                 icon="fluent:draw-shape-20-regular"
                                             ),
+                                            disabled=True,
                                         ),
                                         label="Closed Freeform",
                                     ),
@@ -156,6 +162,7 @@ def layout():
                                             children=DashIconify(
                                                 icon="gg:shape-circle"
                                             ),
+                                            disabled=True,
                                         ),
                                         label="Circle",
                                     ),
@@ -167,6 +174,7 @@ def layout():
                                             children=DashIconify(
                                                 icon="gg:shape-square"
                                             ),
+                                            disabled=True,
                                         ),
                                         label="Rectangle",
                                     ),
@@ -176,6 +184,7 @@ def layout():
                                             variant="outline",
                                             color="gray",
                                             children=DashIconify(icon="el:off"),
+                                            disabled=True,
                                         ),
                                         label="Stop Drawing",
                                     ),
@@ -191,6 +200,7 @@ def layout():
                                 step=1,
                                 color="gray",
                                 size="sm",
+                                disabled=True,
                             ),
                             dmc.Space(h=20),
                             dmc.Text("Annotation class", size="sm"),
@@ -207,6 +217,7 @@ def layout():
                                         className=f"{color}-icon",
                                         id={"type": "annotation-color", "index": color},
                                         w=30,
+                                        disabled=True,
                                     )
                                     for i, color in enumerate(
                                         [

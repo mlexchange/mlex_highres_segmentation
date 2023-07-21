@@ -110,6 +110,75 @@ def locally_store_annotations(relayout_data, img_idx, annotation_store):
     return annotation_store
 
 
+clientside_callback(
+    """
+    function DisableControlsDuringLoading(project_source_trigger, slider_trigger) {
+    console.log(window.dash_clientside.callback_context.triggered)
+        return Array(17).fill(true)
+    }
+    """,
+    Output("figure-brightness", "disabled"),
+    Output("figure-contrast", "disabled"),
+    Output("filters-reset", "disabled"),
+    Output("view-annotations", "disabled"),
+    Output("open-freeform", "disabled"),
+    Output("closed-freeform", "disabled"),
+    Output("circle", "disabled"),
+    Output("rectangle", "disabled"),
+    Output("drawing-off", "disabled"),
+    Output("paintbrush-width", "disabled"),
+    Output("annotation-class-selection", "disabled"),
+    Output("annotation-class-selection", "disabled", "disabled"),
+    Output({"type": "annotation-color", "index": "red"}, "disabled"),
+    Output({"type": "annotation-color", "index": "grape"}, "disabled"),
+    Output({"type": "annotation-color", "index": "violet"}, "disabled"),
+    Output({"type": "annotation-color", "index": "blue"}, "disabled"),
+    Output({"type": "annotation-color", "index": "yellow"}, "disabled"),
+    Input("project-name-src", "value"),
+    Input("image-selection-slider", "value"),
+    prevent_initial_call="initial_duplicate",
+)
+clientside_callback(
+    """
+    function EnableControlsAfterLoading(project_source_trigger) {
+        return Array(17).fill(false)
+    }
+    """,
+    Output("figure-brightness", "disabled", allow_duplicate=True),
+    Output("figure-contrast", "disabled", allow_duplicate=True),
+    Output("filters-reset", "disabled", allow_duplicate=True),
+    Output("view-annotations", "disabled", allow_duplicate=True),
+    Output("open-freeform", "disabled", allow_duplicate=True),
+    Output("closed-freeform", "disabled", allow_duplicate=True),
+    Output("circle", "disabled", allow_duplicate=True),
+    Output("rectangle", "disabled", allow_duplicate=True),
+    Output("drawing-off", "disabled", allow_duplicate=True),
+    Output("paintbrush-width", "disabled", allow_duplicate=True),
+    Output("annotation-class-selection", "disabled", allow_duplicate=True),
+    Output(
+        {"type": "annotation-color", "index": "red"}, "disabled", allow_duplicate=True
+    ),
+    Output(
+        {"type": "annotation-color", "index": "grape"}, "disabled", allow_duplicate=True
+    ),
+    Output(
+        {"type": "annotation-color", "index": "violet"},
+        "disabled",
+        allow_duplicate=True,
+    ),
+    Output(
+        {"type": "annotation-color", "index": "blue"}, "disabled", allow_duplicate=True
+    ),
+    Output(
+        {"type": "annotation-color", "index": "yellow"},
+        "disabled",
+        allow_duplicate=True,
+    ),
+    Input("image-viewer", "figure"),
+    prevent_initial_call=True,
+)
+
+
 @callback(
     Output("image-selection-slider", "min"),
     Output("image-selection-slider", "max"),
