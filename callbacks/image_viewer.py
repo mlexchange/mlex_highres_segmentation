@@ -74,10 +74,17 @@ def render_image(
     patched_annotation_store = Patch()
     patched_annotation_store["image_size"] = tf.size
     fig_loading_overlay = -1
-   
+
     # No update is needed for the 'children' of the control components since we just want to trigger the loading
     # overlay with this callback
-    return fig, patched_annotation_store, fig_loading_overlay, dash.no_update, dash.no_update, dash.no_update,
+    return (
+        fig,
+        patched_annotation_store,
+        fig_loading_overlay,
+        dash.no_update,
+        dash.no_update,
+        dash.no_update,
+    )
 
 
 clientside_callback(
