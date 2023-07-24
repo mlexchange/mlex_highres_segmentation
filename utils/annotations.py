@@ -65,20 +65,12 @@ class Annotations:
         """
         This function sets the class of the annotation.
         """
-        map_color_to_class = {
-            "rgba(240, 62, 62, 0.3)": 0,
-            "#ae3ec9": 1,
-            "#7048e8": 2,
-            "#1c7ed6": 3,
-            "#f59f00": 4,
-            "rgba(245, 159, 0, 0.3)": 5,
-        }
-        self.annotation_class = map_color_to_class[annotation["line"]["color"]]
+        color = annotation["line"]["color"]
+        self.annotation_class = self.annotation_store["label_mapping"][color]
 
     def set_annotation_image_shape(self, image_idx):
         """
         This function sets the the size of the image slice
         """
-        self.annotation_image_shape = self.annotation_store["image_shapes"][
-            int(image_idx)
-        ]
+        # TODO: Assuming all images in the slice are the same shape
+        self.annotation_image_shape = self.annotation_store["image_shapes"][0]

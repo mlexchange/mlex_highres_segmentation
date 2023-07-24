@@ -367,6 +367,8 @@ def layout():
                     "annotations": {},
                     "view": {},
                     "image_size": [],
+                    # TODO: Hard-coding default annotation class
+                    "label_mapping": {"rgb(249,82,82)": "1"},
                 },
             ),
             dmc.NotificationsProvider(html.Div(id="notifications-container")),

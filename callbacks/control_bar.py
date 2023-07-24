@@ -213,20 +213,29 @@ def disable_class_deletion(highlighted):
 @callback(
     Output("annotation-class-selection", "children"),
     Output("annotation-class-label", "value"),
+    Output("annotation-store", "data", allow_duplicate=True),
     Input("create-annotation-class", "n_clicks"),
     Input("remove-annotation-class", "n_clicks"),
     State("annotation-class-label", "value"),
     State("annotation-class-colorpicker", "value"),
     State("annotation-class-selection", "children"),
     State({"type": "annotation-delete-buttons", "index": ALL}, "style"),
+    State("annotation-store", "data"),
     prevent_initial_call=True,
 )
 def add_new_class(
-    create, remove, class_label, class_color, current_classes, classes_to_delete
+    create,
+    remove,
+    class_label,
+    class_color,
+    current_classes,
+    classes_to_delete,
+    annotation_store,
 ):
     """Updates the list of available annotation classes"""
     triggered = ctx.triggered_id
     if triggered == "create-annotation-class":
+        annotation_store["label_mapping"][class_color] = class_label
         if class_color is None:
             class_color = "rgb(255, 255, 255)"
         if class_color == "rgb(255, 255, 255)":
@@ -253,7 +262,7 @@ def add_new_class(
                     children=class_label,
                 )
             )
-        return current_classes, ""
+        output_classes = current_classes
     else:
         color_to_delete = []
         color_to_keep = []
@@ -263,7 +272,12 @@ def add_new_class(
         for color in current_classes:
             if color["props"]["id"]["index"] not in color_to_delete:
                 color_to_keep.append(color)
-        return color_to_keep, ""
+        output_classes = color_to_keep
+        annotation_store["label_mapping"] = {
+            elem["props"]["style"]["background-color"]: elem["props"]["children"]
+            for elem in output_classes
+        }
+    return output_classes, "", annotation_store
 
 
 @callback(
