@@ -1,17 +1,18 @@
-from dash import Input, Output, State, callback, ctx, clientside_callback, no_update
+from dash import Input, Output, State, callback, ctx, Patch, clientside_callback
 import dash_mantine_components as dmc
 import plotly.express as px
 import numpy as np
-from utils.data_utils import convert_hex_to_rgba, data
+from utils.data_utils import data
 
 
 @callback(
     Output("image-viewer", "figure"),
+    Output("annotation-store", "data", allow_duplicate=True),
     Output("image-viewer-loading", "zIndex", allow_duplicate=True),
     Input("image-selection-slider", "value"),
     State("project-name-src", "value"),
     State("paintbrush-width", "value"),
-    State("annotation-class-selection", "className"),
+    State("annotation-class-selection", "children"),
     State("annotation-store", "data"),
     prevent_initial_call=True,
 )
@@ -19,7 +20,7 @@ def render_image(
     image_idx,
     project_name,
     annotation_width,
-    annotation_color,
+    annotation_colors,
     annotation_store,
 ):
     if image_idx:
@@ -33,21 +34,19 @@ def render_image(
         xaxis=dict(visible=False),
         yaxis=dict(visible=False),
         dragmode="drawopenpath",
-        height=620,
-        width=620,
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
     )
     fig.update_traces(hovertemplate=None, hoverinfo="skip")
 
     # set the default annotation style
-    hex_color = dmc.theme.DEFAULT_COLORS[annotation_color][7]
+    for color_opt in annotation_colors:
+        if color_opt["props"]["style"]["border"] != "1px solid":
+            color = color_opt["props"]["style"]["background-color"]
     fig.update_layout(
         newshape=dict(
-            line=dict(
-                color=convert_hex_to_rgba(hex_color, 0.3), width=annotation_width
-            ),
-            fillcolor=convert_hex_to_rgba(hex_color, 0.3),
+            line=dict(color=color, width=annotation_width),
+            fillcolor=color,
         )
     )
     if annotation_store:
@@ -61,8 +60,17 @@ def render_image(
         if str(image_idx) in annotation_store["annotations"]:
             fig["layout"]["shapes"] = annotation_store["annotations"][str(image_idx)]
 
+        view = annotation_store["view"]
+        if "xaxis_range_0" in view and annotation_store["image_size"] == tf.size:
+            fig.update_layout(
+                xaxis=dict(range=[view["xaxis_range_0"], view["xaxis_range_1"]]),
+                yaxis=dict(range=[view["yaxis_range_0"], view["yaxis_range_1"]]),
+            )
+    patched_annotation_store = Patch()
+    patched_annotation_store["image_size"] = tf.size
     fig_loading_overlay = -1
-    return fig, fig_loading_overlay
+
+    return fig, patched_annotation_store, fig_loading_overlay
 
 
 clientside_callback(
@@ -91,6 +99,13 @@ def locally_store_annotations(relayout_data, img_idx, annotation_store):
     """
     if "shapes" in relayout_data:
         annotation_store["annotations"][str(img_idx - 1)] = relayout_data["shapes"]
+
+    if "xaxis.range[0]" in relayout_data:
+        annotation_store["view"]["xaxis_range_0"] = relayout_data["xaxis.range[0]"]
+        annotation_store["view"]["xaxis_range_1"] = relayout_data["xaxis.range[1]"]
+        annotation_store["view"]["yaxis_range_0"] = relayout_data["yaxis.range[0]"]
+        annotation_store["view"]["yaxis_range_1"] = relayout_data["yaxis.range[1]"]
+
     return annotation_store
 
 
