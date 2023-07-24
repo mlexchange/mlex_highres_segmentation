@@ -131,13 +131,7 @@ def update_slider_values(project_name, annotation_store):
     disable_slider = project_name is None
     if not disable_slider:
         tiff_file = data[project_name]
-        # print(tiff_file.shape)
-        # print(tiff_file.shape[1])
-        # print(project_name)
-        # annotation_store["image_shapes"] = [
-        #     (tiff_file[im_str].shape[0], tiff_file[im_str].shape[1])
-        #     for im_str in tiff_file
-        # ]
+        # TODO: Assuming that all slices have the same image shape
         annotation_store["image_shapes"] = [(tiff_file.shape[1], tiff_file.shape[2])]
     min_slider_value = 0 if disable_slider else 1
     max_slider_value = 0 if disable_slider else len(tiff_file)
