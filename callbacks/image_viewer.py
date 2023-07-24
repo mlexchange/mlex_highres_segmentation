@@ -11,9 +11,9 @@ from utils.data_utils import convert_hex_to_rgba, data
     Output("image-viewer", "figure"),
     Output("annotation-store", "data", allow_duplicate=True),
     Output("image-viewer-loading", "zIndex", allow_duplicate=True),
-    Output("data-selection-controls", "children"),
-    Output("image-transformation-controls", "children"),
-    Output("annotations-controls", "children"),
+    Output("data-selection-controls", "children", allow_duplicate=True),
+    Output("image-transformation-controls", "children", allow_duplicate=True),
+    Output("annotations-controls", "children", allow_duplicate=True),
     Input("image-selection-slider", "value"),
     State("project-name-src", "value"),
     State("paintbrush-width", "value"),
@@ -75,8 +75,8 @@ def render_image(
     patched_annotation_store["image_size"] = tf.size
     fig_loading_overlay = -1
 
-    # No update is needed for the 'children' of the control components since we just want to trigger the loading
-    # overlay with this callback
+    # No update is needed for the 'children' of the control components
+    # since we just want to trigger the loading overlay with this callback
     return (
         fig,
         patched_annotation_store,
@@ -129,6 +129,9 @@ def locally_store_annotations(relayout_data, img_idx, annotation_store):
     Output("image-selection-slider", "value"),
     Output("image-selection-slider", "disabled"),
     Output("annotation-store", "data"),
+    Output("data-selection-controls", "children"),
+    Output("image-transformation-controls", "children"),
+    Output("annotations-controls", "children"),
     Input("project-name-src", "value"),
     State("annotation-store", "data"),
 )
@@ -155,6 +158,11 @@ def update_slider_values(project_name, annotation_store):
         slider_value,
         disable_slider,
         annotation_store,
+        # No update is needed for the 'children' of the control components
+        # since we just want to trigger the loading overlay with this callback
+        dash.no_update,
+        dash.no_update,
+        dash.no_update,
     )
 
 
