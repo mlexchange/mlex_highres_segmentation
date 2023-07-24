@@ -3,7 +3,7 @@ import dash_mantine_components as dmc
 from tifffile import imread
 import plotly.express as px
 import numpy as np
-from utils.data_utils import convert_hex_to_rgba, data
+from utils.data_utils import data
 
 
 @callback(
@@ -13,7 +13,7 @@ from utils.data_utils import convert_hex_to_rgba, data
     Input("image-selection-slider", "value"),
     State("project-name-src", "value"),
     State("paintbrush-width", "value"),
-    State("annotation-class-selection", "className"),
+    State("annotation-class-selection", "children"),
     State("annotation-store", "data"),
     prevent_initial_call=True,
 )
@@ -21,7 +21,7 @@ def render_image(
     image_idx,
     project_name,
     annotation_width,
-    annotation_color,
+    annotation_colors,
     annotation_store,
 ):
     if image_idx:
@@ -41,13 +41,13 @@ def render_image(
     fig.update_traces(hovertemplate=None, hoverinfo="skip")
 
     # set the default annotation style
-    hex_color = dmc.theme.DEFAULT_COLORS[annotation_color][7]
+    for color_opt in annotation_colors:
+        if color_opt["props"]["style"]["border"] != "1px solid":
+            color = color_opt["props"]["style"]["background-color"]
     fig.update_layout(
         newshape=dict(
-            line=dict(
-                color=convert_hex_to_rgba(hex_color, 0.3), width=annotation_width
-            ),
-            fillcolor=convert_hex_to_rgba(hex_color, 0.3),
+            line=dict(color=color, width=annotation_width),
+            fillcolor=color,
         )
     )
     if annotation_store:
