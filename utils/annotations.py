@@ -1,8 +1,8 @@
-import math
-import numpy as np
-from skimage.draw import polygon, circle, polygon_perimeter, line
+# import math
+# import numpy as np
+# from skimage.draw import polygon, circle, polygon_perimeter, line
 
-import re
+# import re
 
 
 class Annotations:
