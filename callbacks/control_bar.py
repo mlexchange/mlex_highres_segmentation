@@ -189,8 +189,9 @@ def export_annotation(n_clicks, annotation_store):
         notification_message = "Please annotate an image before exporting."
         notification_color = "red"
     else:
-        annotations = Annotations(annotation_store["annotations"])
-        annotations.process_annotation_data()
+        annotations = Annotations(annotation_store)
+        annotations.create_annotation_metadata()
+        annotations.create_annotation_mask()
         data = {
             "content": json.dumps(annotations.get_annotations()),
             "filename": "annotations.json",

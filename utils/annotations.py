@@ -1,5 +1,8 @@
 import math
 import numpy as np
+from skimage.draw import polygon, circle, polygon_perimeter, line
+
+import re
 
 
 class Annotations:
@@ -9,27 +12,35 @@ class Annotations:
     def get_annotations(self):
         return self.annotations
 
-    def process_annotation_data(self):
+    def create_annotation_metadata(self):
         """
         This function is responsible for converting the annotation data from the dcc.Store into a format that is compatible with napari annotations.
         """
-        annotations = []
-        for image_idx, shapes in self.annotation_store.items():
+        annotations = {}
+        for image_idx, shapes in self.annotation_store["annotations"].items():
+            annotation_slice = []
             for annotation_idx, shape in enumerate(shapes):
+                self.set_annotation_type(shape)
+                self.set_annotation_class(shape)
+                self.set_annotation_image_shape(image_idx)
                 annotation = {
                     "image-id": image_idx,
                     "id": annotation_idx,
-                    "type": self.get_annotation_type(shape),
-                    "class": self.get_annotation_class(shape),
+                    "type": self.annotation_type,
+                    "class": self.annotation_class,
+                    "img_shape": self.annotation_image_shape,
                     "brightness": "",
                     "contrast": "",
-                    "path": self.get_annotation_path(shape),
                 }
-                annotations.append(annotation)
+                annotation_slice.append(annotation)
+            annotations[image_idx] = annotation_slice
 
         self.annotations = annotations
 
-    def get_annotation_type(self, annotation):
+    def create_annotation_mask(self):
+        pass
+
+    def set_annotation_type(self, annotation):
         """
         This function returns readable annotation type name.
         """
@@ -48,74 +59,26 @@ class Annotations:
         else:
             annot = "Unknown"
 
-        return annot
+        self.annotation_type = annot
 
-    def get_annotation_class(self, annotation):
+    def set_annotation_class(self, annotation):
         """
-        This function returns the class of the annotation.
+        This function sets the class of the annotation.
         """
-        color = annotation["line"]["color"]
-        return color
+        map_color_to_class = {
+            "rgba(240, 62, 62, 0.3)": 0,
+            "#ae3ec9": 1,
+            "#7048e8": 2,
+            "#1c7ed6": 3,
+            "#f59f00": 4,
+            "rgba(245, 159, 0, 0.3)": 5,
+        }
+        self.annotation_class = map_color_to_class[annotation["line"]["color"]]
 
-    def get_annotation_path(self, annotation):
+    def set_annotation_image_shape(self, image_idx):
         """
-        This function returns the path of the annotation.
+        This function sets the the size of the image slice
         """
-        if annotation["type"] == "line":
-            x0, y0, x1, y1 = (
-                annotation["x0"],
-                annotation["y0"],
-                annotation["x1"],
-                annotation["y1"],
-            )
-            path = f"M{x0},{y0}L{x1},{y1}"
-        elif annotation["type"] == "circle":
-            path = self.convert_oval_to_path(annotation)
-        elif annotation["type"] == "rect":
-            x0, y0, x1, y1 = (
-                annotation["x0"],
-                annotation["y0"],
-                annotation["x1"],
-                annotation["y1"],
-            )
-            path = f"M{x0},{y0}L{x1},{y0}L{x1},{y1}L{x0},{y1}Z"
-        else:
-            path = annotation["path"]
-        return path
-
-    def convert_oval_to_path(self, oval_path):
-        """
-        This function converts an oval (circle) annotation to a path.
-        """
-        x0, y0, x1, y1 = (
-            oval_path["x0"],
-            oval_path["y0"],
-            oval_path["x1"],
-            oval_path["y1"],
-        )
-
-        rx = (x1 - x0) / 2  # x-radius
-        ry = (y1 - y0) / 2  # y-radius
-        cx = (x0 + x1) / 2  # x-coordinate of the center
-        cy = (y0 + y1) / 2  # y-coordinate of the center
-
-        num_segments = 100  # Number of segments to approximate the oval
-
-        # Generate the path using cubic Bézier curves
-        path = "M"
-
-        for i in range(num_segments):
-            angle = 2 * math.pi * (i / num_segments)
-            x = cx + rx * math.cos(angle)
-            y = cy + ry * math.sin(angle)
-
-            if i == 0:
-                path += f"{x},{y}"
-            else:
-                path += f"C{x - rx * math.cos(angle + math.pi / num_segments) / 2},{y - ry * math.sin(angle + math.pi / num_segments) / 2} "
-                path += f"{x + rx * math.cos(angle + math.pi / num_segments) / 2},{y + ry * math.sin(angle + math.pi / num_segments) / 2} "
-                path += f"{x},{y}"
-
-        path += "Z"
-
-        return path
+        self.annotation_image_shape = self.annotation_store["image_shapes"][
+            int(image_idx)
+        ]

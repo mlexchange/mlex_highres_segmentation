@@ -1,6 +1,5 @@
 from dash import Input, Output, State, callback, ctx, clientside_callback
 import dash_mantine_components as dmc
-from tifffile import imread
 import plotly.express as px
 import numpy as np
 from utils.data_utils import convert_hex_to_rgba, data
@@ -117,6 +116,10 @@ def update_slider_values(project_name, annotation_store):
     disable_slider = project_name is None
     if not disable_slider:
         tiff_file = data[project_name]
+        annotation_store["image_shapes"] = [
+            (tiff_file[im_str].shape[0], tiff_file[im_str].shape[1])
+            for im_str in tiff_file
+        ]
     min_slider_value = 0 if disable_slider else 1
     max_slider_value = 0 if disable_slider else len(tiff_file)
     slider_value = 0 if disable_slider else 1
