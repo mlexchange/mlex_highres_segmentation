@@ -188,7 +188,7 @@ def layout():
                                             color="gray",
                                             children=DashIconify(icon="ph:eraser"),
                                         ),
-                                        label="Eraser: click on shapes to delete them",
+                                        label="Eraser: click on the shape to erase then click this button to delete the selected shape",
                                         multiline=True,
                                     ),
                                     dmc.Tooltip(
@@ -316,6 +316,7 @@ def layout():
                                             variant="light",
                                         ),
                                     ),
+                                    html.Div(id="bad-label-color"),
                                 ],
                             ),
                             dmc.Modal(
@@ -338,10 +339,12 @@ def layout():
                                             ),
                                         ]
                                     ),
-                                    dmc.Text(
-                                        "There must be at least one annotation class!",
-                                        color="red",
-                                        id="at-least-one",
+                                    dmc.Center(
+                                        dmc.Text(
+                                            "There must be at least one annotation class!",
+                                            color="red",
+                                            id="at-least-one",
+                                        ),
                                     ),
                                 ],
                             ),
@@ -373,6 +376,7 @@ def layout():
                     "annotations": {},
                     "view": {},
                     "image_size": [],
+                    "classes": {1: "1"},
                 },
             ),
             dcc.Store(id="project-data"),

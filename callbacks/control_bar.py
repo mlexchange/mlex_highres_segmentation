@@ -179,13 +179,35 @@ def open_delete_class_modal(delete, remove, opened):
 
 @callback(
     Output("create-annotation-class", "disabled"),
+    Output("bad-label-color", "children"),
     Input("annotation-class-label", "value"),
+    Input("annotation-class-colorpicker", "value"),
+    State({"type": "annotation-color", "index": ALL}, "children"),
+    State({"type": "annotation-color", "index": ALL}, "style"),
+    prevent_initial_call=True,
 )
-def disable_class_creation(label):
-    if label is None or len(label) == 0:
-        return True
+def disable_class_creation(label, color, current_labels, current_colors):
+    if color is None:
+        color = "rgb(255, 255, 255)"
+    current_colors = [style["background-color"] for style in current_colors]
+    warning_text = []
+    if label in current_labels:
+        warning_text.append(
+            dmc.Text("This annotation class label is already in use.", color="red")
+        )
+    if color in current_colors:
+        warning_text.append(
+            dmc.Text("This annotation class color is already in use.", color="red")
+        )
+    if (
+        label is None
+        or len(label) == 0
+        or label in current_labels
+        or color in current_colors
+    ):
+        return True, warning_text
     else:
-        return False
+        return False, warning_text
 
 
 @callback(
@@ -210,19 +232,30 @@ def disable_class_deletion(highlighted):
 @callback(
     Output("annotation-class-selection", "children"),
     Output("annotation-class-label", "value"),
+    Output("annotation-store", "data", allow_duplicate=True),
     Input("create-annotation-class", "n_clicks"),
     Input("remove-annotation-class", "n_clicks"),
     State("annotation-class-label", "value"),
     State("annotation-class-colorpicker", "value"),
     State("annotation-class-selection", "children"),
     State({"type": "annotation-delete-buttons", "index": ALL}, "style"),
+    State({"type": "annotation-delete-buttons", "index": ALL}, "children"),
+    State("annotation-store", "data"),
     prevent_initial_call=True,
 )
 def add_new_class(
-    create, remove, class_label, class_color, current_classes, classes_to_delete
+    create,
+    remove,
+    class_label,
+    class_color,
+    current_classes,
+    classes_to_delete,
+    class_names,
+    annotation_store,
 ):
     """Updates the list of available annotation classes"""
     triggered = ctx.triggered_id
+    current_stored_classes = annotation_store["classes"]
     if triggered == "create-annotation-class":
         if class_color is None:
             class_color = "rgb(255, 255, 255)"
@@ -250,17 +283,26 @@ def add_new_class(
                     children=class_label,
                 )
             )
-        return current_classes, ""
+        new_idx = int(max(list(current_stored_classes.keys())))
+        current_stored_classes[new_idx + 1] = class_label
+        annotation_store["classes"] = current_stored_classes
+        return current_classes, "", annotation_store
     else:
         color_to_delete = []
         color_to_keep = []
-        for color_opt in classes_to_delete:
-            if color_opt["border"] == "3px solid black":
-                color_to_delete.append(color_opt["background-color"])
+        for i in range(len(classes_to_delete)):
+            if classes_to_delete[i]["border"] == "3px solid black":
+                color_to_delete.append(classes_to_delete[i]["background-color"])
+                current_stored_classes = {
+                    key: val
+                    for key, val in current_stored_classes.items()
+                    if val != class_names[i]
+                }
         for color in current_classes:
             if color["props"]["id"]["index"] not in color_to_delete:
                 color_to_keep.append(color)
-        return color_to_keep, ""
+        annotation_store["classes"] = current_stored_classes
+        return color_to_keep, "", annotation_store
 
 
 @callback(
@@ -330,3 +372,17 @@ def reset_filters(n_clicks):
     default_brightness = 100
     default_contrast = 100
     return default_brightness, default_contrast
+
+
+clientside_callback(
+    """
+    function eraseShape(_, graph_id) {
+        Plotly.eraseActiveShape(graph_id)
+        return dash_clientside.no_update
+    }
+    """,
+    Output("image-viewer", "id", allow_duplicate=True),
+    Input("eraser", "n_clicks"),
+    State("image-viewer", "id"),
+    prevent_initial_call=True,
+)

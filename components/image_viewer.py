@@ -13,21 +13,8 @@ COMPONENT_STYLE = {
 }
 
 FIGURE_CONFIG = {
-    "modeBarButtonsToAdd": [
-        "drawopenpath",
-        "drawclosedpath",
-        "eraseshape",
-        "drawline",
-        "drawcircle",
-        "drawrect",
-    ],
+    "displayModeBar": False,
     "scrollZoom": True,
-    "modeBarButtonsToRemove": [
-        "zoom",
-        "zoomin",
-        "zoomout",
-        "autoscale",
-    ],
 }
 
 
