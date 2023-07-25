@@ -14,7 +14,7 @@ COMPONENT_STYLE = {
 DEFAULT_ANNOTATION_CLASS = "red"
 
 
-def _accordion_item(title, icon, value, children):
+def _accordion_item(title, icon, value, children, id):
     return dmc.AccordionItem(
         [
             dmc.AccordionControl(
@@ -25,7 +25,11 @@ def _accordion_item(title, icon, value, children):
                     width=20,
                 ),
             ),
-            dmc.AccordionPanel(children),
+            dmc.LoadingOverlay(
+                dmc.AccordionPanel(children=children, id=id),
+                loaderProps={"size": 0},
+                overlayOpacity=0.4,
+            ),
         ],
         value=value,
     )
@@ -45,6 +49,7 @@ def layout():
                         "Data selection",
                         "majesticons:data-line",
                         "data-select",
+                        id="data-selection-controls",
                         children=[
                             dmc.Text("Image"),
                             dmc.Select(
@@ -60,6 +65,7 @@ def layout():
                         "Image transformations",
                         "fluent-mdl2:image-pixel",
                         "image-transformations",
+                        id="image-transformation-controls",
                         children=html.Div(
                             [
                                 dmc.Text("Brightness", size="sm"),
@@ -109,6 +115,7 @@ def layout():
                         "Annotation tools",
                         "mdi:paintbrush-outline",
                         "annotations",
+                        id="annotations-controls",
                         children=[
                             dmc.Center(
                                 dmc.Switch(
