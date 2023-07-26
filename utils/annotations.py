@@ -4,7 +4,7 @@ from skimage.draw import polygon, circle, polygon_perimeter, line
 
 import re
 import numpy as np
-from skimage import draw
+from skimage import draw, morphology
 import math
 from svgpathtools import parse_path
 from matplotlib.path import Path
@@ -37,6 +37,7 @@ class Annotations:
             for annotation_idx, shape in enumerate(slice_data):
                 self.set_annotation_type(shape)
                 self.set_annotation_class(shape)
+                self.set_annotation_line_width(shape)
                 self.set_annotation_image_shape(image_idx)
                 annotation = {
                     "image-id": image_idx,
@@ -44,6 +45,7 @@ class Annotations:
                     "type": self.annotation_type,
                     "class": self.annotation_class,
                     "img_shape": self.annotation_image_shape,
+                    "line_width": self.annotation_line_width,
                     "brightness": "",
                     "contrast": "",
                 }
@@ -61,6 +63,7 @@ class Annotations:
             for shape in slice_data:
                 self.set_annotation_class(shape)
                 self.set_annotation_type(shape)
+                self.set_annotation_line_width(shape)
                 self.set_annotation_image_shape(image_idx)
                 print(self.annotation_class)
                 if self.annotation_type == "Closed Freeform":
@@ -69,7 +72,10 @@ class Annotations:
                     )
                 elif self.annotation_type == "Freeform":
                     shape_mask = ShapeConversion.opened_path_to_array(
-                        shape, self.annotation_image_shape, self.annotation_class
+                        shape,
+                        self.annotation_image_shape,
+                        self.annotation_class,
+                        self.annotation_line_width,
                     )
                 elif self.annotation_type == "Rectangle":
                     shape_mask = ShapeConversion.rectangle_to_array(
@@ -81,7 +87,10 @@ class Annotations:
                     )
                 elif self.annotation_type == "Line":
                     shape_mask = ShapeConversion.line_to_array(
-                        shape, self.annotation_image_shape, self.annotation_class
+                        shape,
+                        self.annotation_image_shape,
+                        self.annotation_class,
+                        self.annotation_line_width,
                     )
                 else:
                     continue
@@ -113,6 +122,12 @@ class Annotations:
             annot = "Unknown"
 
         self.annotation_type = annot
+
+    def set_annotation_line_width(self, annotation):
+        """
+        This function sets the line width of the annotation.
+        """
+        self.annotation_line_width = annotation["line"]["width"]
 
     def set_annotation_class(self, annotation):
         """
@@ -211,7 +226,7 @@ class ShapeConversion:
         return mask
 
     @classmethod
-    def line_to_array(self, svg_data, image_shape, mask_class):
+    def line_to_array(self, svg_data, image_shape, mask_class, line_width):
         image_width, image_height = image_shape
         x0 = svg_data["x0"]
         y0 = svg_data["y0"]
@@ -227,6 +242,7 @@ class ShapeConversion:
         mask = np.zeros((image_width, image_height), dtype=np.uint8)
         rr, cc = draw.line(y0, x0, y1, x1)
         mask[rr, cc] = mask_class
+        # mask = morphology.dilation(mask, morphology.disk(radius=line_width))
         return mask
 
     @classmethod
@@ -262,7 +278,7 @@ class ShapeConversion:
         return mask
 
     @classmethod
-    def opened_path_to_array(self, svg_data, image_shape, svg_class):
+    def opened_path_to_array(self, svg_data, image_shape, mask_class, line_width):
         image_width, image_height = image_shape
         path_data = svg_data["path"]
         path = parse_path(path_data)
@@ -276,5 +292,6 @@ class ShapeConversion:
                 x, y = curve.point(t).real, curve.point(t).imag
                 x = max(min(int(x), image_width - 1), 0)
                 y = max(min(int(y), image_height - 1), 0)
-                mask[y, x] = svg_class
+                mask[y, x] = mask_class
+        # mask = morphology.dilation(mask, morphology.disk(radius=line_width))
         return mask
