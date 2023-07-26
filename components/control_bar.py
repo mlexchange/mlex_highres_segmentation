@@ -371,6 +371,7 @@ def layout():
                                     style={"width": "160px", "margin": "5px"},
                                 )
                             ),
+                            dmc.Center(html.Div(id="output-placeholder")),
                             dmc.Space(h=20),
                         ],
                     ),

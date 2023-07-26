@@ -399,3 +399,13 @@ def export_annotation(n_clicks, annotation_store):
         icon=DashIconify(icon="entypo:export"),
     )
     return notification, metadata_file, mask_file
+
+
+@callback(
+    Output("output-placeholder", "children"),
+    Input("run-model", "n_clicks")
+)
+def run_model(n_clicks):
+    if n_clicks:
+        return "Running the model..."
+    return no_update
