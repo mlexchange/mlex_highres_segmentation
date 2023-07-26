@@ -14,6 +14,9 @@ class Annotations:
     def get_annotations(self):
         return self.annotations
 
+    def get_annotation_mask(self):
+        return self.annotation_mask
+
     def get_annotation_mask_as_bytes(self):
         buffer = io.BytesIO()
         np.save(buffer, self.annotation_mask)

@@ -340,13 +340,13 @@ def layout():
                                 ],
                             ),
                             dmc.Space(h=20),
-                            dmc.Center(
-                                # dmc.Button(
-                                #     "Save annotation",
-                                #     variant="light",
-                                #     style={"width": "160px", "margin": "5px"},
-                                # )
-                            ),
+                            # dmc.Center(
+                            #     # dmc.Button(
+                            #     #     "Save annotation",
+                            #     #     variant="light",
+                            #     #     style={"width": "160px", "margin": "5px"},
+                            #     # )
+                            # ),
                             dmc.Center(
                                 dmc.Button(
                                     "Export annotation",
@@ -359,13 +359,13 @@ def layout():
                         ],
                     ),
                     _accordion_item(
-                        "Model configuration",
-                        "carbon:ibm-watson-machine-learning",
-                        "run-model",
+                        title="Model configuration",
+                        icon="carbon:ibm-watson-machine-learning",
+                        value="run-model",
                         children=[
                             dmc.Center(
                                 dmc.Button(
-                                    "Run model",
+                                    children="Run model",
                                     id="run-model",
                                     variant="light",
                                     style={"width": "160px", "margin": "5px"},
