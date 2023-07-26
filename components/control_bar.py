@@ -2,6 +2,7 @@ import dash_mantine_components as dmc
 from dash import html, dcc
 from dash_iconify import DashIconify
 from utils import data_utils
+import random
 
 COMPONENT_STYLE = {
     "width": "400px",
@@ -368,7 +369,13 @@ def layout():
                     "view": {},
                     "image_size": [],
                     # TODO: Hard-coding default annotation class
-                    "label_mapping": {"rgb(249,82,82)": "1"},
+                    "label_mapping": [
+                        {
+                            "color": "rgb(249,82,82)",
+                            "label": "1",
+                            "id": random.randint(1, 100),
+                        }
+                    ],
                 },
             ),
             dmc.NotificationsProvider(html.Div(id="notifications-container")),

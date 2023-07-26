@@ -15,6 +15,7 @@ import dash_mantine_components as dmc
 from dash_iconify import DashIconify
 import json
 from utils.annotations import Annotations
+import random
 
 
 @callback(
@@ -236,7 +237,10 @@ def add_new_class(
     """Updates the list of available annotation classes"""
     triggered = ctx.triggered_id
     if triggered == "create-annotation-class":
-        annotation_store["label_mapping"][class_color] = class_label
+        # TODO: Check that the randint isn't already assigned to a class
+        annotation_store["label_mapping"].append(
+            {"color": class_color, "id": random.randint(1, 100), "label": class_label}
+        )
         if class_color is None:
             class_color = "rgb(255, 255, 255)"
         if class_color == "rgb(255, 255, 255)":
@@ -265,6 +269,7 @@ def add_new_class(
             )
         output_classes = current_classes
     else:
+        # TODO: Remove mapping from the store
         color_to_delete = []
         color_to_keep = []
         for color_opt in classes_to_delete:
@@ -274,10 +279,7 @@ def add_new_class(
             if color["props"]["id"]["index"] not in color_to_delete:
                 color_to_keep.append(color)
         output_classes = color_to_keep
-        annotation_store["label_mapping"] = {
-            elem["props"]["style"]["background-color"]: elem["props"]["children"]
-            for elem in output_classes
-        }
+
     return output_classes, "", annotation_store
 
 
