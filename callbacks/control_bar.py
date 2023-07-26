@@ -1,6 +1,7 @@
 from dash import (
     Input,
     Output,
+    dcc,
     State,
     callback,
     Patch,
@@ -351,26 +352,38 @@ def reset_filters(n_clicks):
 
 @callback(
     Output("notifications-container", "children"),
-    Output("export-annotations", "data"),
+    Output("export-annotation-metadata", "data"),
+    Output("export-annotation-mask", "data"),
     Input("export-annotation", "n_clicks"),
     State("annotation-store", "data"),
     prevent_initial_call=True,
 )
 def export_annotation(n_clicks, annotation_store):
+    EXPORT_AS_SPARSE = False  # todo replace with input
     if not annotation_store["annotations"]:
-        data = no_update
+        metadata_data = no_update
         notification_title = "No Annotations to Export!"
         notification_message = "Please annotate an image before exporting."
         notification_color = "red"
     else:
         annotations = Annotations(annotation_store)
+
+        # medatada
         annotations.create_annotation_metadata()
-        annotations.create_annotation_mask()
-        data = {
+        metadata_file = {
             "content": json.dumps(annotations.get_annotations()),
-            "filename": "annotations.json",
+            "filename": "annotation_metadata.json",
             "type": "application/json",
         }
+
+        # mask data
+        annotations.create_annotation_mask(sparse=EXPORT_AS_SPARSE)
+        mask_data, file_extension = annotations.get_annotation_mask_as_bytes()
+        mask_file = dcc.send_bytes(
+            mask_data, filename=f"annotation_mask.{file_extension}"
+        )
+
+        # notification
         notification_title = "Annotation Exported!"
         notification_message = "Succesfully exported in .json format."
         notification_color = "green"
@@ -383,4 +396,4 @@ def export_annotation(n_clicks, annotation_store):
         action="show",
         icon=DashIconify(icon="entypo:export"),
     )
-    return notification, data
+    return notification, metadata_file, mask_file
