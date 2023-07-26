@@ -2,6 +2,7 @@ version: '3.7'
 
 services:
   app:
+    container_name: highres_seg_demo
     build: .
     command: 'gunicorn -b 0.0.0.0:8050 --reload app:server'
     environment:
