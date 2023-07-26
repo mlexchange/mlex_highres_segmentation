@@ -341,11 +341,11 @@ def layout():
                             ),
                             dmc.Space(h=20),
                             dmc.Center(
-                                dmc.Button(
-                                    "Save annotation",
-                                    variant="light",
-                                    style={"width": "160px", "margin": "5px"},
-                                )
+                                # dmc.Button(
+                                #     "Save annotation",
+                                #     variant="light",
+                                #     style={"width": "160px", "margin": "5px"},
+                                # )
                             ),
                             dmc.Center(
                                 dmc.Button(
