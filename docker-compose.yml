@@ -8,5 +8,17 @@ services:
     environment:
       TILED_URI: '${TILED_URI}'
       API_KEY: '${API_KEY}'
+    volumes:
+      - ./app.py:/app/app.py
+      - ./callbacks:/app/callbacks
+      - ./components:/app/components
+      - ./utils:/app/utils
     ports:
       - '8075:8075'
+
+#     networks:
+#       - computing_api_default
+
+# networks:
+#   computing_api_default:
+#     external: true
