@@ -258,7 +258,6 @@ def layout():
                         "props": ["key"],
                     }
                 ],
-                logging=True,
                 id="keybind-event-listener",
             ),
         ],
