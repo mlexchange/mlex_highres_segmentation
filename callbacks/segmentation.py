@@ -16,10 +16,12 @@ import numpy as np
 def run_job(n_clicks, annotation_store, project_name):
     # TODO: Check if someone needs annotations as inputs
     if n_clicks:
-        
+
         annotations = Annotations(annotation_store)
         annotations.create_annotation_metadata()
-        annotations.create_annotation_mask(sparse=False) # TODO: Would sparse need to be true?
+        annotations.create_annotation_mask(
+            sparse=False
+        )  # TODO: Would sparse need to be true?
 
         # Get metadata and annotation data
         metadata = annotations.get_annotations()
