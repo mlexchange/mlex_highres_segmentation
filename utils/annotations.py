@@ -11,6 +11,8 @@ from matplotlib.path import Path
 import scipy.sparse as sp
 import io
 
+import zipfile
+
 
 class Annotations:
     def __init__(self, annotation_store):
@@ -21,11 +23,29 @@ class Annotations:
 
     def get_annotation_mask_as_bytes(self):
         buffer = io.BytesIO()
-        np.save(buffer, self.annotation_mask)
-        buffer.seek(0)  # Reset the buffer position to the beginning
-        array_bytes = buffer.read()
+        zip_buffer = io.BytesIO()
         file_extension = "sp" if self.sparse else "npy"
-        return array_bytes, file_extension
+
+        # Step 1: Save each numpy array to a separate .npy file in buffer
+        npy_files = []
+        for i, arr in enumerate(self.annotation_mask):
+            npy_buffer = io.BytesIO()
+            np.save(npy_buffer, arr)
+            npy_files.append((f"mask_{i}.{file_extension}", npy_buffer.getvalue()))
+
+        # Step 2: Add the .npy files to a .zip file using buffer
+        with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zipf:
+            for filename, data in npy_files:
+                zipf.writestr(filename, data)
+
+        # Get the .zip file data and file extension
+        zip_data = zip_buffer.getvalue()
+
+        # Reset the buffer position to the beginning
+        buffer.seek(0)
+        buffer.write(zip_data)
+
+        return buffer.getvalue()
 
     def create_annotation_metadata(self):
         """
