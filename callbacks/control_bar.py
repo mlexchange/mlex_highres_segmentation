@@ -380,10 +380,8 @@ def export_annotation(n_clicks, annotation_store):
 
         # mask data
         annotations.create_annotation_mask(sparse=EXPORT_AS_SPARSE)
-        mask_data, file_extension = annotations.get_annotation_mask_as_bytes()
-        mask_file = dcc.send_bytes(
-            mask_data, filename=f"annotation_mask.{file_extension}"
-        )
+        mask_data = annotations.get_annotation_mask_as_bytes()
+        mask_file = dcc.send_bytes(mask_data, filename=f"annotation_masks.zip")
 
         # notification
         notification_title = "Annotation Exported!"
