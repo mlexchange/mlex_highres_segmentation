@@ -27,9 +27,11 @@ class Annotations:
         # Step 1: Save each numpy array to a separate .npy file in buffer
         npy_files = []
         for i, arr in enumerate(self.annotation_mask):
+            item = self.annotation_store["annotations"].items()
+            idx = list(item)[i][0]
             npy_buffer = io.BytesIO()
             np.save(npy_buffer, arr)
-            npy_files.append((f"mask_{i}.{file_extension}", npy_buffer.getvalue()))
+            npy_files.append((f"mask_{idx}.{file_extension}", npy_buffer.getvalue()))
 
         # Step 2: Add the .npy files to a .zip file using buffer
         with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zipf:
@@ -83,7 +85,6 @@ class Annotations:
                 self.set_annotation_type(shape)
                 self.set_annotation_line_width(shape)
                 self.set_annotation_image_shape(image_idx)
-                print(self.annotation_class)
                 if self.annotation_type == "Closed Freeform":
                     shape_mask = ShapeConversion.closed_path_to_array(
                         shape, self.annotation_image_shape, self.annotation_class
