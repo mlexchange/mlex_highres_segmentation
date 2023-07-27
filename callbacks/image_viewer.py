@@ -22,7 +22,7 @@ def render_image(
 ):
     if image_idx:
         image_idx -= 1  # slider starts at 1, so subtract 1 to get the correct index
-        tf = data[project_name][image_idx]
+        tf = data[project_name].items()[image_idx][1]
     else:
         tf = np.zeros((500, 500))
     fig = px.imshow(tf, binary_string=True)

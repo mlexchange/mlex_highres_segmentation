@@ -1,11 +1,21 @@
-version: '3.7'
+version: '3'
 
 services:
   app:
-    build: .
-    command: 'gunicorn -b 0.0.0.0:8050 --reload app:server'
+    #build: .
+    image: highres-seg
+    container_name: 'highres_seg_demo'
+    command: 'gunicorn -b 0.0.0.0:8075 --reload app:server'
     environment:
+      USERNAME: '${USERNAME}'
+      PASSWORD: '${PASSWORD}'
       TILED_URI: '${TILED_URI}'
       API_KEY: '${API_KEY}'
-    ports:
-      - '8050:8050'
+    #ports:
+      #- '8075:8075'
+    networks:
+      - computing_api_default
+
+networks:
+  computing_api_default:
+    external: true

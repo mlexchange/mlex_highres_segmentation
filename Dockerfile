@@ -13,6 +13,6 @@ COPY . ./
 
 EXPOSE 8050
 # Run Dash app with gunicorn
-CMD ["gunicorn", "-b", "0.0.0.0:8050", "--reload", "app:server"]
+CMD ["gunicorn", "-b", "0.0.0.0:8075", "--reload", "app:server"]
 # Better than the alternative running of app.py directly with
 #CMD ["python", "app.py"]
