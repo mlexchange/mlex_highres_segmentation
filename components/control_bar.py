@@ -363,16 +363,13 @@ def layout():
                         "carbon:ibm-watson-machine-learning",
                         "run-model",
                         children=[
-                            # dmc.Center(
-                            #     dmc.Button(
-                            #         children="Run model",
-                            #         id="run-model",
-                            #         variant="light",
-                            #         style={"width": "160px", "margin": "5px"},
-                            #     )
-                            # ),
-                            # dmc.Center(html.Div(id="output-placeholder")),
-                            # dmc.Space(h=20),
+                            dmc.Button(
+                                "Run model",
+                                id="run-model",
+                                variant="light",
+                                style={"width": "160px", "margin": "5px"},
+                            ),
+                            html.Div(id="output-placeholder"),
                         ],
                     ),
                 ],
