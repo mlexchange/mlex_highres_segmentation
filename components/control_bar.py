@@ -358,23 +358,23 @@ def layout():
                             dmc.Space(h=20),
                         ],
                     ),
-                    # _accordion_item(
-                    #     "Model configuration",
-                    #     "carbon:ibm-watson-machine-learning",
-                    #     "run-model",
-                    #     children=[
-                    #         dmc.Center(
-                    #             dmc.Button(
-                    #                 children="Run model",
-                    #                 id="run-model",
-                    #                 variant="light",
-                    #                 style={"width": "160px", "margin": "5px"},
-                    #             )
-                    #         ),
-                    #         dmc.Center(html.Div(id="output-placeholder")),
-                    #         dmc.Space(h=20),
-                    #     ],
-                    # ),
+                    _accordion_item(
+                        "Model configuration",
+                        "carbon:ibm-watson-machine-learning",
+                        "run-model",
+                        children=[
+                            # dmc.Center(
+                            #     dmc.Button(
+                            #         children="Run model",
+                            #         id="run-model",
+                            #         variant="light",
+                            #         style={"width": "160px", "margin": "5px"},
+                            #     )
+                            # ),
+                            # dmc.Center(html.Div(id="output-placeholder")),
+                            # dmc.Space(h=20),
+                        ],
+                    ),
                 ],
             ),
             dcc.Store(
