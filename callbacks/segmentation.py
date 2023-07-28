@@ -14,7 +14,7 @@ import numpy as np
     State("project-name-src", "value"),
 )
 def run_job(n_clicks, annotation_store, project_name):
-    # TODO: Check if someone needs annotations as inputs
+    # As a placeholder, pulling together the inputs we'd need if we were going to submit a job
     if n_clicks:
 
         annotations = Annotations(annotation_store)
@@ -35,8 +35,11 @@ def run_job(n_clicks, annotation_store, project_name):
         for idx in img_idx:
             ar = img[int(idx)]
             raw.append(ar)
-        raw = np.stack(raw)
-        mask = np.stack(mask)
+        try:
+            raw = np.stack(raw)
+            mask = np.stack(mask)
+        except ValueError:
+            return "No annotations to process."
 
         # Some checks to validate that things are in the format we'd expect
         print(metadata)
