@@ -7,12 +7,12 @@ import numpy as np
 # NEXT STEPS:
 # - this function returns a job ID, which would be associated with the workflow run on vaughan
 # - then we need another callback to pick up this ID and start polling for successful output
-@callback(
-    Output("output-placeholder", "children"),
-    Input("run-model", "n_clicks"),
-    State("annotation-store", "data"),
-    State("project-name-src", "value"),
-)
+# @callback(
+#     Output("output-placeholder", "children"),
+#     Input("run-model", "n_clicks"),
+#     State("annotation-store", "data"),
+#     State("project-name-src", "value"),
+# )
 def run_job(n_clicks, annotation_store, project_name):
     # As a placeholder, pulling together the inputs we'd need if we were going to submit a job
     if n_clicks:
