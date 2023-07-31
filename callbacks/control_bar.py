@@ -24,6 +24,8 @@ import random
     Output("closed-freeform", "style"),
     Output("circle", "style"),
     Output("rectangle", "style"),
+    Output("eraser", "style"),
+    Output("delete-all", "style"),
     Output("drawing-off", "style"),
     Output("annotation-store", "data", allow_duplicate=True),
     Output("current-ann-mode", "data", allow_duplicate=True),
@@ -31,13 +33,23 @@ import random
     Input("closed-freeform", "n_clicks"),
     Input("circle", "n_clicks"),
     Input("rectangle", "n_clicks"),
+    Input("eraser", "n_clicks"),
+    Input("delete-all", "n_clicks"),
     Input("drawing-off", "n_clicks"),
     Input("keybind-event-listener", "event"),
     State("annotation-store", "data"),
     prevent_initial_call=True,
 )
 def annotation_mode(
-    open, closed, circle, rect, off_mode, keybind_event_listener, annotation_store
+    open,
+    closed,
+    circle,
+    rect,
+    eraser,
+    delete_all,
+    off_mode,
+    keybind_event_listener,
+    annotation_store,
 ):
     """This callback determines which drawing mode the graph is in"""
     if not annotation_store["visible"]:
@@ -51,21 +63,18 @@ def annotation_mode(
     close_style = inactive
     circle_style = inactive
     rect_style = inactive
+    eraser_style = inactive
+    delete_all_style = inactive
     pan_style = inactive
 
-    (
-        key_open_freeform,
-        key_closed_freeform,
-        key_circle,
-        key_rectangle,
-        key_drawing_off,
-    ) = (
-        False,
-        False,
-        False,
-        False,
-        False,
-    )
+    key_open_freeform = False
+    key_closed_freeform = False
+    key_circle = False
+    key_rectangle = False
+    key_eraser = False
+    key_delete_all = False
+    key_drawing_off = False
+
     if triggered == "keybind-event-listener":
         pressed_key = keybind_event_listener["key"]
         if pressed_key == "1":
@@ -77,6 +86,10 @@ def annotation_mode(
         elif pressed_key == "4":
             key_rectangle = True
         elif pressed_key == "5":
+            key_eraser = True
+        elif pressed_key == "6":
+            key_delete_all = True
+        elif pressed_key == "7":
             key_drawing_off = True
 
     if key_open_freeform or (triggered == "open-freeform" and open > 0):
@@ -95,6 +108,14 @@ def annotation_mode(
         patched_figure["layout"]["dragmode"] = "drawrect"
         annotation_store["dragmode"] = "drawrect"
         rect_style = active
+    if key_eraser or (triggered == "erase" and eraser > 0):
+        patched_figure["layout"]["dragmode"] = "eraseshape"
+        annotation_store["dragmode"] = "eraseshape"
+        eraser_style = active
+    if key_delete_all or (triggered == "delete" and delete_all > 0):
+        patched_figure["layout"]["dragmode"] = "deleteshape"
+        annotation_store["dragmode"] = "deleteshape"
+        delete_all_style = active
     if key_drawing_off or (triggered == "drawing-off" and off_mode > 0):
         patched_figure["layout"]["dragmode"] = "pan"
         annotation_store["dragmode"] = "pan"
@@ -105,6 +126,8 @@ def annotation_mode(
         close_style,
         circle_style,
         rect_style,
+        eraser_style,
+        delete_all_style,
         pan_style,
         annotation_store,
         triggered,
