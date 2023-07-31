@@ -1,8 +1,3 @@
-import math
-import numpy as np
-from skimage.draw import polygon, circle, polygon_perimeter, line
-
-import re
 import numpy as np
 from skimage import draw, morphology
 import math
@@ -21,6 +16,9 @@ class Annotations:
     def get_annotations(self):
         return self.annotations
 
+    def get_annotation_mask(self):
+        return self.annotation_mask
+
     def get_annotation_mask_as_bytes(self):
         buffer = io.BytesIO()
         zip_buffer = io.BytesIO()
@@ -29,9 +27,11 @@ class Annotations:
         # Step 1: Save each numpy array to a separate .npy file in buffer
         npy_files = []
         for i, arr in enumerate(self.annotation_mask):
+            item = self.annotation_store["annotations"].items()
+            idx = list(item)[i][0]
             npy_buffer = io.BytesIO()
             np.save(npy_buffer, arr)
-            npy_files.append((f"mask_{i}.{file_extension}", npy_buffer.getvalue()))
+            npy_files.append((f"mask_{idx}.{file_extension}", npy_buffer.getvalue()))
 
         # Step 2: Add the .npy files to a .zip file using buffer
         with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zipf:
@@ -85,7 +85,6 @@ class Annotations:
                 self.set_annotation_type(shape)
                 self.set_annotation_line_width(shape)
                 self.set_annotation_image_shape(image_idx)
-                print(self.annotation_class)
                 if self.annotation_type == "Closed Freeform":
                     shape_mask = ShapeConversion.closed_path_to_array(
                         shape, self.annotation_image_shape, self.annotation_class
@@ -153,27 +152,17 @@ class Annotations:
         """
         This function sets the class of the annotation.
         """
-        map_color_to_class = {
-            "rgba(240, 62, 62, 0.3)": 1,
-            "#ae3ec9": 2,
-            "#7048e8": 3,
-            "#1c7ed6": 4,
-            "#f59f00": 5,
-            "rgba(245, 159, 0, 0.3)": 6,
-        }
-
-        if annotation["line"]["color"] in map_color_to_class:
-            self.annotation_class = map_color_to_class[annotation["line"]["color"]]
-        else:
-            self.annotation_class = 99
+        self.annotation_class = 99
+        for item in self.annotation_store["label_mapping"]:
+            if item["color"] == annotation["line"]["color"]:
+                self.annotation_class = item["id"]
 
     def set_annotation_image_shape(self, image_idx):
         """
         This function sets the the size of the image slice
         """
-        self.annotation_image_shape = self.annotation_store["image_shapes"][
-            int(image_idx)
-        ]
+        # TODO: Assuming all images in the slice are the same shape
+        self.annotation_image_shape = self.annotation_store["image_shapes"][0]
 
 
 class ShapeConversion:
