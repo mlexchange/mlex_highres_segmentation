@@ -369,6 +369,7 @@ def layout():
                         "Model configuration",
                         "carbon:ibm-watson-machine-learning",
                         "run-model",
+                        id="model-configuration",
                         children=[
                             dmc.Button(
                                 "Run model",
