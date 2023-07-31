@@ -1,7 +1,6 @@
 from dash import Input, Output, State, callback, ctx, Patch, clientside_callback
 import dash
 import dash_mantine_components as dmc
-from tifffile import imread
 import plotly.express as px
 import numpy as np
 from utils.data_utils import data
@@ -148,6 +147,8 @@ def update_slider_values(project_name, annotation_store):
     disable_slider = project_name is None
     if not disable_slider:
         tiff_file = data[project_name]
+        # TODO: Assuming that all slices have the same image shape
+        annotation_store["image_shapes"] = [(tiff_file.shape[1], tiff_file.shape[2])]
     min_slider_value = 0 if disable_slider else 1
     max_slider_value = 0 if disable_slider else len(tiff_file)
     slider_value = 0 if disable_slider else 1

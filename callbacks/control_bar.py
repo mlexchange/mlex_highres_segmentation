@@ -1,16 +1,21 @@
 from dash import (
     Input,
     Output,
+    dcc,
     State,
     callback,
     Patch,
     ALL,
     ctx,
     clientside_callback,
+    no_update,
 )
 from dash.exceptions import PreventUpdate
 import dash_mantine_components as dmc
-from utils.data_utils import data
+from dash_iconify import DashIconify
+import json
+from utils.annotations import Annotations
+import random
 
 
 @callback(
@@ -210,20 +215,32 @@ def disable_class_deletion(highlighted):
 @callback(
     Output("annotation-class-selection", "children"),
     Output("annotation-class-label", "value"),
+    Output("annotation-store", "data", allow_duplicate=True),
     Input("create-annotation-class", "n_clicks"),
     Input("remove-annotation-class", "n_clicks"),
     State("annotation-class-label", "value"),
     State("annotation-class-colorpicker", "value"),
     State("annotation-class-selection", "children"),
     State({"type": "annotation-delete-buttons", "index": ALL}, "style"),
+    State("annotation-store", "data"),
     prevent_initial_call=True,
 )
 def add_new_class(
-    create, remove, class_label, class_color, current_classes, classes_to_delete
+    create,
+    remove,
+    class_label,
+    class_color,
+    current_classes,
+    classes_to_delete,
+    annotation_store,
 ):
     """Updates the list of available annotation classes"""
     triggered = ctx.triggered_id
     if triggered == "create-annotation-class":
+        # TODO: Check that the randint isn't already assigned to a class
+        annotation_store["label_mapping"].append(
+            {"color": class_color, "id": random.randint(1, 100), "label": class_label}
+        )
         if class_color is None:
             class_color = "rgb(255, 255, 255)"
         if class_color == "rgb(255, 255, 255)":
@@ -250,8 +267,9 @@ def add_new_class(
                     children=class_label,
                 )
             )
-        return current_classes, ""
+        output_classes = current_classes
     else:
+        # TODO: Remove mapping from the store
         color_to_delete = []
         color_to_keep = []
         for color_opt in classes_to_delete:
@@ -260,7 +278,9 @@ def add_new_class(
         for color in current_classes:
             if color["props"]["id"]["index"] not in color_to_delete:
                 color_to_keep.append(color)
-        return color_to_keep, ""
+        output_classes = color_to_keep
+
+    return output_classes, "", annotation_store
 
 
 @callback(
@@ -330,3 +350,50 @@ def reset_filters(n_clicks):
     default_brightness = 100
     default_contrast = 100
     return default_brightness, default_contrast
+
+
+@callback(
+    Output("notifications-container", "children"),
+    Output("export-annotation-metadata", "data"),
+    Output("export-annotation-mask", "data"),
+    Input("export-annotation", "n_clicks"),
+    State("annotation-store", "data"),
+    prevent_initial_call=True,
+)
+def export_annotation(n_clicks, annotation_store):
+    EXPORT_AS_SPARSE = False  # todo replace with input
+    if not annotation_store["annotations"]:
+        metadata_data = no_update
+        notification_title = "No Annotations to Export!"
+        notification_message = "Please annotate an image before exporting."
+        notification_color = "red"
+    else:
+        annotations = Annotations(annotation_store)
+
+        # medatada
+        annotations.create_annotation_metadata()
+        metadata_file = {
+            "content": json.dumps(annotations.get_annotations()),
+            "filename": "annotation_metadata.json",
+            "type": "application/json",
+        }
+
+        # mask data
+        annotations.create_annotation_mask(sparse=EXPORT_AS_SPARSE)
+        mask_data = annotations.get_annotation_mask_as_bytes()
+        mask_file = dcc.send_bytes(mask_data, filename=f"annotation_masks.zip")
+
+        # notification
+        notification_title = "Annotation Exported!"
+        notification_message = "Succesfully exported in .json format."
+        notification_color = "green"
+
+    notification = dmc.Notification(
+        title=notification_title,
+        message=notification_message,
+        color=notification_color,
+        id="export-annotation-notification",
+        action="show",
+        icon=DashIconify(icon="entypo:export"),
+    )
+    return notification, metadata_file, mask_file

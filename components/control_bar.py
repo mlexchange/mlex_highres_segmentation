@@ -2,6 +2,7 @@ import dash_mantine_components as dmc
 from dash import html, dcc
 from dash_iconify import DashIconify
 from utils import data_utils
+import random
 
 COMPONENT_STYLE = {
     "width": "400px",
@@ -346,21 +347,36 @@ def layout():
                                 ],
                             ),
                             dmc.Space(h=20),
-                            dmc.Center(
-                                dmc.Button(
-                                    "Save annotation",
-                                    variant="light",
-                                    style={"width": "160px", "margin": "5px"},
-                                )
-                            ),
+                            # dmc.Center(
+                            #     # dmc.Button(
+                            #     #     "Save annotation",
+                            #     #     variant="light",
+                            #     #     style={"width": "160px", "margin": "5px"},
+                            #     # )
+                            # ),
                             dmc.Center(
                                 dmc.Button(
                                     "Export annotation",
+                                    id="export-annotation",
                                     variant="light",
                                     style={"width": "160px", "margin": "5px"},
-                                )
+                                ),
                             ),
                             dmc.Space(h=20),
+                        ],
+                    ),
+                    _accordion_item(
+                        "Model configuration",
+                        "carbon:ibm-watson-machine-learning",
+                        "run-model",
+                        children=[
+                            dmc.Button(
+                                "Run model",
+                                id="run-model",
+                                variant="light",
+                                style={"width": "160px", "margin": "5px"},
+                            ),
+                            html.Div(id="output-placeholder"),
                         ],
                     ),
                 ],
@@ -373,8 +389,19 @@ def layout():
                     "annotations": {},
                     "view": {},
                     "image_size": [],
+                    # TODO: Hard-coding default annotation class
+                    "label_mapping": [
+                        {
+                            "color": "rgb(249,82,82)",
+                            "label": "1",
+                            "id": random.randint(1, 100),
+                        }
+                    ],
                 },
             ),
+            dmc.NotificationsProvider(html.Div(id="notifications-container")),
+            dcc.Download(id="export-annotation-metadata"),
+            dcc.Download(id="export-annotation-mask"),
             dcc.Store(id="project-data"),
             html.Div(id="dummy-output"),
         ],
