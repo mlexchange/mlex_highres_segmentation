@@ -119,6 +119,8 @@ def update_viefinder(relayout_data, annotation_store):
         patched_fig["layout"]["shapes"][0]["y0"] = DOWNSCALED_img_max_height
         patched_fig["layout"]["shapes"][0]["x1"] = DOWNSCALED_img_max_width
         patched_fig["layout"]["shapes"][0]["y1"] = 0
+    elif "xaxis.range[0]" not in relayout_data:
+        raise dash.exceptions.PreventUpdate
     else:
         x0, y0, x1, y1 = downscale_view(
             relayout_data["xaxis.range[0]"],
