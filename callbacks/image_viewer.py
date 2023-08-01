@@ -4,10 +4,14 @@ import dash_mantine_components as dmc
 import plotly.express as px
 import numpy as np
 from utils.data_utils import data
+from utils.plot_utils import create_viewfinder, downscale_view
+
+DOWNSCALED_img_max_height, DOWNSCALED_img_max_width = 250, 250
 
 
 @callback(
     Output("image-viewer", "figure"),
+    Output("image-viewfinder", "figure"),
     Output("annotation-store", "data", allow_duplicate=True),
     Output("image-viewer-loading", "zIndex", allow_duplicate=True),
     Output("data-selection-controls", "children", allow_duplicate=True),
@@ -54,36 +58,85 @@ def render_image(
         )
     )
     if annotation_store:
+        fig["layout"]["dragmode"] = annotation_store["dragmode"]
         if not annotation_store["visible"]:
             fig["layout"]["shapes"] = []
-            fig["layout"]["dragmode"] = False
-            return fig
-
-        fig["layout"]["dragmode"] = annotation_store["dragmode"]
-
-        if str(image_idx) in annotation_store["annotations"]:
-            fig["layout"]["shapes"] = annotation_store["annotations"][str(image_idx)]
+        else:
+            if str(image_idx) in annotation_store["annotations"]:
+                fig["layout"]["shapes"] = annotation_store["annotations"][
+                    str(image_idx)
+                ]
 
         view = annotation_store["view"]
-        if "xaxis_range_0" in view and annotation_store["image_size"] == tf.size:
+        if "xaxis_range_0" in view and annotation_store["active_img_shape"] == list(
+            tf.shape
+        ):
             fig.update_layout(
                 xaxis=dict(range=[view["xaxis_range_0"], view["xaxis_range_1"]]),
                 yaxis=dict(range=[view["yaxis_range_0"], view["yaxis_range_1"]]),
             )
     patched_annotation_store = Patch()
-    patched_annotation_store["image_size"] = tf.size
+    patched_annotation_store["active_img_shape"] = list(tf.shape)
     fig_loading_overlay = -1
 
+    fig_viewfinder = create_viewfinder(
+        tf, annotation_store, (DOWNSCALED_img_max_height, DOWNSCALED_img_max_width)
+    )
     # No update is needed for the 'children' of the control components
     # since we just want to trigger the loading overlay with this callback
     return (
         fig,
+        fig_viewfinder,
         patched_annotation_store,
         fig_loading_overlay,
         dash.no_update,
         dash.no_update,
         dash.no_update,
     )
+
+
+@callback(
+    Output("image-viewfinder", "figure", allow_duplicate=True),
+    Input("image-viewer", "relayoutData"),
+    State("annotation-store", "data"),
+    prevent_initial_call=True,
+)
+def update_viefinder(relayout_data, annotation_store):
+    """
+    When relayoutData is triggered, update the viewfinder box to match the new view position of the image (inlude zooming).
+    The viewfinder box is downsampled to match the size of the viewfinder.
+    The viewfinder box is containen within the figure layout, so that if the user zooms out/pans away, they will still be able to see the viewfinder box.
+    """
+    # Callback is triggered when the image is first loaded, but the annotation_store is not yet populated so we need to prevent the update
+    if not annotation_store["active_img_shape"]:
+        raise dash.exceptions.PreventUpdate
+
+    patched_fig = Patch()
+
+    # If user resets the view by double clicking on the image, reset the viewfinder
+    if "xaxis.autorange" in relayout_data and relayout_data["xaxis.autorange"]:
+        patched_fig["layout"]["shapes"][0]["x0"] = 0
+        patched_fig["layout"]["shapes"][0]["y0"] = DOWNSCALED_img_max_height
+        patched_fig["layout"]["shapes"][0]["x1"] = DOWNSCALED_img_max_width
+        patched_fig["layout"]["shapes"][0]["y1"] = 0
+    else:
+        x0, y0, x1, y1 = downscale_view(
+            relayout_data["xaxis.range[0]"],
+            relayout_data["yaxis.range[0]"],
+            relayout_data["xaxis.range[1]"],
+            relayout_data["yaxis.range[1]"],
+            annotation_store["active_img_shape"],
+            (DOWNSCALED_img_max_height, DOWNSCALED_img_max_width),
+        )
+        patched_fig["layout"]["shapes"][0]["x0"] = x0 if x0 > 0 else 0
+        patched_fig["layout"]["shapes"][0]["y0"] = (
+            y0 if y0 < DOWNSCALED_img_max_height else DOWNSCALED_img_max_height
+        )
+        patched_fig["layout"]["shapes"][0]["x1"] = (
+            x1 if x1 < DOWNSCALED_img_max_width else DOWNSCALED_img_max_width
+        )
+        patched_fig["layout"]["shapes"][0]["y1"] = y1 if y1 > 0 else 0
+    return patched_fig
 
 
 clientside_callback(
@@ -118,6 +171,13 @@ def locally_store_annotations(relayout_data, img_idx, annotation_store):
         annotation_store["view"]["xaxis_range_1"] = relayout_data["xaxis.range[1]"]
         annotation_store["view"]["yaxis_range_0"] = relayout_data["yaxis.range[0]"]
         annotation_store["view"]["yaxis_range_1"] = relayout_data["yaxis.range[1]"]
+    elif "xaxis.autorange" in relayout_data and relayout_data["xaxis.autorange"]:
+        # if user resets the view by double clicking on the image, reset the viewfinder
+        max_height, max_width = annotation_store["active_img_shape"]
+        annotation_store["view"]["xaxis_range_0"] = 1
+        annotation_store["view"]["xaxis_range_1"] = max_width - 1
+        annotation_store["view"]["yaxis_range_0"] = max_height - 1
+        annotation_store["view"]["yaxis_range_1"] = 1
 
     return annotation_store
 
