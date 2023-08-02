@@ -15,6 +15,7 @@ import dash_mantine_components as dmc
 from dash_iconify import DashIconify
 import json
 from utils.annotations import Annotations
+from constants import KEYBINDS
 import random
 
 
@@ -33,11 +34,13 @@ import random
     Input("closed-freeform", "n_clicks"),
     Input("circle", "n_clicks"),
     Input("rectangle", "n_clicks"),
+    # Input("line", "n_clicks"), # todo enable line drawing when #57 is merged
     Input("eraser", "n_clicks"),
     Input("delete-all", "n_clicks"),
     Input("drawing-off", "n_clicks"),
     Input("keybind-event-listener", "event"),
     State("annotation-store", "data"),
+    State("image-viewer-loading", "zIndex"),
     prevent_initial_call=True,
 )
 def annotation_mode(
@@ -45,90 +48,112 @@ def annotation_mode(
     closed,
     circle,
     rect,
-    eraser,
-    delete_all,
-    off_mode,
+    # line, # todo enable line drawing when #57 is merged
+    pan,
+    erase_annotation,
+    delete_all_annotations,
     keybind_event_listener,
     annotation_store,
+    figure_overlay_z_index,
 ):
-    """This callback determines which drawing mode the graph is in"""
+    """
+    This callback is responsible for changing the annotation mode and the style of the buttons.
+    It also accepts keybinds to change the annotation mode.
+    """
     if not annotation_store["visible"]:
         raise PreventUpdate
+    # if the image is loading stop the callback when keybinds are pressed
+    if figure_overlay_z_index != -1:
+        raise PreventUpdate
 
-    patched_figure = Patch()
+    key_modes = {
+        KEYBINDS["open-freeform"]: ("drawopenpath", "open_style"),
+        KEYBINDS["closed-freeform"]: ("drawclosedpath", "close_style"),
+        KEYBINDS["circle"]: ("drawcircle", "circle_style"),
+        KEYBINDS["rectangle"]: ("drawrect", "rect_style"),
+        # KEYBINDS["line"]: ("drawline", "line_style"),    # todo enable line drawing when #57 is merged
+        KEYBINDS["pan"]: ("pan", "pan_style"),
+        KEYBINDS["erase-annotation"]: ("eraseshape", "eraser_style"),
+        KEYBINDS["delete-all-annotations"]: ("deleteshape", "delete_all_style"),
+    }
+
     triggered = ctx.triggered_id
+    pressed_key = keybind_event_listener.get("key", None)
+
+    if pressed_key in key_modes:
+        mode, style = key_modes[pressed_key]
+    else:
+        # if the callback was triggered by pressing a key that is not in the `key_modes`, stop the callback
+        if triggered == "keybind-event-listener":
+            raise PreventUpdate
+        mode, style = None, None
+
     active = {"border": "3px solid black"}
     inactive = {"border": "1px solid"}
-    open_style = inactive
-    close_style = inactive
-    circle_style = inactive
-    rect_style = inactive
-    eraser_style = inactive
-    delete_all_style = inactive
-    pan_style = inactive
 
-    key_open_freeform = False
-    key_closed_freeform = False
-    key_circle = False
-    key_rectangle = False
-    key_eraser = False
-    key_delete_all = False
-    key_drawing_off = False
+    patched_figure = Patch()
 
-    if triggered == "keybind-event-listener":
-        pressed_key = keybind_event_listener["key"]
-        if pressed_key == "1":
-            key_open_freeform = True
-        elif pressed_key == "2":
-            key_closed_freeform = True
-        elif pressed_key == "3":
-            key_circle = True
-        elif pressed_key == "4":
-            key_rectangle = True
-        elif pressed_key == "5":
-            key_eraser = True
-        elif pressed_key == "6":
-            key_delete_all = True
-        elif pressed_key == "7":
-            key_drawing_off = True
+    # Define a dictionary to store the styles
+    styles = {
+        "open_style": inactive,
+        "close_style": inactive,
+        "circle_style": inactive,
+        "rect_style": inactive,
+        # "line_style": inactive,    # todo enable line drawing when #57 is merged
+        "pan_style": inactive,
+        "eraser_style": inactive,
+        "delete_all_style": inactive,
+    }
 
-    if key_open_freeform or (triggered == "open-freeform" and open > 0):
-        patched_figure["layout"]["dragmode"] = "drawopenpath"
-        annotation_store["dragmode"] = "drawopenpath"
-        open_style = active
-    if key_closed_freeform or (triggered == "closed-freeform" and closed > 0):
-        patched_figure["layout"]["dragmode"] = "drawclosedpath"
-        annotation_store["dragmode"] = "drawclosedpath"
-        close_style = active
-    if key_circle or (triggered == "circle" and circle > 0):
-        patched_figure["layout"]["dragmode"] = "drawcircle"
-        annotation_store["dragmode"] = "drawcircle"
-        circle_style = active
-    if key_rectangle or (triggered == "rectangle" and rect > 0):
-        patched_figure["layout"]["dragmode"] = "drawrect"
-        annotation_store["dragmode"] = "drawrect"
-        rect_style = active
-    if key_eraser or (triggered == "erase" and eraser > 0):
-        patched_figure["layout"]["dragmode"] = "eraseshape"
-        annotation_store["dragmode"] = "eraseshape"
-        eraser_style = active
-    if key_delete_all or (triggered == "delete" and delete_all > 0):
-        patched_figure["layout"]["dragmode"] = "deleteshape"
-        annotation_store["dragmode"] = "deleteshape"
-        delete_all_style = active
-    if key_drawing_off or (triggered == "drawing-off" and off_mode > 0):
-        patched_figure["layout"]["dragmode"] = "pan"
-        annotation_store["dragmode"] = "pan"
-        pan_style = active
+    if mode:
+        patched_figure["layout"]["dragmode"] = mode
+        annotation_store["dragmode"] = mode
+        styles[style] = active
+    else:
+        if triggered == "open-freeform" and open > 0:
+            patched_figure["layout"]["dragmode"] = "drawopenpath"
+            annotation_store["dragmode"] = "drawopenpath"
+            styles["open_style"] = active
+        elif triggered == "closed-freeform" and closed > 0:
+            patched_figure["layout"]["dragmode"] = "drawclosedpath"
+            annotation_store["dragmode"] = "drawclosedpath"
+            styles["close_style"] = active
+        elif triggered == "circle" and circle > 0:
+            patched_figure["layout"]["dragmode"] = "drawcircle"
+            annotation_store["dragmode"] = "drawcircle"
+            styles["circle_style"] = active
+        elif triggered == "rectangle" and rect > 0:
+            patched_figure["layout"]["dragmode"] = "drawrect"
+            annotation_store["dragmode"] = "drawrect"
+            styles["rect_style"] = active
+        # elif triggered == "line" and line > 0:    # todo enable line drawing when #57 is merged
+        #     patched_figure["layout"]["dragmode"] = "drawline"
+        #     annotation_store["dragmode"] = "drawline"
+        #     styles["line_style"] = active
+        elif triggered == "erase-annotation" and erase_annotation > 0:
+            patched_figure["layout"]["dragmode"] = "eraseshape"
+            annotation_store["dragmode"] = "eraseshape"
+            styles["eraser_style"] = active
+        elif triggered == "delete-all-annotations" and delete_all_annotations > 0:
+            patched_figure["layout"]["dragmode"] = "deleteshape"
+            annotation_store["dragmode"] = "deleteshape"
+            styles["delete_all_style"] = active
+        elif triggered == "pan" and pan > 0:
+            patched_figure["layout"]["dragmode"] = "pan"
+            annotation_store["dragmode"] = "pan"
+            styles["pan_style"] = active
+
+    # Return the styles from the styles dictionary
     return (
         patched_figure,
-        open_style,
-        close_style,
-        circle_style,
-        rect_style,
-        eraser_style,
-        delete_all_style,
-        pan_style,
+        styles["open_style"],
+        styles["close_style"],
+        styles["circle_style"],
+        styles["rect_style"],
+        # styles["line_style"],    # todo enable line drawing when #57 is merged
+        styles["pan_style"],
+        styles["eraser_style"],
+        styles["delete_all_style"],
         annotation_store,
         triggered,
     )

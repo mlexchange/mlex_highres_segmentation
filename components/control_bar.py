@@ -410,7 +410,7 @@ def layout():
                 events=[
                     {
                         "event": "keydown",
-                        "props": ["key"],
+                        "props": ["key", "altKey", "shiftKey"],
                     }
                 ],
                 id="keybind-event-listener",
