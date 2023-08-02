@@ -15,7 +15,7 @@ import dash_mantine_components as dmc
 from dash_iconify import DashIconify
 import json
 from utils.annotations import Annotations
-from constants import KEYBINDS
+from constants import KEYBINDS, ANNOT_ICONS, ANNOT_NOTIFICATION_MSGS
 import random
 
 
@@ -27,9 +27,10 @@ import random
     Output("rectangle", "style"),
     Output("eraser", "style"),
     Output("delete-all", "style"),
-    Output("drawing-off", "style"),
+    Output("pan-and-zoom", "style"),
     Output("annotation-store", "data", allow_duplicate=True),
     Output("current-ann-mode", "data", allow_duplicate=True),
+    Output("notifications-container", "children", allow_duplicate=True),
     Input("open-freeform", "n_clicks"),
     Input("closed-freeform", "n_clicks"),
     Input("circle", "n_clicks"),
@@ -37,7 +38,7 @@ import random
     # Input("line", "n_clicks"), # todo enable line drawing when #57 is merged
     Input("eraser", "n_clicks"),
     Input("delete-all", "n_clicks"),
-    Input("drawing-off", "n_clicks"),
+    Input("pan-and-zoom", "n_clicks"),
     Input("keybind-event-listener", "event"),
     State("annotation-store", "data"),
     State("image-viewer-loading", "zIndex"),
@@ -49,9 +50,9 @@ def annotation_mode(
     circle,
     rect,
     # line, # todo enable line drawing when #57 is merged
-    pan,
     erase_annotation,
     delete_all_annotations,
+    pan_and_zoom,
     keybind_event_listener,
     annotation_store,
     figure_overlay_z_index,
@@ -67,26 +68,28 @@ def annotation_mode(
         raise PreventUpdate
 
     key_modes = {
-        KEYBINDS["open-freeform"]: ("drawopenpath", "open_style"),
-        KEYBINDS["closed-freeform"]: ("drawclosedpath", "close_style"),
-        KEYBINDS["circle"]: ("drawcircle", "circle_style"),
-        KEYBINDS["rectangle"]: ("drawrect", "rect_style"),
-        # KEYBINDS["line"]: ("drawline", "line_style"),    # todo enable line drawing when #57 is merged
-        KEYBINDS["pan"]: ("pan", "pan_style"),
-        KEYBINDS["erase-annotation"]: ("eraseshape", "eraser_style"),
-        KEYBINDS["delete-all-annotations"]: ("deleteshape", "delete_all_style"),
+        KEYBINDS["open-freeform"]: ("drawopenpath", "open-freeform"),
+        KEYBINDS["closed-freeform"]: ("drawclosedpath", "closed-freeform"),
+        KEYBINDS["circle"]: ("drawcircle", "circle"),
+        KEYBINDS["rectangle"]: ("drawrect", "rectangle"),
+        # KEYBINDS["line"]: ("drawline", "line"),    # todo enable line drawing when #57 is merged
+        KEYBINDS["pan-and-zoom"]: ("pan", "pan-and-zoom"),
+        KEYBINDS["erase"]: ("eraseshape", "eraser"),
+        KEYBINDS["delete-all"]: ("deleteshape", "delete-all"),
     }
 
     triggered = ctx.triggered_id
-    pressed_key = keybind_event_listener.get("key", None)
+    pressed_key = (
+        keybind_event_listener.get("key", None) if keybind_event_listener else None
+    )
 
     if pressed_key in key_modes:
-        mode, style = key_modes[pressed_key]
+        mode, triggered = key_modes[pressed_key]
     else:
         # if the callback was triggered by pressing a key that is not in the `key_modes`, stop the callback
         if triggered == "keybind-event-listener":
             raise PreventUpdate
-        mode, style = None, None
+        mode = None
 
     active = {"border": "3px solid black"}
     inactive = {"border": "1px solid"}
@@ -95,67 +98,76 @@ def annotation_mode(
 
     # Define a dictionary to store the styles
     styles = {
-        "open_style": inactive,
-        "close_style": inactive,
-        "circle_style": inactive,
-        "rect_style": inactive,
-        # "line_style": inactive,    # todo enable line drawing when #57 is merged
-        "pan_style": inactive,
-        "eraser_style": inactive,
-        "delete_all_style": inactive,
+        "open-freeform": inactive,
+        "closed-freeform": inactive,
+        "circle": inactive,
+        "rectangle": inactive,
+        # "line": inactive,    # todo enable line drawing when #57 is merged
+        "eraser": inactive,
+        "delete-all": inactive,
+        "pan-and-zoom": inactive,
     }
 
     if mode:
         patched_figure["layout"]["dragmode"] = mode
         annotation_store["dragmode"] = mode
-        styles[style] = active
+        styles[triggered] = active
     else:
         if triggered == "open-freeform" and open > 0:
             patched_figure["layout"]["dragmode"] = "drawopenpath"
             annotation_store["dragmode"] = "drawopenpath"
-            styles["open_style"] = active
+            styles[triggered] = active
         elif triggered == "closed-freeform" and closed > 0:
             patched_figure["layout"]["dragmode"] = "drawclosedpath"
             annotation_store["dragmode"] = "drawclosedpath"
-            styles["close_style"] = active
+            styles[triggered] = active
         elif triggered == "circle" and circle > 0:
             patched_figure["layout"]["dragmode"] = "drawcircle"
             annotation_store["dragmode"] = "drawcircle"
-            styles["circle_style"] = active
+            styles[triggered] = active
         elif triggered == "rectangle" and rect > 0:
             patched_figure["layout"]["dragmode"] = "drawrect"
             annotation_store["dragmode"] = "drawrect"
-            styles["rect_style"] = active
+            styles[triggered] = active
         # elif triggered == "line" and line > 0:    # todo enable line drawing when #57 is merged
         #     patched_figure["layout"]["dragmode"] = "drawline"
         #     annotation_store["dragmode"] = "drawline"
-        #     styles["line_style"] = active
-        elif triggered == "erase-annotation" and erase_annotation > 0:
+        #     styles[triggered] = active
+        elif triggered == "eraser" and erase_annotation > 0:
             patched_figure["layout"]["dragmode"] = "eraseshape"
             annotation_store["dragmode"] = "eraseshape"
-            styles["eraser_style"] = active
-        elif triggered == "delete-all-annotations" and delete_all_annotations > 0:
+            styles[triggered] = active
+        elif triggered == "delete-all" and delete_all_annotations > 0:
             patched_figure["layout"]["dragmode"] = "deleteshape"
             annotation_store["dragmode"] = "deleteshape"
-            styles["delete_all_style"] = active
-        elif triggered == "pan" and pan > 0:
+            styles[triggered] = active
+        elif triggered == "pan-and-zoom" and pan_and_zoom > 0:
             patched_figure["layout"]["dragmode"] = "pan"
             annotation_store["dragmode"] = "pan"
-            styles["pan_style"] = active
+            styles[triggered] = active
 
-    # Return the styles from the styles dictionary
+    notification = dmc.Notification(
+        title=ANNOT_NOTIFICATION_MSGS[triggered],
+        message="",
+        color="indigo",
+        id=f"export-annotation-notification-{random.randint(0, 10000)}",
+        action="show",
+        icon=DashIconify(icon=ANNOT_ICONS[triggered], width=40),
+        styles={"icon": {"height": "50px", "width": "50px"}},
+    )
     return (
         patched_figure,
-        styles["open_style"],
-        styles["close_style"],
-        styles["circle_style"],
-        styles["rect_style"],
-        # styles["line_style"],    # todo enable line drawing when #57 is merged
-        styles["pan_style"],
-        styles["eraser_style"],
-        styles["delete_all_style"],
+        styles["open-freeform"],
+        styles["closed-freeform"],
+        styles["circle"],
+        styles["rectangle"],
+        # styles["line"],    # todo enable line drawing when #57 is merged
+        styles["eraser"],
+        styles["delete-all"],
+        styles["pan-and-zoom"],
         annotation_store,
         triggered,
+        notification,
     )
 
 

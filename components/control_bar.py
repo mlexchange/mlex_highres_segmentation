@@ -2,6 +2,7 @@ import dash_mantine_components as dmc
 from dash import html, dcc
 from dash_iconify import DashIconify
 from utils import data_utils
+from constants import ANNOT_ICONS
 import random
 from dash_extensions import EventListener
 
@@ -141,7 +142,9 @@ def layout():
                                             id="open-freeform",
                                             variant="outline",
                                             color="gray",
-                                            children=DashIconify(icon="mdi:draw"),
+                                            children=DashIconify(
+                                                icon=ANNOT_ICONS["open-freeform"]
+                                            ),
                                             style={"border": "3px solid black"},
                                         ),
                                         label="Open Freeform: draw any open shape",
@@ -153,7 +156,7 @@ def layout():
                                             variant="outline",
                                             color="gray",
                                             children=DashIconify(
-                                                icon="fluent:draw-shape-20-regular"
+                                                icon=ANNOT_ICONS["closed-freeform"]
                                             ),
                                         ),
                                         label="Closed Freeform: draw a shape that will auto-complete",
@@ -165,7 +168,7 @@ def layout():
                                             variant="outline",
                                             color="gray",
                                             children=DashIconify(
-                                                icon="gg:shape-circle"
+                                                icon=ANNOT_ICONS["circle"]
                                             ),
                                         ),
                                         label="Circle: create a filled circle",
@@ -177,7 +180,7 @@ def layout():
                                             variant="outline",
                                             color="gray",
                                             children=DashIconify(
-                                                icon="gg:shape-square"
+                                                icon=ANNOT_ICONS["rectangle"]
                                             ),
                                         ),
                                         label="Rectangle: create a filled rectangle",
@@ -188,7 +191,9 @@ def layout():
                                             id="eraser",
                                             variant="outline",
                                             color="gray",
-                                            children=DashIconify(icon="ph:eraser"),
+                                            children=DashIconify(
+                                                icon=ANNOT_ICONS["eraser"]
+                                            ),
                                         ),
                                         label="Eraser: click on shapes to delete them",
                                         multiline=True,
@@ -199,7 +204,7 @@ def layout():
                                             variant="outline",
                                             color="gray",
                                             children=DashIconify(
-                                                icon="octicon:trash-24"
+                                                icon=ANNOT_ICONS["delete-all"]
                                             ),
                                         ),
                                         label="Clear All Annotations",
@@ -207,10 +212,12 @@ def layout():
                                     ),
                                     dmc.Tooltip(
                                         dmc.ActionIcon(
-                                            id="drawing-off",
+                                            id="pan-and-zoom",
                                             variant="outline",
                                             color="gray",
-                                            children=DashIconify(icon="el:off"),
+                                            children=DashIconify(
+                                                icon=ANNOT_ICONS["pan-and-zoom"]
+                                            ),
                                         ),
                                         label="Stop Drawing: pan, zoom, select annotations and edit them using the nodes",
                                         multiline=True,
