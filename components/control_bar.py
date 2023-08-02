@@ -390,7 +390,7 @@ def layout():
                     "visible": True,
                     "annotations": {},
                     "view": {},
-                    "image_size": [],
+                    "active_img_shape": [],
                     # TODO: Hard-coding default annotation class
                     "label_mapping": [
                         {

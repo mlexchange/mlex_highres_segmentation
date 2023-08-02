@@ -3,5 +3,6 @@ function changeFilters(js_path, brightness, contrast) {
     if (element) {
         // Apply the new brightness value to the element
         element.style.filter = `brightness(${brightness}%) contrast(${contrast}%)`;
+        element.style.webkitFilter = `brightness(${brightness}%) contrast(${contrast}%)`;
     }
 }

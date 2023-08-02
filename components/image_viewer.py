@@ -93,6 +93,12 @@ def layout():
                         figure=blank_fig(),
                         style={"margin": "auto", "height": "calc(-150px + 100vh)"},
                     ),
+                    dcc.Graph(
+                        id="image-viewfinder",
+                        figure=blank_fig(),
+                        config={"displayModeBar": False},
+                        style={"width": "10vh", "height": "10vh"},
+                    ),
                 ],
                 style={"display": "flex"},
             ),

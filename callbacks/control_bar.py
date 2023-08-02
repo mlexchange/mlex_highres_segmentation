@@ -380,7 +380,7 @@ clientside_callback(
     """
     function dash_filters_clientside(brightness, contrast) {
     console.log(brightness, contrast)
-        js_path = "#image-viewer > div.js-plotly-plot > div > div > svg:nth-child(1) > g.cartesianlayer > g > g.plot > g"
+        js_path = "#image-viewer > div.js-plotly-plot > div > div > svg:nth-child(1)"
         changeFilters(js_path, brightness, contrast)
         return ""
     }

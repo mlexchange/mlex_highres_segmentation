@@ -6,3 +6,17 @@
 .mantine-Grid-col>.mantine-1avyp1d {
     margin: auto;
 }
+
+/* make figure viewfinder transparent */
+#image-viewfinder {
+    filter: opacity(0.5);
+    -webkit-filter: opacity(0.5);
+}
+
+/* remove mouse pointer from the figure viewfinder */
+#image-viewfinder * {
+    pointer-events: none !important;
+    position: absolute;
+    top: 0;
+    right: 0;
+}
