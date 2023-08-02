@@ -36,6 +36,8 @@ def layout():
         style=COMPONENT_STYLE,
         children=[
             dmc.Grid(
+                id="image-slice-selection-parent",
+                style={"padding-left": "450px"},
                 children=[
                     dmc.Col(
                         dmc.Tooltip(
@@ -52,6 +54,7 @@ def layout():
                     dmc.Col(
                         [
                             dmc.Text(
+                                "Selected image: 1",
                                 align="center",
                                 id="image-selection-text",
                             ),

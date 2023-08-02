@@ -427,7 +427,7 @@ def drawer_section(children):
                 position={"left": "25px", "top": "25px"},
             ),
             dmc.Drawer(
-                title="Lawrence Berkeley National Laboratory",
+                title=dmc.Text("Lawrence Berkeley National Laboratory", weight=700),
                 id="drawer-controls",
                 padding="md",
                 transition="slide-right",
