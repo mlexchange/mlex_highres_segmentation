@@ -397,3 +397,12 @@ def export_annotation(n_clicks, annotation_store):
         icon=DashIconify(icon="entypo:export"),
     )
     return notification, metadata_file, mask_file
+
+
+@callback(
+    Output("drawer-controls", "opened"),
+    Input("drawer-controls-open-button", "n_clicks"),
+    prevent_initial_call=True,
+)
+def open_controls_drawer(n_clicks):
+    return True
