@@ -106,16 +106,17 @@ def annotation_width(width_value):
 
 @callback(
     Output("current-annotation-classes", "children"),
+    Output("current-annotation-classes-edit", "data"),
     Input("annotation-class-selection", "children"),
-    prevent_initial_call=True,
 )
 def make_class_delete_modal(current_classes):
-    """Creates buttons for the delete selected classes modal"""
+    """Creates buttons for the delete selected classes and edit selected class modal"""
+    current_classes_edit = [button["props"]["children"] for button in current_classes]
     for button in current_classes:
         color = button["props"]["style"]["background-color"]
         button["props"]["id"] = {"type": "annotation-delete-buttons", "index": color}
         button["props"]["style"]["border"] = "1px solid"
-    return current_classes
+    return current_classes, current_classes_edit
 
 
 @callback(
@@ -193,6 +194,17 @@ def open_delete_class_modal(delete, remove, opened):
 
 
 @callback(
+    Output("edit-annotation-class-modal", "opened"),
+    Input("edit-annotation-class", "n_clicks"),
+    Input("relabel-annotation-class", "n_clicks"),
+    State("edit-annotation-class-modal", "opened"),
+    prevent_initial_call=True,
+)
+def open_edit_class_modal(edit, relabel, opened):
+    return not opened
+
+
+@callback(
     Output("create-annotation-class", "disabled"),
     Output("bad-label-color", "children"),
     Input("annotation-class-label", "value"),
@@ -254,23 +266,27 @@ def disable_class_deletion(highlighted):
     Output("image-viewer", "figure", allow_duplicate=True),
     Input("create-annotation-class", "n_clicks"),
     Input("remove-annotation-class", "n_clicks"),
+    Input("relabel-annotation-class", "n_clicks"),
     State("annotation-class-label", "value"),
     State("annotation-class-colorpicker", "value"),
     State("annotation-class-selection", "children"),
     State({"type": "annotation-delete-buttons", "index": ALL}, "style"),
-    State({"type": "annotation-delete-buttons", "index": ALL}, "children"),
+    State("current-annotation-classes-edit", "value"),
+    State("annotation-class-label-edit", "value"),
     State("annotation-store", "data"),
     State("image-selection-slider", "value"),
     prevent_initial_call=True,
 )
-def add_delete_classes(
+def add_delete_edit_classes(
     create,
     remove,
+    edit,
     class_label,
     class_color,
     current_classes,
     classes_to_delete,
-    class_names,
+    old_label,
+    new_label,
     annotation_store,
     image_idx,
 ):
@@ -284,6 +300,7 @@ def add_delete_classes(
     image_idx = str(image_idx - 1)
     patched_figure = Patch()
     current_stored_classes = annotation_store["label_mapping"]
+    current_annotations = annotation_store["annotations"]
     if class_color is None:
         class_color = "rgb(255,255,255)"
     else:
@@ -331,11 +348,16 @@ def add_delete_classes(
                 )
             )
         return current_classes, "", annotation_store, no_update
+    elif triggered == "relabel-annotation-class":
+        for i in range(len(current_stored_classes)):
+            if current_stored_classes[i]["label"] == old_label:
+                annotation_store["label_mapping"][i]["label"] = new_label
+                current_classes[i]["props"]["children"] = new_label
+        return current_classes, "", annotation_store, no_update
     else:
         color_to_delete = []
         color_to_keep = []
         annotations_to_keep = {}
-        current_annotations = annotation_store["annotations"]
         for i in range(len(classes_to_delete)):
             if classes_to_delete[i]["border"] == "3px solid black":
                 color_to_delete.append(

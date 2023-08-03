@@ -287,21 +287,23 @@ def layout():
                                             id="generate-annotation-class",
                                             children="Generate Class",
                                             variant="outline",
-                                            leftIcon=DashIconify(
-                                                icon="ic:baseline-plus"
-                                            ),
+                                            style={"padding": "0px 12px"},
+                                        ),
+                                        dmc.Button(
+                                            id="edit-annotation-class",
+                                            children="Edit Class",
+                                            variant="outline",
+                                            style={"padding": "0px 12px"},
                                         ),
                                         dmc.Button(
                                             id="delete-annotation-class",
                                             children="Delete Class",
                                             variant="outline",
-                                            style={"margin-left": "auto"},
-                                            leftIcon=DashIconify(
-                                                icon="octicon:trash-24"
-                                            ),
+                                            style={"padding": "0px 12px"},
                                         ),
                                     ],
                                     className="flex-row",
+                                    style={"justify-content": "space-evenly"},
                                 ),
                                 dmc.Modal(
                                     id="generate-annotation-class-modal",
@@ -332,6 +334,32 @@ def layout():
                                     ],
                                 ),
                                 dmc.Modal(
+                                    id="edit-annotation-class-modal",
+                                    title="Edit a Custom Annotation Class",
+                                    children=[
+                                        dmc.Text("Select a generated class to edit:"),
+                                        dmc.Select(
+                                            id="current-annotation-classes-edit"
+                                        ),
+                                        dmc.Space(h=10),
+                                        dmc.Center(
+                                            dmc.TextInput(
+                                                id="annotation-class-label-edit",
+                                                placeholder="New Annotation Class Label",
+                                            ),
+                                        ),
+                                        dmc.Space(h=10),
+                                        dmc.Center(
+                                            dmc.Button(
+                                                id="relabel-annotation-class",
+                                                children="Edit Annotation Class",
+                                                variant="light",
+                                            ),
+                                        ),
+                                        html.Div(id="bad-label"),
+                                    ],
+                                ),
+                                dmc.Modal(
                                     id="delete-annotation-class-modal",
                                     title="Delete Custom Annotation Class(es)",
                                     children=[
@@ -347,6 +375,12 @@ def layout():
                                             },
                                         ),
                                         dmc.Space(h=10),
+                                        dmc.Center(
+                                            dmc.Text(
+                                                "NOTE: Deleting a class will delete all annotations associated with that class!",
+                                                color="red",
+                                            )
+                                        ),
                                         dmc.Center(
                                             [
                                                 dmc.Button(
