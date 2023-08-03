@@ -526,3 +526,24 @@ def export_annotation(n_clicks, annotation_store):
         icon=DashIconify(icon="entypo:export"),
     )
     return notification, metadata_file, mask_file
+
+
+@callback(
+    Output("drawer-controls", "opened"),
+    Output("image-slice-selection-parent", "style"),
+    Input("drawer-controls-open-button", "n_clicks"),
+    # prevent_initial_call=True,
+)
+def open_controls_drawer(n_clicks):
+    return True, {"padding-left": "450px"}
+
+
+@callback(
+    Output("image-slice-selection-parent", "style", allow_duplicate=True),
+    Input("drawer-controls", "opened"),
+    prevent_initial_call=True,
+)
+def open_controls_drawer(is_opened):
+    if is_opened:
+        raise PreventUpdate
+    return {"padding-left": "50px"}
