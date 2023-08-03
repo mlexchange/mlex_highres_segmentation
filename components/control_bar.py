@@ -122,9 +122,7 @@ def layout():
                                 ),
                                 dmc.Space(h=20),
                                 dmc.Text("Annotation mode", size="sm"),
-                                dmc.Group(
-                                    spacing="xs",
-                                    grow=True,
+                                html.Div(
                                     children=[
                                         dmc.Tooltip(
                                             dmc.ActionIcon(
@@ -216,6 +214,8 @@ def layout():
                                             multiline=True,
                                         ),
                                     ],
+                                    className="flex-row",
+                                    style={"justify-content": "space-evenly"},
                                 ),
                                 dmc.Modal(
                                     title="Warning",
