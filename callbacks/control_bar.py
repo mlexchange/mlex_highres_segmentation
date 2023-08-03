@@ -42,6 +42,7 @@ import random
     Input("keybind-event-listener", "event"),
     State("annotation-store", "data"),
     State("image-viewer-loading", "zIndex"),
+    State("generate-annotation-class-modal", "opened"),
     prevent_initial_call=True,
 )
 def annotation_mode(
@@ -56,11 +57,15 @@ def annotation_mode(
     keybind_event_listener,
     annotation_store,
     figure_overlay_z_index,
+    generate_modal_opened,
 ):
     """
     This callback is responsible for changing the annotation mode and the style of the buttons.
     It also accepts keybinds to change the annotation mode.
     """
+    if generate_modal_opened:
+        # user is going to type on this page and we don't want to trigger this callback using keys
+        raise PreventUpdate
     if not annotation_store["visible"]:
         raise PreventUpdate
     # if the image is loading stop the callback when keybinds are pressed
@@ -218,19 +223,54 @@ def highlight_selected_classes(selected_classes, current_styles):
     Output("image-viewer", "figure", allow_duplicate=True),
     Output({"type": "annotation-color", "index": ALL}, "style"),
     Input({"type": "annotation-color", "index": ALL}, "n_clicks"),
+    Input("keybind-event-listener", "event"),
     State({"type": "annotation-color", "index": ALL}, "style"),
+    State("generate-annotation-class-modal", "opened"),
     prevent_initial_call=True,
 )
-def annotation_color(color_value, current_style):
+def annotation_color(
+    color_value, keybind_event_listener, current_style, generate_modal_opened
+):
     """
     This callback is responsible for changing the color of the brush.
     """
-    color = ctx.triggered_id["index"]
-    for i in range(len(current_style)):
-        if current_style[i]["background-color"] == color:
-            current_style[i]["border"] = "3px solid black"
-        else:
-            current_style[i]["border"] = "1px solid"
+    if ctx.triggered_id == "keybind-event-listener":
+        if generate_modal_opened:
+            # user is going to type on this page and we don't want to trigger this callback using keys
+            raise PreventUpdate
+        pressed_key = (
+            keybind_event_listener.get("key", None) if keybind_event_listener else None
+        )
+        pressed_key = (
+            f"shift+{pressed_key}"
+            if keybind_event_listener.get("shiftKey", None)
+            else pressed_key
+        )
+        if not pressed_key:
+            raise PreventUpdate
+        if pressed_key not in KEYBINDS["classes"]:
+            # if key pressed is not a valid keybind for class selection
+            raise PreventUpdate
+        selected_color_idx = KEYBINDS["classes"].index(pressed_key)
+
+        if selected_color_idx >= len(current_style):
+            # if the key pressed corresponds to a class that doesn't exist
+            raise PreventUpdate
+
+        color = current_style[selected_color_idx]["background-color"]
+
+        for i in range(len(current_style)):
+            if current_style[i]["background-color"] == color:
+                current_style[i]["border"] = "3px solid black"
+            else:
+                current_style[i]["border"] = "1px solid"
+    else:
+        color = ctx.triggered_id["index"]
+        for i in range(len(current_style)):
+            if current_style[i]["background-color"] == color:
+                current_style[i]["border"] = "3px solid black"
+            else:
+                current_style[i]["border"] = "1px solid"
     patched_figure = Patch()
     patched_figure["layout"]["newshape"]["fillcolor"] = color
     patched_figure["layout"]["newshape"]["line"]["color"] = color

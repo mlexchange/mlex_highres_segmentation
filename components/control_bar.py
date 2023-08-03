@@ -482,7 +482,7 @@ def create_info_card_affix():
                                     KEYBINDS["rectangle"].upper(),
                                     "Rectangle Annotation Mode",
                                 ),
-                                # create_keybind_row(
+                                # create_keybind_row(     # todo enable line drawing when #57 is merged
                                 #     KEYBINDS["line"],
                                 #     "Line Annotation Mode",
                                 # ),
