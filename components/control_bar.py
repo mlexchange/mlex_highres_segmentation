@@ -2,7 +2,7 @@ import dash_mantine_components as dmc
 from dash import html, dcc
 from dash_iconify import DashIconify
 from utils import data_utils
-from constants import ANNOT_ICONS
+from constants import ANNOT_ICONS, KEYBINDS
 import random
 from dash_extensions import EventListener
 
@@ -408,6 +408,7 @@ def layout():
                     ],
                 },
             ),
+            create_info_card_affix(),
             dmc.NotificationsProvider(html.Div(id="notifications-container")),
             dcc.Download(id="export-annotation-metadata"),
             dcc.Download(id="export-annotation-mask"),
@@ -423,4 +424,104 @@ def layout():
                 id="keybind-event-listener",
             ),
         ],
+    )
+
+
+def create_keybind_row(keys, text):
+    keybinds = []
+    for key in keys:
+        keybinds.append(dmc.Kbd(key))
+        keybinds.append(" + ")
+    keybinds.pop()
+    return dmc.Group(
+        position="apart",
+        children=[html.Div(keybinds), dmc.Text(text, size="sm")],
+    )
+
+
+def create_info_card_affix():
+    return dmc.Affix(
+        position={"bottom": 20, "left": 20},
+        children=dmc.HoverCard(
+            shadow="md",
+            position="top-start",
+            zIndex=9999999,
+            children=[
+                dmc.HoverCardTarget(
+                    dmc.ActionIcon(
+                        DashIconify(icon="entypo:info"),
+                        size="lg",
+                        radius="lg",
+                        variant="filled",
+                        mb=10,
+                    ),
+                ),
+                dmc.HoverCardDropdown(
+                    [
+                        dmc.Text(
+                            "Keybding shortcuts",
+                            size="lg",
+                            weight=700,
+                        ),
+                        dmc.Stack(
+                            [
+                                dmc.Divider(variant="solid", color="gray"),
+                                create_keybind_row(
+                                    KEYBINDS["open-freeform"].upper(),
+                                    "Open Freeform",
+                                ),
+                                create_keybind_row(
+                                    KEYBINDS["closed-freeform"].upper(),
+                                    "Closed Freeform",
+                                ),
+                                create_keybind_row(
+                                    KEYBINDS["circle"].upper(),
+                                    "Circle Annotation Mode",
+                                ),
+                                create_keybind_row(
+                                    KEYBINDS["rectangle"].upper(),
+                                    "Rectangle Annotation Mode",
+                                ),
+                                # create_keybind_row(
+                                #     KEYBINDS["line"],
+                                #     "Line Annotation Mode",
+                                # ),
+                                dmc.Divider(variant="solid", color="gray"),
+                                create_keybind_row(
+                                    KEYBINDS["pan-and-zoom"].upper(),
+                                    "Pan and Zoom Mode",
+                                ),
+                                create_keybind_row(
+                                    KEYBINDS["erase"].upper(),
+                                    "Erase Annotation Mode",
+                                ),
+                                create_keybind_row(
+                                    KEYBINDS["delete-all"].upper(),
+                                    "Delete all annotations",
+                                ),
+                                dmc.Divider(variant="solid", color="gray"),
+                                create_keybind_row(
+                                    ["1-9"],
+                                    "Select annotation class 1-9",
+                                ),
+                                create_keybind_row(
+                                    ["shift", "1-9"],
+                                    "Select annotation class 10-19",
+                                ),
+                                dmc.Divider(variant="solid", color="gray"),
+                                create_keybind_row(
+                                    ["alt", "1-9"],
+                                    "Hide annotation class 1-9",
+                                ),
+                                create_keybind_row(
+                                    ["alt", "shift", "1-9"],
+                                    "Hide annotation class 10-19",
+                                ),
+                            ],
+                            p=0,
+                        ),
+                    ]
+                ),
+            ],
+        ),
     )
