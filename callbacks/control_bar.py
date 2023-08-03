@@ -145,6 +145,8 @@ def annotation_color(color_value, current_style):
     This callback is responsible for changing the color of the brush.
     """
     color = ctx.triggered_id["index"]
+    if all(v is None for v in color_value):
+        color = current_style[-1]["background-color"]
     for i in range(len(current_style)):
         if current_style[i]["background-color"] == color:
             current_style[i]["border"] = "3px solid black"
@@ -272,9 +274,15 @@ def add_delete_classes(
     annotation_store,
     image_idx,
 ):
-    """Updates the list of available annotation classes"""
+    """
+    Updates the list of available annotation classes,
+    triggers other things that should happen when classes
+    are added or deleted like removing annotations or updating
+    the drawing mode.
+    """
     triggered = ctx.triggered_id
     image_idx = str(image_idx - 1)
+    patched_figure = Patch()
     current_stored_classes = annotation_store["label_mapping"]
     if class_color is None:
         class_color = "rgb(255,255,255)"
@@ -340,7 +348,6 @@ def add_delete_classes(
                 color_to_keep.append(color)
         annotation_store["label_mapping"] = current_stored_classes
         annotation_store["annotations"] = annotations_to_keep
-        patched_figure = Patch()
         if image_idx in annotation_store["annotations"]:
             patched_figure["layout"]["shapes"] = annotation_store["annotations"][
                 image_idx
