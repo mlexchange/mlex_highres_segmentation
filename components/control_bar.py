@@ -151,6 +151,16 @@ def layout():
                                         ),
                                         dmc.Tooltip(
                                             dmc.ActionIcon(
+                                                id="line",
+                                                variant="outline",
+                                                color="gray",
+                                                children=DashIconify(icon="ci:line-l"),
+                                            ),
+                                            label="Line: draw a straight line",
+                                            multiline=True,
+                                        ),
+                                        dmc.Tooltip(
+                                            dmc.ActionIcon(
                                                 id="circle",
                                                 variant="outline",
                                                 color="gray",
@@ -180,7 +190,7 @@ def layout():
                                                 color="gray",
                                                 children=DashIconify(icon="ph:eraser"),
                                             ),
-                                            label="Eraser: click on shapes to delete them",
+                                            label="Eraser: click on the shape to erase then click this button to delete the selected shape",
                                             multiline=True,
                                         ),
                                         dmc.Tooltip(
@@ -312,6 +322,7 @@ def layout():
                                                 variant="light",
                                             ),
                                         ),
+                                        html.Div(id="bad-label-color"),
                                     ],
                                 ),
                                 dmc.Modal(
@@ -336,10 +347,12 @@ def layout():
                                                 ),
                                             ]
                                         ),
-                                        dmc.Text(
-                                            "There must be at least one annotation class!",
-                                            color="red",
-                                            id="at-least-one",
+                                        dmc.Center(
+                                            dmc.Text(
+                                                "There must be at least one annotation class!",
+                                                color="red",
+                                                id="at-least-one",
+                                            ),
                                         ),
                                     ],
                                 ),
@@ -385,7 +398,7 @@ def layout():
                             {
                                 "color": "rgb(249,82,82)",
                                 "label": "1",
-                                "id": random.randint(1, 100),
+                                "id": "1",
                             }
                         ],
                     },
