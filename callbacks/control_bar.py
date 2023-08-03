@@ -307,6 +307,9 @@ def add_delete_classes(
                         "background-color": class_color,
                         "border": "1px solid",
                         "color": "black",
+                        "width": "fit-content",
+                        "padding": "5px",
+                        "margin-right": "10px",
                     },
                     children=class_label,
                 )
@@ -317,7 +320,13 @@ def add_delete_classes(
                     id={"type": "annotation-color", "index": class_color},
                     w=30,
                     variant="filled",
-                    style={"background-color": class_color, "border": "1px solid"},
+                    style={
+                        "background-color": class_color,
+                        "border": "1px solid",
+                        "width": "fit-content",
+                        "padding": "5px",
+                        "margin-right": "10px",
+                    },
                     children=class_label,
                 )
             )

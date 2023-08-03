@@ -254,9 +254,7 @@ def layout():
                                 ),
                                 dmc.Space(h=20),
                                 dmc.Text("Annotation class", size="sm"),
-                                dmc.Group(
-                                    spacing="xs",
-                                    grow=True,
+                                html.Div(
                                     id="annotation-class-selection",
                                     children=[
                                         dmc.ActionIcon(
@@ -269,10 +267,18 @@ def layout():
                                             style={
                                                 "background-color": "rgb(249,82,82)",
                                                 "border": "3px solid black",
+                                                "width": "fit-content",
+                                                "padding": "5px",
+                                                "margin-right": "10px",
                                             },
                                             children="1",
                                         ),
                                     ],
+                                    style={
+                                        "display": "flex",
+                                        "flex-wrap": "wrap",
+                                        "justify-content": "space-evenly",
+                                    },
                                 ),
                                 dmc.Space(h=5),
                                 html.Div(
@@ -332,10 +338,13 @@ def layout():
                                         dmc.Text(
                                             "Select all generated classes to remove:"
                                         ),
-                                        dmc.Group(
-                                            spacing="xs",
-                                            grow=True,
+                                        html.Div(
                                             id="current-annotation-classes",
+                                            style={
+                                                "display": "flex",
+                                                "flex-wrap": "wrap",
+                                                "justify-content": "space-evenly",
+                                            },
                                         ),
                                         dmc.Space(h=10),
                                         dmc.Center(
