@@ -98,7 +98,7 @@ def layout():
                             "height": "90vh",
                             "width": "90vw",
                             "position": "fixed",
-                            "top": "10vh",
+                            "top": "12vh",
                             "left": "0",
                         },
                     ),
