@@ -47,6 +47,16 @@ def render_image(
     )
     fig.update_traces(hovertemplate=None, hoverinfo="skip")
 
+    # calculate optimal canvas ratios
+    y_size = tf.shape[0]
+    x_size = tf.shape[1]
+    x_min = 0 - 0.6 * y_size
+    x_max = x_size + 0.1 * y_size
+    y_min = -0.1 * x_size
+    y_max = y_size + 0.1 * x_size
+    fig.update_xaxes(range=[x_min, x_max])
+    fig.update_yaxes(range=[y_min, y_max])
+
     # set the default annotation style
     for color_opt in annotation_colors:
         if color_opt["props"]["style"]["border"] != "1px solid":

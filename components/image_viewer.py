@@ -4,7 +4,7 @@ from dash_iconify import DashIconify
 from utils.plot_utils import blank_fig
 
 COMPONENT_STYLE = {
-    "width": "calc(-440px + 100vw)",
+    "width": "calc(100vw)",
     "height": "calc(100vh - 40px)",
     "padding": "10px",
     "borderRadius": "5px",
@@ -37,7 +37,6 @@ def layout():
         children=[
             dmc.Grid(
                 id="image-slice-selection-parent",
-                style={"padding-left": "450px"},
                 children=[
                     dmc.Col(
                         dmc.Tooltip(
@@ -50,6 +49,7 @@ def layout():
                             ),
                         ),
                         span=1,
+                        offset=0.5,
                     ),
                     dmc.Col(
                         [
@@ -94,16 +94,31 @@ def layout():
                         id="image-viewer",
                         config=FIGURE_CONFIG,
                         figure=blank_fig(),
-                        style={"margin": "auto", "height": "calc(-150px + 100vh)"},
+                        style={
+                            "height": "90vh",
+                            "width": "90vw",
+                            "position": "fixed",
+                            "top": "10vh",
+                            "left": "0",
+                        },
                     ),
                     dcc.Graph(
                         id="image-viewfinder",
                         figure=blank_fig(),
                         config={"displayModeBar": False},
-                        style={"width": "10vh", "height": "10vh"},
+                        style={
+                            "width": "10vh",
+                            "height": "10vh",
+                            "position": "absolute",
+                            "top": "30px",
+                            "right": "10px",
+                        },
                     ),
                 ],
-                style={"display": "flex"},
+                style={
+                    "height": "100%",
+                    "width": "90vw",
+                },
             ),
         ],
     )
