@@ -20,3 +20,12 @@
     top: 0;
     right: 0;
 }
+.modebar-container{
+    top: 90% !important;
+}
+
+#image-slice-selection-parent {
+    z-index: 2 !important;
+    background-color: white;
+    position: relative;
+}

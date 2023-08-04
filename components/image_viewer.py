@@ -5,7 +5,7 @@ from utils.plot_utils import blank_fig
 
 COMPONENT_STYLE = {
     "width": "calc(100vw)",
-    "height": "calc(100vh - 40px)",
+    "height": "calc(100vh)",
     "padding": "10px",
     "borderRadius": "5px",
     "border": "1px solid rgb(222, 226, 230)",
@@ -37,6 +37,11 @@ def layout():
         children=[
             dmc.Grid(
                 id="image-slice-selection-parent",
+                style={
+                    "z-index": "2",
+                    "background-color": "white",
+                    "position": "relative",
+                },
                 children=[
                     dmc.Col(
                         dmc.Tooltip(
@@ -98,8 +103,8 @@ def layout():
                             "height": "90vh",
                             "width": "90vw",
                             "position": "fixed",
-                            "top": "12vh",
-                            "left": "0",
+                            "top": "10vh",
+                            "left": "10hw",
                         },
                     ),
                     dcc.Graph(

@@ -403,18 +403,22 @@ def export_annotation(n_clicks, annotation_store):
     Output("drawer-controls", "opened"),
     Output("image-slice-selection-parent", "style"),
     Input("drawer-controls-open-button", "n_clicks"),
+    State("image-slice-selection-parent", "style")
     # prevent_initial_call=True,
 )
-def open_controls_drawer(n_clicks):
-    return True, {"padding-left": "450px"}
+def open_controls_drawer(n_clicks, style):
+    style["padding-left"] = "450px"
+    return True, style
 
 
 @callback(
     Output("image-slice-selection-parent", "style", allow_duplicate=True),
     Input("drawer-controls", "opened"),
+    State("image-slice-selection-parent", "style"),
     prevent_initial_call=True,
 )
-def open_controls_drawer(is_opened):
+def open_controls_drawer(is_opened, style):
     if is_opened:
         raise PreventUpdate
-    return {"padding-left": "50px"}
+    style["padding-left"] = "50px"
+    return style

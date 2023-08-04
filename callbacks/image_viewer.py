@@ -50,7 +50,7 @@ def render_image(
     # calculate optimal canvas ratios
     y_size = tf.shape[0]
     x_size = tf.shape[1]
-    x_min = 0 - 0.6 * y_size
+    x_min = 0 - 0.8 * y_size
     x_max = x_size + 0.1 * y_size
     y_min = -0.1 * x_size
     y_max = y_size + 0.1 * x_size
