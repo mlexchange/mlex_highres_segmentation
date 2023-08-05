@@ -4,7 +4,12 @@ import dash_mantine_components as dmc
 import plotly.express as px
 import numpy as np
 from utils.data_utils import data
-from utils.plot_utils import create_viewfinder, downscale_view
+from utils.plot_utils import (
+    create_viewfinder,
+    downscale_view,
+    get_view_finder_max_min,
+    get_viewfinder_style,
+)
 
 
 @callback(
@@ -87,34 +92,17 @@ def render_image(
             )
     patched_annotation_store = Patch()
     patched_annotation_store["active_img_shape"] = list(tf.shape)
+
     fig_loading_overlay = -1
     image_ratio = round(tf.shape[1] / tf.shape[0], 2)
 
-    if image_ratio < 1:
-        style = (
-            {
-                "width": f"calc(10vh/{image_ratio})",
-                "height": f"10vh",
-                "position": "absolute",
-                "top": "30px",
-                "right": "0px",
-            },
-        )
-        DOWNSCALED_img_max_height, DOWNSCALED_img_max_width = 250, 250 * image_ratio
-    else:
-        style = (
-            {
-                "width": "10vh",
-                "height": f"calc(10vh/{image_ratio})",
-                "position": "absolute",
-                "top": "30px",
-                "right": "0px",
-            },
-        )
-        DOWNSCALED_img_max_height, DOWNSCALED_img_max_width = 250 / image_ratio, 250
+    style = get_viewfinder_style(image_ratio)
+    DOWNSCALED_img_max_height, DOWNSCALED_img_max_width = get_view_finder_max_min(
+        image_ratio
+    )
 
     fig_viewfinder = create_viewfinder(
-        tf, annotation_store, (DOWNSCALED_img_max_height, DOWNSCALED_img_max_width)
+        tf, (DOWNSCALED_img_max_height, DOWNSCALED_img_max_width)
     )
     # No update is needed for the 'children' of the control components
     # since we just want to trigger the loading overlay with this callback
@@ -146,7 +134,8 @@ def update_viewfinder(relayout_data, annotation_store, image_ratio):
     The viewfinder box is containen within the figure layout, so that if the user zooms out/pans away, they will still be able to see the viewfinder box.
     """
     # Callback is triggered when the image is first loaded, but the annotation_store is not yet populated so we need to prevent the update
-    if not annotation_store["active_img_shape"]:
+
+    if not image_ratio:
         raise dash.exceptions.PreventUpdate
 
     patched_fig = Patch()
@@ -161,6 +150,7 @@ def update_viewfinder(relayout_data, annotation_store, image_ratio):
         patched_fig["layout"]["shapes"][0]["y0"] = DOWNSCALED_img_max_height
         patched_fig["layout"]["shapes"][0]["x1"] = DOWNSCALED_img_max_width
         patched_fig["layout"]["shapes"][0]["y1"] = 0
+
     elif "xaxis.range[0]" not in relayout_data:
         raise dash.exceptions.PreventUpdate
     else:

@@ -46,7 +46,7 @@ def downscale_view(
     return x0, y0, x1, y1
 
 
-def create_viewfinder(image_data, annotation_store, downscaled_image_shape):
+def create_viewfinder(image_data, downscaled_image_shape):
     """
     Creates a viewfinder for the image viewer. The viewfinder is a small box that shows the current view of the image
     in the image viewer. It is used to quickly navigate to different parts of the image.
@@ -64,6 +64,7 @@ def create_viewfinder(image_data, annotation_store, downscaled_image_shape):
         origin="lower",
     )
 
+    """
     view = annotation_store["view"]
     if "xaxis_range_0" in view:
         x0, y0, x1, y1 = downscale_view(
@@ -79,6 +80,12 @@ def create_viewfinder(image_data, annotation_store, downscaled_image_shape):
         y0 = img_max_height
         x1 = img_max_width
         y1 = 0
+    """
+
+    x0 = 0
+    y0 = img_max_height
+    x1 = img_max_width
+    y1 = 0
 
     # Create the viewfinder box
     fig.add_shape(
@@ -114,3 +121,33 @@ def create_viewfinder(image_data, annotation_store, downscaled_image_shape):
         hovermode=False,
     )
     return fig
+
+
+def get_viewfinder_style(image_ratio):
+    if image_ratio < 1:
+        return (
+            {
+                "width": f"calc(10vh/{image_ratio})",
+                "height": f"10vh",
+                "position": "absolute",
+                "top": "30px",
+                "right": "0px",
+            },
+        )
+    else:
+        return (
+            {
+                "width": "10vh",
+                "height": f"calc(10vh/{image_ratio})",
+                "position": "absolute",
+                "top": "30px",
+                "right": "0px",
+            },
+        )
+
+
+def get_view_finder_max_min(image_ratio):
+    if image_ratio < 1:
+        return 250, 250 * image_ratio
+    else:
+        return 250 / image_ratio, 250
