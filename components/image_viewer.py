@@ -95,6 +95,7 @@ def layout():
                     color=dmc.theme.DEFAULT_COLORS["blue"][6], variant="bars"
                 ),
                 children=[
+                    dcc.Store(id="image-ratio"),
                     dcc.Graph(
                         id="image-viewer",
                         config=FIGURE_CONFIG,

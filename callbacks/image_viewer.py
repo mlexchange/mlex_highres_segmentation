@@ -6,8 +6,6 @@ import numpy as np
 from utils.data_utils import data
 from utils.plot_utils import create_viewfinder, downscale_view
 
-DOWNSCALED_img_max_height, DOWNSCALED_img_max_width = 250, 250
-
 
 @callback(
     Output("image-viewer", "figure"),
@@ -17,6 +15,8 @@ DOWNSCALED_img_max_height, DOWNSCALED_img_max_width = 250, 250
     Output("data-selection-controls", "children", allow_duplicate=True),
     Output("image-transformation-controls", "children", allow_duplicate=True),
     Output("annotations-controls", "children", allow_duplicate=True),
+    Output("image-viewfinder", "style"),
+    Output("image-ratio", "data"),
     Input("image-selection-slider", "value"),
     State("project-name-src", "value"),
     State("paintbrush-width", "value"),
@@ -88,12 +88,36 @@ def render_image(
     patched_annotation_store = Patch()
     patched_annotation_store["active_img_shape"] = list(tf.shape)
     fig_loading_overlay = -1
+    image_ratio = round(tf.shape[1] / tf.shape[0], 1)
+    if image_ratio < 1:
+        style = (
+            {
+                "width": "10vh",
+                "height": f"calc(10vh/{image_ratio})",
+                "position": "absolute",
+                "top": "30px",
+                "right": "0px",
+            },
+        )
+        DOWNSCALED_img_max_height, DOWNSCALED_img_max_width = 250, 250 * image_ratio
+    else:
+        style = (
+            {
+                "width": f"calc(10vh*{image_ratio}",
+                "height": f"10vh",
+                "position": "absolute",
+                "top": "30px",
+                "right": "0px",
+            },
+        )
+        DOWNSCALED_img_max_height, DOWNSCALED_img_max_width = 250 / image_ratio, 250
 
     fig_viewfinder = create_viewfinder(
         tf, annotation_store, (DOWNSCALED_img_max_height, DOWNSCALED_img_max_width)
     )
     # No update is needed for the 'children' of the control components
     # since we just want to trigger the loading overlay with this callback
+
     return (
         fig,
         fig_viewfinder,
@@ -102,6 +126,8 @@ def render_image(
         dash.no_update,
         dash.no_update,
         dash.no_update,
+        *style,
+        image_ratio,
     )
 
 
@@ -109,9 +135,10 @@ def render_image(
     Output("image-viewfinder", "figure", allow_duplicate=True),
     Input("image-viewer", "relayoutData"),
     State("annotation-store", "data"),
+    State("image-ratio", "data"),
     prevent_initial_call=True,
 )
-def update_viefinder(relayout_data, annotation_store):
+def update_viewfinder(relayout_data, annotation_store, ratio):
     """
     When relayoutData is triggered, update the viewfinder box to match the new view position of the image (inlude zooming).
     The viewfinder box is downsampled to match the size of the viewfinder.
@@ -122,6 +149,8 @@ def update_viefinder(relayout_data, annotation_store):
         raise dash.exceptions.PreventUpdate
 
     patched_fig = Patch()
+
+    DOWNSCALED_img_max_height, DOWNSCALED_img_max_width = 250, 250 * ratio
 
     # If user resets the view by double clicking on the image, reset the viewfinder
     if "xaxis.autorange" in relayout_data and relayout_data["xaxis.autorange"]:
@@ -148,6 +177,7 @@ def update_viefinder(relayout_data, annotation_store):
             x1 if x1 < DOWNSCALED_img_max_width else DOWNSCALED_img_max_width
         )
         patched_fig["layout"]["shapes"][0]["y1"] = y1 if y1 > 0 else 0
+
     return patched_fig
 
 
