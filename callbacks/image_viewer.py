@@ -138,7 +138,7 @@ def render_image(
     State("image-ratio", "data"),
     prevent_initial_call=True,
 )
-def update_viewfinder(relayout_data, annotation_store, ratio):
+def update_viewfinder(relayout_data, annotation_store, image_ratio):
     """
     When relayoutData is triggered, update the viewfinder box to match the new view position of the image (inlude zooming).
     The viewfinder box is downsampled to match the size of the viewfinder.
@@ -150,7 +150,9 @@ def update_viewfinder(relayout_data, annotation_store, ratio):
 
     patched_fig = Patch()
 
-    DOWNSCALED_img_max_height, DOWNSCALED_img_max_width = 250, 250 * ratio
+    DOWNSCALED_img_max_height, DOWNSCALED_img_max_width = (
+        (250, 250 * image_ratio) if image_ratio < 1 else (250 / image_ratio, 250)
+    )
 
     # If user resets the view by double clicking on the image, reset the viewfinder
     if "xaxis.autorange" in relayout_data and relayout_data["xaxis.autorange"]:

@@ -1,6 +1,6 @@
 import plotly.graph_objects as go
 import plotly.express as px
-from skimage.transform import resize, rescale
+from skimage.transform import resize
 
 
 def blank_fig():
@@ -61,6 +61,7 @@ def create_viewfinder(image_data, annotation_store, downscaled_image_shape):
         binary_string=True,
         width=img_max_width,
         height=img_max_height,
+        origin="lower",
     )
 
     view = annotation_store["view"]
