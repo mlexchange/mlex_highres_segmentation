@@ -88,12 +88,13 @@ def render_image(
     patched_annotation_store = Patch()
     patched_annotation_store["active_img_shape"] = list(tf.shape)
     fig_loading_overlay = -1
-    image_ratio = round(tf.shape[1] / tf.shape[0], 1)
+    image_ratio = round(tf.shape[1] / tf.shape[0], 2)
+
     if image_ratio < 1:
         style = (
             {
-                "width": "10vh",
-                "height": f"calc(10vh/{image_ratio})",
+                "width": f"calc(10vh/{image_ratio})",
+                "height": f"10vh",
                 "position": "absolute",
                 "top": "30px",
                 "right": "0px",
@@ -103,8 +104,8 @@ def render_image(
     else:
         style = (
             {
-                "width": f"calc(10vh*{image_ratio}",
-                "height": f"10vh",
+                "width": "10vh",
+                "height": f"calc(10vh/{image_ratio})",
                 "position": "absolute",
                 "top": "30px",
                 "right": "0px",
