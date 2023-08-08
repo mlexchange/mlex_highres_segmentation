@@ -402,11 +402,85 @@ def layout():
                                 dmc.Space(h=20),
                                 dmc.Center(
                                     dmc.Button(
-                                        "Export annotation",
-                                        id="export-annotation",
+                                        "Save/Load/Export",
+                                        id="open-data-management-modal-button",
                                         variant="light",
                                         style={"width": "160px", "margin": "5px"},
                                     ),
+                                ),
+                                dmc.Modal(
+                                    title="Data Management",
+                                    id="data-management-modal",
+                                    centered=True,
+                                    zIndex=10000,
+                                    children=[
+                                        dmc.Divider(
+                                            variant="solid",
+                                            label="Save data",
+                                            labelPosition="center",
+                                        ),
+                                        dmc.Center(
+                                            dmc.Button(
+                                                "Save to server",
+                                                id="save-annotations",
+                                                variant="light",
+                                                style={
+                                                    "width": "160px",
+                                                    "margin": "5px",
+                                                },
+                                            ),
+                                        ),
+                                        dmc.Text(
+                                            id="data-modal-save-status",
+                                            align="center",
+                                            italic=True,
+                                        ),
+                                        dmc.Space(h=20),
+                                        dmc.Divider(
+                                            variant="solid",
+                                            label="Load data",
+                                            labelPosition="center",
+                                        ),
+                                        dmc.Space(h=10),
+                                        dmc.Center(
+                                            dmc.HoverCard(
+                                                withArrow=True,
+                                                shadow="md",
+                                                children=[
+                                                    dmc.HoverCardTarget(
+                                                        dmc.Button(
+                                                            "From server",
+                                                            variant="light",
+                                                            style={
+                                                                "width": "160px",
+                                                                "margin": "5px",
+                                                            },
+                                                        )
+                                                    ),
+                                                    dmc.HoverCardDropdown(
+                                                        id="load-annotations-server-container",
+                                                    ),
+                                                ],
+                                            ),
+                                        ),
+                                        dmc.Space(h=20),
+                                        dmc.Divider(
+                                            variant="solid",
+                                            labelPosition="center",
+                                        ),
+                                        dmc.Space(h=10),
+                                        dmc.Center(
+                                            dmc.Button(
+                                                "Export annotation",
+                                                id="export-annotation",
+                                                variant="light",
+                                                style={
+                                                    "width": "160px",
+                                                    "margin": "5px",
+                                                },
+                                            ),
+                                        ),
+                                    ],
                                 ),
                                 dmc.Space(h=20),
                             ],
@@ -504,4 +578,25 @@ def drawer_section(children):
                 opened=True,
             ),
         ]
+    )
+
+
+def class_action_icon(class_color, class_label, label_color):
+    """
+    This component creates an action icon for the given annotation class.
+    """
+    style = {
+        "background-color": class_color,
+        "width": "fit-content",
+        "border": "1px solid black",
+        "color": label_color,
+        "padding": "5px",
+        "margin-right": "10px",
+    }
+    return dmc.ActionIcon(
+        id={"type": "annotation-color", "index": class_color},
+        w=30,
+        variant="filled",
+        style=style,
+        children=class_label,
     )

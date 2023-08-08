@@ -15,7 +15,25 @@ import dash_mantine_components as dmc
 from dash_iconify import DashIconify
 import json
 from utils.annotations import Annotations
+from components.control_bar import class_action_icon
 import random
+from utils.data_utils import (
+    DEV_load_exported_json_data,
+    DEV_filter_json_data_by_timestamp,
+)
+
+import os
+import time
+
+# TODO - temporary local file path and user for annotation saving and exporting
+EXPORT_FILE_PATH = "data/exported_annotation_data.json"
+USER_NAME = "user1"
+
+# Create an empty file if it doesn't exist
+if not os.path.exists(EXPORT_FILE_PATH):
+    with open(EXPORT_FILE_PATH, "w") as f:
+        pass
+# TODO - temporary local file path and user for annotation saving and exporting
 
 
 @callback(
@@ -315,38 +333,9 @@ def add_delete_edit_classes(
             }
         )
         if class_color == "rgb(255,255,255)":
-            current_classes.append(
-                dmc.ActionIcon(
-                    id={"type": "annotation-color", "index": class_color},
-                    w=30,
-                    variant="filled",
-                    style={
-                        "background-color": class_color,
-                        "border": "1px solid",
-                        "color": "black",
-                        "width": "fit-content",
-                        "padding": "5px",
-                        "margin-right": "10px",
-                    },
-                    children=class_label,
-                )
-            )
+            current_classes.append(class_action_icon(class_color, class_label, "black"))
         else:
-            current_classes.append(
-                dmc.ActionIcon(
-                    id={"type": "annotation-color", "index": class_color},
-                    w=30,
-                    variant="filled",
-                    style={
-                        "background-color": class_color,
-                        "border": "1px solid",
-                        "width": "fit-content",
-                        "padding": "5px",
-                        "margin-right": "10px",
-                    },
-                    children=class_label,
-                )
-            )
+            current_classes.append(class_action_icon(class_color, class_label, "white"))
         return current_classes, "", annotation_store, no_update
     elif triggered == "relabel-annotation-class":
         for i in range(len(current_stored_classes)):
@@ -517,6 +506,131 @@ def export_annotation(n_clicks, annotation_store):
         icon=DashIconify(icon="entypo:export"),
     )
     return notification, metadata_file, mask_file
+
+
+@callback(
+    Output("data-modal-save-status", "children"),
+    Input("save-annotations", "n_clicks"),
+    State("annotation-store", "data"),
+    State("project-name-src", "value"),
+    prevent_initial_call=True,
+)
+def save_data(n_clicks, annotation_store, image_src):
+    """
+    This callback is responsible for saving the annotation data to the store.
+    """
+    if not n_clicks:
+        raise PreventUpdate
+
+    # TODO: save store to the server file-user system, this will be changed to DB later
+    export_data = {
+        "user": USER_NAME,
+        "source": image_src,
+        "time": time.strftime("%Y-%m-%d-%H:%M:%S"),
+        "data": json.dumps(annotation_store),
+    }
+    # Convert export_data to JSON string
+    export_data_json = json.dumps(export_data)
+
+    # Append export_data JSON string to the file
+    if export_data["data"] != "{}":
+        with open(EXPORT_FILE_PATH, "a+") as f:
+            f.write(export_data_json + "\n")
+    return "Data saved!"
+
+
+@callback(
+    Output("data-management-modal", "opened"),
+    Output("data-modal-save-status", "children", allow_duplicate=True),
+    Input("open-data-management-modal-button", "n_clicks"),
+    State("data-management-modal", "opened"),
+    prevent_initial_call=True,
+)
+def toggle_ssave_load_modal(n_clicks, opened):
+    return not opened, ""
+
+
+@callback(
+    Output("load-annotations-server-container", "children"),
+    Input("open-data-management-modal-button", "n_clicks"),
+    State("project-name-src", "value"),
+    prevent_initial_call=True,
+)
+def populate_load_server_annotations(modal_opened, image_src):
+    """
+    This callback populates dropdown window with all saved annotation options for the given project name.
+    It then creates buttons with info about the save, which when clicked, loads the data from the server.
+    """
+    if not modal_opened:
+        raise PreventUpdate
+
+    # TODO : when quering from the server, get (annotation save time) for user, source, order by time
+    data = DEV_load_exported_json_data(EXPORT_FILE_PATH, USER_NAME, image_src)
+    if not data:
+        return "No annotations found for the selected data source."
+    # TODO : when quering from the server, load data for user, source, order by time
+
+    buttons = []
+    for i, data_json in enumerate(data):
+        no_of_annotations = 0
+        for key, annotation_list in data_json["data"]["annotations"].items():
+            no_of_annotations += len(annotation_list)
+
+        number_of_annotated_images = len(data_json["data"]["annotations"])
+        buttons.append(
+            dmc.Button(
+                f"{no_of_annotations} annotations across {number_of_annotated_images} images, created at {data_json['time']}",
+                id={"type": "load-server-annotations", "index": data_json["time"]},
+                variant="light",
+            )
+        )
+
+    return dmc.Stack(
+        buttons,
+        spacing="xs",
+        style={"overflow": "auto", "max-height": "300px"},
+    )
+
+
+@callback(
+    Output("image-viewer", "figure", allow_duplicate=True),
+    Output("annotation-store", "data", allow_duplicate=True),
+    Output("data-management-modal", "opened", allow_duplicate=True),
+    Output("annotation-class-selection", "children", allow_duplicate=True),
+    Input({"type": "load-server-annotations", "index": ALL}, "n_clicks"),
+    State("project-name-src", "value"),
+    State("image-selection-slider", "value"),
+    prevent_initial_call=True,
+)
+def load_and_apply_selected_annotations(selected_annotation, image_src, img_idx):
+    """
+    This callback is responsible for loading and applying the selected annotations when user selects them from the modal.
+    """
+    # this callback is triggered when the buttons are created, when that happens we can stop it
+    if all([x is None for x in selected_annotation]):
+        raise PreventUpdate
+    img_idx -= 1  # dmc.Slider starts from 1, but we need to start from 0
+
+    selected_annotation_timestamp = json.loads(
+        ctx.triggered[0]["prop_id"].split(".")[0]
+    )["index"]
+
+    # TODO : when quering from the server, load (data) for user, source, time
+    data = DEV_load_exported_json_data(EXPORT_FILE_PATH, USER_NAME, image_src)
+    data = DEV_filter_json_data_by_timestamp(data, str(selected_annotation_timestamp))
+    data = data[0]["data"]
+    # TODO : when quering from the server, load (data) for user, source, time
+    patched_figure = Patch()
+    if str(img_idx) in data["annotations"]:
+        patched_figure["layout"]["shapes"] = data["annotations"][str(img_idx)]
+    else:
+        patched_figure["layout"]["shapes"] = []
+
+    labels = [
+        class_action_icon(label["color"], label["label"], "white")
+        for label in data["label_mapping"]
+    ]
+    return patched_figure, data, False, labels
 
 
 @callback(
