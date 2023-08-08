@@ -556,7 +556,7 @@ def toggle_ssave_load_modal(n_clicks, opened):
     State("project-name-src", "value"),
     prevent_initial_call=True,
 )
-def populate_load_server_annotations(modal_opened, image_src):
+def populate_load_annotations_dropdown_menu_options(modal_opened, image_src):
     """
     This callback populates dropdown window with all saved annotation options for the given project name.
     It then creates buttons with info about the save, which when clicked, loads the data from the server.
