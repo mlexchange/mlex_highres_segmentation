@@ -155,7 +155,7 @@ def annotation_mode(
         title=ANNOT_NOTIFICATION_MSGS[triggered],
         message="",
         color="indigo",
-        id=f"export-annotation-notification-{random.randint(0, 10000)}",
+        id=f"notification-{random.randint(0, 10000)}",
         action="show",
         icon=DashIconify(icon=ANNOT_ICONS[triggered], width=40),
         styles={"icon": {"height": "50px", "width": "50px"}},
@@ -222,6 +222,7 @@ def highlight_selected_classes(selected_classes, current_styles):
 @callback(
     Output("image-viewer", "figure", allow_duplicate=True),
     Output({"type": "annotation-color", "index": ALL}, "style"),
+    Output("notifications-container", "children", allow_duplicate=True),
     Input({"type": "annotation-color", "index": ALL}, "n_clicks"),
     Input("keybind-event-listener", "event"),
     State({"type": "annotation-color", "index": ALL}, "style"),
@@ -274,7 +275,23 @@ def annotation_color(
     patched_figure = Patch()
     patched_figure["layout"]["newshape"]["fillcolor"] = color
     patched_figure["layout"]["newshape"]["line"]["color"] = color
-    return patched_figure, current_style
+
+    label_name = "1234"  # todo: get label name from annotation store
+    notification = dmc.Notification(
+        title=f"{label_name} class selected",
+        message="",
+        id=f"notification-{random.randint(0, 10000)}",
+        action="show",
+        icon=DashIconify(icon="mdi:color", width=30),
+        styles={
+            "icon": {
+                "height": "50px",
+                "width": "50px",
+                "background-color": f"{color} !important",
+            }
+        },
+    )
+    return patched_figure, current_style, notification
 
 
 @callback(
@@ -521,7 +538,7 @@ def export_annotation(n_clicks, annotation_store):
         title=notification_title,
         message=notification_message,
         color=notification_color,
-        id="export-annotation-notification",
+        id=f"notification-{random.randint(0, 10000)}",
         action="show",
         icon=DashIconify(icon="entypo:export"),
     )
