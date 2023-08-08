@@ -521,6 +521,8 @@ def save_data(n_clicks, annotation_store, image_src):
     """
     if not n_clicks:
         raise PreventUpdate
+    if annotation_store["annotations"] == {}:
+        return "No annotations to save!"
 
     # TODO: save store to the server file-user system, this will be changed to DB later
     export_data = {
