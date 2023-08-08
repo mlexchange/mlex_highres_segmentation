@@ -380,39 +380,6 @@ def layout():
                         ),
                     ],
                 ),
-                dcc.Store(
-                    id="annotation-store",
-                    data={
-                        "dragmode": "drawopenpath",
-                        "visible": True,
-                        "annotations": {},
-                        "view": {},
-                        "active_img_shape": [],
-                        # TODO: Hard-coding default annotation class
-                        "label_mapping": [
-                            {
-                                "color": "rgb(249,82,82)",
-                                "label": "1",
-                                "id": random.randint(1, 100),
-                            }
-                        ],
-                    },
-                ),
-                create_info_card_affix(),
-                dmc.NotificationsProvider(html.Div(id="notifications-container")),
-                dcc.Download(id="export-annotation-metadata"),
-                dcc.Download(id="export-annotation-mask"),
-                dcc.Store(id="project-data"),
-                html.Div(id="dummy-output"),
-                EventListener(
-                    events=[
-                        {
-                            "event": "keydown",
-                            "props": ["key", "altKey", "shiftKey"],
-                        }
-                    ],
-                    id="keybind-event-listener",
-                ),
             ],
         )
     )
@@ -464,6 +431,39 @@ def drawer_section(children):
                 },
                 children=children,
                 opened=True,
+            ),
+            dcc.Store(
+                id="annotation-store",
+                data={
+                    "dragmode": "drawopenpath",
+                    "visible": True,
+                    "annotations": {},
+                    "view": {},
+                    "active_img_shape": [],
+                    # TODO: Hard-coding default annotation class
+                    "label_mapping": [
+                        {
+                            "color": "rgb(249,82,82)",
+                            "label": "1",
+                            "id": random.randint(1, 100),
+                        }
+                    ],
+                },
+            ),
+            create_info_card_affix(),
+            dmc.NotificationsProvider(html.Div(id="notifications-container")),
+            dcc.Download(id="export-annotation-metadata"),
+            dcc.Download(id="export-annotation-mask"),
+            dcc.Store(id="project-data"),
+            html.Div(id="dummy-output"),
+            EventListener(
+                events=[
+                    {
+                        "event": "keydown",
+                        "props": ["key", "altKey", "shiftKey"],
+                    }
+                ],
+                id="keybind-event-listener",
             ),
         ]
     )
