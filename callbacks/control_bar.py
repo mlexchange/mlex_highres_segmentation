@@ -341,10 +341,21 @@ def annotation_color(
     Input("delete-all", "n_clicks"),
     Input("modal-cancel-button", "n_clicks"),
     Input("modal-delete-button", "n_clicks"),
+    Input("keybind-event-listener", "event"),
     State("delete-all-warning", "opened"),
     prevent_initial_call=True,
 )
-def open_warning_modal(delete, cancel, delete_4_real, opened):
+def open_warning_modal(delete, cancel, delete_4_real, keybind_event_listener, opened):
+    if ctx.triggered_id == "keybind-event-listener":
+        pressed_key = (
+            keybind_event_listener.get("key", None) if keybind_event_listener else None
+        )
+        if not pressed_key:
+            raise PreventUpdate
+        if pressed_key is not KEYBINDS["delete-all"]:
+            # if key pressed is not a valid keybind for class selection
+            raise PreventUpdate
+        return True
     return not opened
 
 
