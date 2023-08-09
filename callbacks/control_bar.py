@@ -16,7 +16,7 @@ from dash_iconify import DashIconify
 import json
 from utils.annotations import Annotations
 from components.control_bar import class_action_icon
-import random
+import copy
 from utils.data_utils import (
     DEV_load_exported_json_data,
     DEV_filter_json_data_by_timestamp,
@@ -125,16 +125,23 @@ def annotation_width(width_value):
 @callback(
     Output("current-annotation-classes", "children"),
     Output("current-annotation-classes-edit", "data"),
+    Output("current-annotation-classes-hide", "children"),
     Input("annotation-class-selection", "children"),
 )
-def make_class_delete_modal(current_classes):
+def make_class_delete_edit_hide_modal(current_classes):
     """Creates buttons for the delete selected classes and edit selected class modal"""
     current_classes_edit = [button["props"]["children"] for button in current_classes]
-    for button in current_classes:
+    current_classes_delete = copy.deepcopy(current_classes)
+    current_classes_hide = copy.deepcopy(current_classes)
+    for button in current_classes_delete:
         color = button["props"]["style"]["background-color"]
         button["props"]["id"] = {"type": "annotation-delete-buttons", "index": color}
         button["props"]["style"]["border"] = "1px solid"
-    return current_classes, current_classes_edit
+    for button in current_classes_hide:
+        color = button["props"]["style"]["background-color"]
+        button["props"]["id"] = {"type": "annotation-hide-buttons", "index": color}
+        button["props"]["style"]["border"] = "1px solid"
+    return current_classes_delete, current_classes_edit, current_classes_hide
 
 
 @callback(
@@ -144,6 +151,23 @@ def make_class_delete_modal(current_classes):
     prevent_initial_call=True,
 )
 def highlight_selected_classes(selected_classes, current_styles):
+    """Highlights selected buttons in delete modal"""
+    for i in range(len(selected_classes)):
+        if selected_classes[i] is not None and selected_classes[i] % 2 != 0:
+            current_styles[i]["border"] = "3px solid black"
+        else:
+            current_styles[i]["border"] = "1px solid"
+    return current_styles
+
+
+@callback(
+    Output({"type": "annotation-hide-buttons", "index": ALL}, "style"),
+    Input({"type": "annotation-hide-buttons", "index": ALL}, "n_clicks"),
+    State({"type": "annotation-hide-buttons", "index": ALL}, "style"),
+    prevent_initial_call=True,
+)
+def highlight_selected_hide_classes(selected_classes, current_styles):
+    """Highlights selected buttons in hide modal"""
     for i in range(len(selected_classes)):
         if selected_classes[i] is not None and selected_classes[i] % 2 != 0:
             current_styles[i]["border"] = "3px solid black"
@@ -223,6 +247,17 @@ def open_edit_class_modal(edit, relabel, opened):
 
 
 @callback(
+    Output("hide-annotation-class-modal", "opened"),
+    Input("hide-annotation-class", "n_clicks"),
+    Input("conceal-annotation-class", "n_clicks"),
+    State("hide-annotation-class-modal", "opened"),
+    prevent_initial_call=True,
+)
+def open_hide_class_modal(hide, conceal, opened):
+    return not opened
+
+
+@callback(
     Output("create-annotation-class", "disabled"),
     Output("bad-label-color", "children"),
     Input("annotation-class-label", "value"),
@@ -240,8 +275,10 @@ def disable_class_creation(label, color, current_labels, current_colors):
                 dmc.Text("This annotation class label is already in use.", color="red")
             )
     if color is None:
-        color = "rgb(255, 255, 255)"
-    if color == "rgb(255, 255, 255)" or triggered_id == "annotation-class-colorpicker":
+        color = "rgb(255,255,255)"
+    else:
+        color = color.replace(" ", "")
+    if color == "rgb(255,255,255)" or triggered_id == "annotation-class-colorpicker":
         current_colors = [style["background-color"] for style in current_colors]
         if color in current_colors:
             warning_text.append(
@@ -253,6 +290,25 @@ def disable_class_creation(label, color, current_labels, current_colors):
         or label in current_labels
         or color in current_colors
     ):
+        return True, warning_text
+    else:
+        return False, warning_text
+
+
+@callback(
+    Output("relabel-annotation-class", "disabled"),
+    Output("bad-label", "children"),
+    Input("annotation-class-label-edit", "value"),
+    State({"type": "annotation-color", "index": ALL}, "children"),
+    prevent_initial_call=True,
+)
+def disable_class_editing(label, current_labels):
+    warning_text = []
+    if label in current_labels:
+        warning_text.append(
+            dmc.Text("This annotation class label is already in use.", color="red")
+        )
+    if label is None or len(label) == 0 or label in current_labels:
         return True, warning_text
     else:
         return False, warning_text
@@ -278,31 +334,53 @@ def disable_class_deletion(highlighted):
 
 
 @callback(
+    Output("conceal-annotation-class", "disabled"),
+    Output("at-least-one-hide", "style"),
+    Input({"type": "annotation-hide-buttons", "index": ALL}, "style"),
+    prevent_initial_call=True,
+)
+def disable_class_hiding(highlighted):
+    num_selected = 0
+    for style in highlighted:
+        if style["border"] == "3px solid black":
+            num_selected += 1
+    if num_selected == 0:
+        return True, {"display": "initial"}
+    else:
+        return False, {"display": "none"}
+
+
+@callback(
     Output("annotation-class-selection", "children"),
     Output("annotation-class-label", "value"),
+    Output("annotation-class-label-edit", "value"),
     Output("annotation-store", "data", allow_duplicate=True),
     Output("image-viewer", "figure", allow_duplicate=True),
     Input("create-annotation-class", "n_clicks"),
     Input("remove-annotation-class", "n_clicks"),
     Input("relabel-annotation-class", "n_clicks"),
+    Input("conceal-annotation-class", "n_clicks"),
     State("annotation-class-label", "value"),
     State("annotation-class-colorpicker", "value"),
     State("annotation-class-selection", "children"),
     State({"type": "annotation-delete-buttons", "index": ALL}, "style"),
+    State({"type": "annotation-hide-buttons", "index": ALL}, "style"),
     State("current-annotation-classes-edit", "value"),
     State("annotation-class-label-edit", "value"),
     State("annotation-store", "data"),
     State("image-selection-slider", "value"),
     prevent_initial_call=True,
 )
-def add_delete_edit_classes(
+def add_delete_edit_hide_classes(
     create,
     remove,
     edit,
+    hide,
     class_label,
     class_color,
     current_classes,
     classes_to_delete,
+    classes_to_hide,
     old_label,
     new_label,
     annotation_store,
@@ -336,13 +414,13 @@ def add_delete_edit_classes(
             current_classes.append(class_action_icon(class_color, class_label, "black"))
         else:
             current_classes.append(class_action_icon(class_color, class_label, "white"))
-        return current_classes, "", annotation_store, no_update
+        return current_classes, "", "", annotation_store, no_update
     elif triggered == "relabel-annotation-class":
         for i in range(len(current_stored_classes)):
             if current_stored_classes[i]["label"] == old_label:
                 annotation_store["label_mapping"][i]["label"] = new_label
                 current_classes[i]["props"]["children"] = new_label
-        return current_classes, "", annotation_store, no_update
+        return current_classes, "", "", annotation_store, no_update
     else:
         color_to_delete = []
         color_to_keep = []
@@ -374,7 +452,7 @@ def add_delete_edit_classes(
             ]
         else:
             patched_figure["layout"]["shapes"] = []
-        return color_to_keep, "", annotation_store, patched_figure
+        return color_to_keep, "", "", annotation_store, patched_figure
 
 
 @callback(
