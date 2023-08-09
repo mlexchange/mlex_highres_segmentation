@@ -45,6 +45,7 @@ import random
     State("annotation-store", "data"),
     State("image-viewer-loading", "zIndex"),
     State("generate-annotation-class-modal", "opened"),
+    State("edit-annotation-class-modal", "opened"),
     prevent_initial_call=True,
 )
 def annotation_mode(
@@ -60,12 +61,13 @@ def annotation_mode(
     annotation_store,
     figure_overlay_z_index,
     generate_modal_opened,
+    edit_annotation_modal_opened,
 ):
     """
     This callback is responsible for changing the annotation mode and the style of the buttons.
     It also accepts keybinds to change the annotation mode.
     """
-    if generate_modal_opened:
+    if generate_modal_opened or edit_annotation_modal_opened:
         # user is going to type on this page and we don't want to trigger this callback using keys
         raise PreventUpdate
     if not annotation_store["visible"]:
@@ -254,6 +256,7 @@ def highlight_selected_hide_classes(selected_classes, current_styles):
     Input("keybind-event-listener", "event"),
     State({"type": "annotation-color", "index": ALL}, "style"),
     State("generate-annotation-class-modal", "opened"),
+    State("edit-annotation-class-modal", "opened"),
     State("annotation-store", "data"),
     prevent_initial_call=True,
 )
@@ -262,13 +265,14 @@ def annotation_color(
     keybind_event_listener,
     current_style,
     generate_modal_opened,
+    edit_annotation_modal_opened,
     annotation_store,
 ):
     """
     This callback is responsible for changing the color of the brush.
     """
     if ctx.triggered_id == "keybind-event-listener":
-        if generate_modal_opened:
+        if generate_modal_opened or edit_annotation_modal_opened:
             # user is going to type on this page and we don't want to trigger this callback using keys
             raise PreventUpdate
         pressed_key = (
