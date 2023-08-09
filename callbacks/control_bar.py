@@ -16,6 +16,7 @@ from dash_iconify import DashIconify
 import json
 from utils.annotations import Annotations
 from constants import KEYBINDS, ANNOT_ICONS, ANNOT_NOTIFICATION_MSGS
+import copy
 import random
 
 
@@ -23,6 +24,7 @@ import random
     Output("image-viewer", "figure", allow_duplicate=True),
     Output("open-freeform", "style"),
     Output("closed-freeform", "style"),
+    Output("line", "style"),
     Output("circle", "style"),
     Output("rectangle", "style"),
     Output("eraser", "style"),
@@ -35,7 +37,7 @@ import random
     Input("closed-freeform", "n_clicks"),
     Input("circle", "n_clicks"),
     Input("rectangle", "n_clicks"),
-    # Input("line", "n_clicks"), # todo enable line drawing when #57 is merged
+    Input("line", "n_clicks"),
     Input("eraser", "n_clicks"),
     Input("delete-all", "n_clicks"),
     Input("pan-and-zoom", "n_clicks"),
@@ -50,7 +52,7 @@ def annotation_mode(
     closed,
     circle,
     rect,
-    # line, # todo enable line drawing when #57 is merged
+    line,
     erase_annotation,
     delete_all_annotations,
     pan_and_zoom,
@@ -77,7 +79,7 @@ def annotation_mode(
         KEYBINDS["closed-freeform"]: ("drawclosedpath", "closed-freeform"),
         KEYBINDS["circle"]: ("drawcircle", "circle"),
         KEYBINDS["rectangle"]: ("drawrect", "rectangle"),
-        # KEYBINDS["line"]: ("drawline", "line"),    # todo enable line drawing when #57 is merged
+        KEYBINDS["line"]: ("drawline", "line"),
         KEYBINDS["pan-and-zoom"]: ("pan", "pan-and-zoom"),
         KEYBINDS["erase"]: ("eraseshape", "eraser"),
         KEYBINDS["delete-all"]: ("deleteshape", "delete-all"),
@@ -107,7 +109,7 @@ def annotation_mode(
         "closed-freeform": inactive,
         "circle": inactive,
         "rectangle": inactive,
-        # "line": inactive,    # todo enable line drawing when #57 is merged
+        "line": inactive,
         "eraser": inactive,
         "delete-all": inactive,
         "pan-and-zoom": inactive,
@@ -126,6 +128,10 @@ def annotation_mode(
             patched_figure["layout"]["dragmode"] = "drawclosedpath"
             annotation_store["dragmode"] = "drawclosedpath"
             styles[triggered] = active
+        elif triggered == "line" and line > 0:
+            patched_figure["layout"]["dragmode"] = "drawline"
+            annotation_store["dragmode"] = "drawline"
+            styles[triggered] = active
         elif triggered == "circle" and circle > 0:
             patched_figure["layout"]["dragmode"] = "drawcircle"
             annotation_store["dragmode"] = "drawcircle"
@@ -134,10 +140,6 @@ def annotation_mode(
             patched_figure["layout"]["dragmode"] = "drawrect"
             annotation_store["dragmode"] = "drawrect"
             styles[triggered] = active
-        # elif triggered == "line" and line > 0:    # todo enable line drawing when #57 is merged
-        #     patched_figure["layout"]["dragmode"] = "drawline"
-        #     annotation_store["dragmode"] = "drawline"
-        #     styles[triggered] = active
         elif triggered == "eraser" and erase_annotation > 0:
             patched_figure["layout"]["dragmode"] = "eraseshape"
             annotation_store["dragmode"] = "eraseshape"
@@ -164,9 +166,9 @@ def annotation_mode(
         patched_figure,
         styles["open-freeform"],
         styles["closed-freeform"],
+        styles["line"],
         styles["circle"],
         styles["rectangle"],
-        # styles["line"],    # todo enable line drawing when #57 is merged
         styles["eraser"],
         styles["delete-all"],
         styles["pan-and-zoom"],
@@ -192,16 +194,24 @@ def annotation_width(width_value):
 
 @callback(
     Output("current-annotation-classes", "children"),
+    Output("current-annotation-classes-edit", "data"),
+    Output("current-annotation-classes-hide", "children"),
     Input("annotation-class-selection", "children"),
-    prevent_initial_call=True,
 )
-def make_class_delete_modal(current_classes):
-    """Creates buttons for the delete selected classes modal"""
-    for button in current_classes:
+def make_class_delete_edit_hide_modal(current_classes):
+    """Creates buttons for the delete selected classes and edit selected class modal"""
+    current_classes_edit = [button["props"]["children"] for button in current_classes]
+    current_classes_delete = copy.deepcopy(current_classes)
+    current_classes_hide = copy.deepcopy(current_classes)
+    for button in current_classes_delete:
         color = button["props"]["style"]["background-color"]
         button["props"]["id"] = {"type": "annotation-delete-buttons", "index": color}
         button["props"]["style"]["border"] = "1px solid"
-    return current_classes
+    for button in current_classes_hide:
+        color = button["props"]["style"]["background-color"]
+        button["props"]["id"] = {"type": "annotation-hide-buttons", "index": color}
+        button["props"]["style"]["border"] = "1px solid"
+    return current_classes_delete, current_classes_edit, current_classes_hide
 
 
 @callback(
@@ -211,6 +221,23 @@ def make_class_delete_modal(current_classes):
     prevent_initial_call=True,
 )
 def highlight_selected_classes(selected_classes, current_styles):
+    """Highlights selected buttons in delete modal"""
+    for i in range(len(selected_classes)):
+        if selected_classes[i] is not None and selected_classes[i] % 2 != 0:
+            current_styles[i]["border"] = "3px solid black"
+        else:
+            current_styles[i]["border"] = "1px solid"
+    return current_styles
+
+
+@callback(
+    Output({"type": "annotation-hide-buttons", "index": ALL}, "style"),
+    Input({"type": "annotation-hide-buttons", "index": ALL}, "n_clicks"),
+    State({"type": "annotation-hide-buttons", "index": ALL}, "style"),
+    prevent_initial_call=True,
+)
+def highlight_selected_hide_classes(selected_classes, current_styles):
+    """Highlights selected buttons in hide modal"""
     for i in range(len(selected_classes)):
         if selected_classes[i] is not None and selected_classes[i] % 2 != 0:
             current_styles[i]["border"] = "3px solid black"
@@ -267,11 +294,13 @@ def annotation_color(
                 current_style[i]["border"] = "1px solid"
     else:
         color = ctx.triggered_id["index"]
-        for i in range(len(current_style)):
-            if current_style[i]["background-color"] == color:
-                current_style[i]["border"] = "3px solid black"
-            else:
-                current_style[i]["border"] = "1px solid"
+        if all(v is None for v in color_value):
+            color = current_style[-1]["background-color"]
+    for i in range(len(current_style)):
+        if current_style[i]["background-color"] == color:
+            current_style[i]["border"] = "3px solid black"
+        else:
+            current_style[i]["border"] = "1px solid"
     patched_figure = Patch()
     patched_figure["layout"]["newshape"]["fillcolor"] = color
     patched_figure["layout"]["newshape"]["line"]["color"] = color
@@ -329,14 +358,82 @@ def open_delete_class_modal(delete, remove, opened):
 
 
 @callback(
-    Output("create-annotation-class", "disabled"),
-    Input("annotation-class-label", "value"),
+    Output("edit-annotation-class-modal", "opened"),
+    Input("edit-annotation-class", "n_clicks"),
+    Input("relabel-annotation-class", "n_clicks"),
+    State("edit-annotation-class-modal", "opened"),
+    prevent_initial_call=True,
 )
-def disable_class_creation(label):
-    if label is None or len(label) == 0:
-        return True
+def open_edit_class_modal(edit, relabel, opened):
+    return not opened
+
+
+@callback(
+    Output("hide-annotation-class-modal", "opened"),
+    Input("hide-annotation-class", "n_clicks"),
+    Input("conceal-annotation-class", "n_clicks"),
+    State("hide-annotation-class-modal", "opened"),
+    prevent_initial_call=True,
+)
+def open_hide_class_modal(hide, conceal, opened):
+    return not opened
+
+
+@callback(
+    Output("create-annotation-class", "disabled"),
+    Output("bad-label-color", "children"),
+    Input("annotation-class-label", "value"),
+    Input("annotation-class-colorpicker", "value"),
+    State({"type": "annotation-color", "index": ALL}, "children"),
+    State({"type": "annotation-color", "index": ALL}, "style"),
+    prevent_initial_call=True,
+)
+def disable_class_creation(label, color, current_labels, current_colors):
+    triggered_id = ctx.triggered_id
+    warning_text = []
+    if triggered_id == "annotation-class-label":
+        if label in current_labels:
+            warning_text.append(
+                dmc.Text("This annotation class label is already in use.", color="red")
+            )
+    if color is None:
+        color = "rgb(255,255,255)"
     else:
-        return False
+        color = color.replace(" ", "")
+    if color == "rgb(255,255,255)" or triggered_id == "annotation-class-colorpicker":
+        current_colors = [style["background-color"] for style in current_colors]
+        if color in current_colors:
+            warning_text.append(
+                dmc.Text("This annotation class color is already in use.", color="red")
+            )
+    if (
+        label is None
+        or len(label) == 0
+        or label in current_labels
+        or color in current_colors
+    ):
+        return True, warning_text
+    else:
+        return False, warning_text
+
+
+@callback(
+    Output("relabel-annotation-class", "disabled"),
+    Output("bad-label", "children"),
+    Input("annotation-class-label-edit", "value"),
+    State({"type": "annotation-color", "index": ALL}, "children"),
+    prevent_initial_call=True,
+)
+def disable_class_editing(label, current_labels):
+    warning_text = []
+    if label in current_labels:
+        warning_text.append(
+            dmc.Text("This annotation class label is already in use.", color="red")
+        )
+    if label is None or len(label) == 0 or label in current_labels:
+        return True, warning_text
+    else:
+        return False, warning_text
 
 
 @callback(
@@ -359,37 +456,83 @@ def disable_class_deletion(highlighted):
 
 
 @callback(
+    Output("conceal-annotation-class", "disabled"),
+    Output("at-least-one-hide", "style"),
+    Input({"type": "annotation-hide-buttons", "index": ALL}, "style"),
+    prevent_initial_call=True,
+)
+def disable_class_hiding(highlighted):
+    num_selected = 0
+    for style in highlighted:
+        if style["border"] == "3px solid black":
+            num_selected += 1
+    if num_selected == 0:
+        return True, {"display": "initial"}
+    else:
+        return False, {"display": "none"}
+
+
+@callback(
     Output("annotation-class-selection", "children"),
     Output("annotation-class-label", "value"),
+    Output("annotation-class-label-edit", "value"),
     Output("annotation-store", "data", allow_duplicate=True),
+    Output("image-viewer", "figure", allow_duplicate=True),
     Input("create-annotation-class", "n_clicks"),
     Input("remove-annotation-class", "n_clicks"),
+    Input("relabel-annotation-class", "n_clicks"),
+    Input("conceal-annotation-class", "n_clicks"),
     State("annotation-class-label", "value"),
     State("annotation-class-colorpicker", "value"),
     State("annotation-class-selection", "children"),
     State({"type": "annotation-delete-buttons", "index": ALL}, "style"),
+    State({"type": "annotation-hide-buttons", "index": ALL}, "style"),
+    State("current-annotation-classes-edit", "value"),
+    State("annotation-class-label-edit", "value"),
     State("annotation-store", "data"),
+    State("image-selection-slider", "value"),
     prevent_initial_call=True,
 )
-def add_new_class(
+def add_delete_edit_hide_classes(
     create,
     remove,
+    edit,
+    hide,
     class_label,
     class_color,
     current_classes,
     classes_to_delete,
+    classes_to_hide,
+    old_label,
+    new_label,
     annotation_store,
+    image_idx,
 ):
-    """Updates the list of available annotation classes"""
+    """
+    Updates the list of available annotation classes,
+    triggers other things that should happen when classes
+    are added or deleted like removing annotations or updating
+    the drawing mode.
+    """
     triggered = ctx.triggered_id
+    image_idx = str(image_idx - 1)
+    patched_figure = Patch()
+    current_stored_classes = annotation_store["label_mapping"]
+    current_annotations = annotation_store["annotations"]
+    if class_color is None:
+        class_color = "rgb(255,255,255)"
+    else:
+        class_color = class_color.replace(" ", "")
     if triggered == "create-annotation-class":
-        # TODO: Check that the randint isn't already assigned to a class
+        last_id = int(current_stored_classes[-1]["id"])
         annotation_store["label_mapping"].append(
-            {"color": class_color, "id": random.randint(1, 100), "label": class_label}
+            {
+                "color": class_color,
+                "id": last_id + 1,
+                "label": class_label,
+            }
         )
-        if class_color is None:
-            class_color = "rgb(255, 255, 255)"
-        if class_color == "rgb(255, 255, 255)":
+        if class_color == "rgb(255,255,255)":
             current_classes.append(
                 dmc.ActionIcon(
                     id={"type": "annotation-color", "index": class_color},
@@ -399,6 +542,9 @@ def add_new_class(
                         "background-color": class_color,
                         "border": "1px solid",
                         "color": "black",
+                        "width": "fit-content",
+                        "padding": "5px",
+                        "margin-right": "10px",
                     },
                     children=class_label,
                 )
@@ -409,24 +555,55 @@ def add_new_class(
                     id={"type": "annotation-color", "index": class_color},
                     w=30,
                     variant="filled",
-                    style={"background-color": class_color, "border": "1px solid"},
+                    style={
+                        "background-color": class_color,
+                        "border": "1px solid",
+                        "width": "fit-content",
+                        "padding": "5px",
+                        "margin-right": "10px",
+                    },
                     children=class_label,
                 )
             )
-        output_classes = current_classes
+        return current_classes, "", "", annotation_store, no_update
+    elif triggered == "relabel-annotation-class":
+        for i in range(len(current_stored_classes)):
+            if current_stored_classes[i]["label"] == old_label:
+                annotation_store["label_mapping"][i]["label"] = new_label
+                current_classes[i]["props"]["children"] = new_label
+        return current_classes, "", "", annotation_store, no_update
     else:
-        # TODO: Remove mapping from the store
         color_to_delete = []
         color_to_keep = []
-        for color_opt in classes_to_delete:
-            if color_opt["border"] == "3px solid black":
-                color_to_delete.append(color_opt["background-color"])
+        annotations_to_keep = {}
+        for i in range(len(classes_to_delete)):
+            if classes_to_delete[i]["border"] == "3px solid black":
+                color_to_delete.append(
+                    classes_to_delete[i]["background-color"].replace(" ", "")
+                )
+        current_stored_classes = [
+            class_pair
+            for class_pair in current_stored_classes
+            if class_pair["color"] not in color_to_delete
+        ]
+        for key, val in current_annotations.items():
+            val = [
+                shape for shape in val if shape["line"]["color"] not in color_to_delete
+            ]
+            if len(val):
+                annotations_to_keep[key] = val
         for color in current_classes:
             if color["props"]["id"]["index"] not in color_to_delete:
                 color_to_keep.append(color)
-        output_classes = color_to_keep
-
-    return output_classes, "", annotation_store
+        annotation_store["label_mapping"] = current_stored_classes
+        annotation_store["annotations"] = annotations_to_keep
+        if image_idx in annotation_store["annotations"]:
+            patched_figure["layout"]["shapes"] = annotation_store["annotations"][
+                image_idx
+            ]
+        else:
+            patched_figure["layout"]["shapes"] = []
+        return color_to_keep, "", "", annotation_store, patched_figure
 
 
 @callback(
@@ -496,6 +673,21 @@ def reset_filters(n_clicks):
     default_brightness = 100
     default_contrast = 100
     return default_brightness, default_contrast
+
+
+# TODO: check this when plotly is updated
+clientside_callback(
+    """
+    function eraseShape(_, graph_id) {
+        Plotly.eraseActiveShape(graph_id)
+        return dash_clientside.no_update
+    }
+    """,
+    Output("image-viewer", "id", allow_duplicate=True),
+    Input("eraser", "n_clicks"),
+    State("image-viewer", "id"),
+    prevent_initial_call=True,
+)
 
 
 @callback(

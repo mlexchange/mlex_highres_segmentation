@@ -1,9 +1,9 @@
 KEYBINDS = {
     "open-freeform": "q",
     "closed-freeform": "w",
-    "circle": "e",
-    "rectangle": "r",
-    # "line": "t",    # todo enable line drawing when #57 is merged
+    "line": "e",
+    "circle": "r",
+    "rectangle": "t",
     "pan-and-zoom": "a",
     "erase": "s",
     "delete-all": "d",
@@ -34,6 +34,7 @@ KEYBINDS = {
 ANNOT_ICONS = {
     "open-freeform": "mdi:draw",
     "closed-freeform": "fluent:draw-shape-20-regular",
+    "line": "pepicons-pop:line-y",
     "circle": "gg:shape-circle",
     "rectangle": "gg:shape-square",
     "eraser": "ph:eraser",
@@ -44,6 +45,7 @@ ANNOT_ICONS = {
 ANNOT_NOTIFICATION_MSGS = {
     "open-freeform": "Open freeform annotation mode",
     "closed-freeform": "Closed freeform annotation mode",
+    "line": "Line annotation mode",
     "circle": "Circle annotation mode",
     "rectangle": "Rectangle annotation mode",
     "eraser": "Eraser annotation mode",
