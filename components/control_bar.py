@@ -585,10 +585,10 @@ def create_keybind_row(keys, text):
 def create_info_card_affix():
     return dmc.Affix(
         position={"bottom": 20, "left": 20},
+        zIndex=9999999,
         children=dmc.HoverCard(
             shadow="md",
             position="top-start",
-            zIndex=9999999,
             children=[
                 dmc.HoverCardTarget(
                     dmc.ActionIcon(
@@ -616,6 +616,10 @@ def create_info_card_affix():
                                 create_keybind_row(
                                     KEYBINDS["closed-freeform"].upper(),
                                     "Closed Freeform",
+                                ),
+                                create_keybind_row(
+                                    KEYBINDS["line"].upper(),
+                                    "Line Annotation Mode",
                                 ),
                                 create_keybind_row(
                                     KEYBINDS["circle"].upper(),
@@ -650,15 +654,6 @@ def create_info_card_affix():
                                 create_keybind_row(
                                     ["shift", "1-9"],
                                     "Select annotation class 10-19",
-                                ),
-                                dmc.Divider(variant="solid", color="gray"),
-                                create_keybind_row(
-                                    ["alt", "1-9"],
-                                    "Hide annotation class 1-9",
-                                ),
-                                create_keybind_row(
-                                    ["alt", "shift", "1-9"],
-                                    "Hide annotation class 10-19",
                                 ),
                             ],
                             p=0,
