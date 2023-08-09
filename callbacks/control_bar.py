@@ -254,10 +254,15 @@ def highlight_selected_hide_classes(selected_classes, current_styles):
     Input("keybind-event-listener", "event"),
     State({"type": "annotation-color", "index": ALL}, "style"),
     State("generate-annotation-class-modal", "opened"),
+    State("annotation-store", "data"),
     prevent_initial_call=True,
 )
 def annotation_color(
-    color_value, keybind_event_listener, current_style, generate_modal_opened
+    color_value,
+    keybind_event_listener,
+    current_style,
+    generate_modal_opened,
+    annotation_store,
 ):
     """
     This callback is responsible for changing the color of the brush.
@@ -286,7 +291,7 @@ def annotation_color(
             raise PreventUpdate
 
         color = current_style[selected_color_idx]["background-color"]
-
+        color_label = annotation_store["label_mapping"][selected_color_idx]["label"]
         for i in range(len(current_style)):
             if current_style[i]["background-color"] == color:
                 current_style[i]["border"] = "3px solid black"
@@ -296,16 +301,20 @@ def annotation_color(
         color = ctx.triggered_id["index"]
         if all(v is None for v in color_value):
             color = current_style[-1]["background-color"]
-    for i in range(len(current_style)):
-        if current_style[i]["background-color"] == color:
-            current_style[i]["border"] = "3px solid black"
-        else:
-            current_style[i]["border"] = "1px solid"
+        selected_color_idx = -1
+        for i in range(len(current_style)):
+            if current_style[i]["background-color"] == color:
+                current_style[i]["border"] = "3px solid black"
+                selected_color_idx = i
+            else:
+                current_style[i]["border"] = "1px solid"
+        color_label = annotation_store["label_mapping"][selected_color_idx]["label"]
+
     patched_figure = Patch()
     patched_figure["layout"]["newshape"]["fillcolor"] = color
     patched_figure["layout"]["newshape"]["line"]["color"] = color
 
-    label_name = "1234"  # todo: get label name from annotation store
+    label_name = color_label
     notification = dmc.Notification(
         title=f"{label_name} class selected",
         message="",
