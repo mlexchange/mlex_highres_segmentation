@@ -101,7 +101,7 @@ def render_image(
     State("annotation-store", "data"),
     prevent_initial_call=True,
 )
-def update_viefinder(relayout_data, annotation_store):
+def update_viewfinder(relayout_data, annotation_store):
     """
     When relayoutData is triggered, update the viewfinder box to match the new view position of the image (inlude zooming).
     The viewfinder box is downsampled to match the size of the viewfinder.
