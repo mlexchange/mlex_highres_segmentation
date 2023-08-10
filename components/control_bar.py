@@ -513,7 +513,7 @@ def drawer_section(children):
                 position={"left": "25px", "top": "25px"},
             ),
             dmc.Drawer(
-                title=dmc.Text("Lawrence Berkeley National Laboratory", weight=700),
+                title=dmc.Text("ML Exchange", weight=700),
                 id="drawer-controls",
                 padding="md",
                 transition="slide-right",
@@ -549,6 +549,8 @@ def drawer_section(children):
                             "id": "1",
                         }
                     ],
+                    "classes_shown": {},
+                    "classes_hidden": {},
                 },
             ),
             create_info_card_affix(),

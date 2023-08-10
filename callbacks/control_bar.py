@@ -251,6 +251,7 @@ def highlight_selected_hide_classes(selected_classes, current_styles):
 @callback(
     Output("image-viewer", "figure", allow_duplicate=True),
     Output({"type": "annotation-color", "index": ALL}, "style"),
+    Output({"type": "annotation-color", "index": ALL}, "n_clicks"),
     Output("notifications-container", "children", allow_duplicate=True),
     Input({"type": "annotation-color", "index": ALL}, "n_clicks"),
     Input("keybind-event-listener", "event"),
@@ -303,8 +304,9 @@ def annotation_color(
                 current_style[i]["border"] = "1px solid"
     else:
         color = ctx.triggered_id["index"]
-        if all(v is None for v in color_value):
+        if color_value[-1] is None:
             color = current_style[-1]["background-color"]
+            color_value[-1] = 1
         selected_color_idx = -1
         for i in range(len(current_style)):
             if current_style[i]["background-color"] == color:
@@ -333,7 +335,7 @@ def annotation_color(
             }
         },
     )
-    return patched_figure, current_style, notification
+    return patched_figure, current_style, color_value, notification
 
 
 @callback(
@@ -346,6 +348,7 @@ def annotation_color(
     prevent_initial_call=True,
 )
 def open_warning_modal(delete, cancel, delete_4_real, keybind_event_listener, opened):
+    """Opens and closes the modal that warns you when you're deleting all annotations"""
     if ctx.triggered_id == "keybind-event-listener":
         pressed_key = (
             keybind_event_listener.get("key", None) if keybind_event_listener else None
@@ -356,7 +359,6 @@ def open_warning_modal(delete, cancel, delete_4_real, keybind_event_listener, op
             # if key pressed is not a valid keybind for class selection
             raise PreventUpdate
         return True
-    return not opened
 
 
 @callback(
@@ -367,6 +369,7 @@ def open_warning_modal(delete, cancel, delete_4_real, keybind_event_listener, op
     prevent_initial_call=True,
 )
 def open_annotation_class_modal(generate, create, opened):
+    """Opens and closes the modal that is used to create a new annotation class"""
     return not opened
 
 
@@ -378,6 +381,7 @@ def open_annotation_class_modal(generate, create, opened):
     prevent_initial_call=True,
 )
 def open_delete_class_modal(delete, remove, opened):
+    """Opens and closes the modal that is used to select annotation classes to delete"""
     return not opened
 
 
@@ -389,6 +393,7 @@ def open_delete_class_modal(delete, remove, opened):
     prevent_initial_call=True,
 )
 def open_edit_class_modal(edit, relabel, opened):
+    """Opens and closes the modal that allows you to relabel an existing annotation class"""
     return not opened
 
 
@@ -400,6 +405,7 @@ def open_edit_class_modal(edit, relabel, opened):
     prevent_initial_call=True,
 )
 def open_hide_class_modal(hide, conceal, opened):
+    """Opens and closes the modal that allows you to select which classes to hide/show"""
     return not opened
 
 
@@ -413,6 +419,7 @@ def open_hide_class_modal(hide, conceal, opened):
     prevent_initial_call=True,
 )
 def disable_class_creation(label, color, current_labels, current_colors):
+    """Disables the create class button when the user selects a color or label that belongs to an existing annotation class"""
     triggered_id = ctx.triggered_id
     warning_text = []
     if triggered_id == "annotation-class-label":
@@ -449,6 +456,7 @@ def disable_class_creation(label, color, current_labels, current_colors):
     prevent_initial_call=True,
 )
 def disable_class_editing(label, current_labels):
+    """Disables the edit class button when the user tries to rename a class to the same name as an existing class"""
     warning_text = []
     if label in current_labels:
         warning_text.append(
@@ -467,6 +475,7 @@ def disable_class_editing(label, current_labels):
     prevent_initial_call=True,
 )
 def disable_class_deletion(highlighted):
+    """Disables the delete class button when all classes would be removed or if no classes are selected to remove"""
     num_selected = 0
     for style in highlighted:
         if style["border"] == "3px solid black":
@@ -486,6 +495,7 @@ def disable_class_deletion(highlighted):
     prevent_initial_call=True,
 )
 def disable_class_hiding(highlighted):
+    """Disables the class hide/show button when no classes are selected to either hide or show"""
     num_selected = 0
     for style in highlighted:
         if style["border"] == "3px solid black":
@@ -596,6 +606,13 @@ def add_delete_edit_hide_classes(
                 annotation_store["label_mapping"][i]["label"] = new_label
                 current_classes[i]["props"]["children"] = new_label
         return current_classes, "", "", annotation_store, no_update
+    # elif triggered == "conceal-annotation-class":
+    #     ann_show = annotation_store["classes_shown"]
+    #     ann_hide = annotation_store["classes_hidden"]
+    #     patched_figure["layout"]["shapes"]
+    #     print(current_annotations)
+    #     print(classes_to_hide)
+    #     return no_update, no_update, no_update, no_update, no_update
     else:
         color_to_delete = []
         color_to_keep = []
