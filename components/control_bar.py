@@ -489,6 +489,8 @@ def layout():
                                 "id": "1",
                             }
                         ],
+                        "classes_shown": {},
+                        "classes_hidden": {},
                     },
                 ),
                 dmc.NotificationsProvider(html.Div(id="notifications-container")),

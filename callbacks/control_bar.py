@@ -161,6 +161,7 @@ def highlight_selected_hide_classes(selected_classes, current_styles):
 @callback(
     Output("image-viewer", "figure", allow_duplicate=True),
     Output({"type": "annotation-color", "index": ALL}, "style"),
+    Output({"type": "annotation-color", "index": ALL}, "n_clicks"),
     Input({"type": "annotation-color", "index": ALL}, "n_clicks"),
     State({"type": "annotation-color", "index": ALL}, "style"),
     prevent_initial_call=True,
@@ -170,8 +171,9 @@ def annotation_color(color_value, current_style):
     This callback is responsible for changing the color of the brush.
     """
     color = ctx.triggered_id["index"]
-    if all(v is None for v in color_value):
+    if color_value[-1] is None:
         color = current_style[-1]["background-color"]
+        color_value[-1] = 1
     for i in range(len(current_style)):
         if current_style[i]["background-color"] == color:
             current_style[i]["border"] = "3px solid black"
@@ -180,7 +182,7 @@ def annotation_color(color_value, current_style):
     patched_figure = Patch()
     patched_figure["layout"]["newshape"]["fillcolor"] = color
     patched_figure["layout"]["newshape"]["line"]["color"] = color
-    return patched_figure, current_style
+    return patched_figure, current_style, color_value
 
 
 @callback(
@@ -432,6 +434,13 @@ def add_delete_edit_hide_classes(
                 annotation_store["label_mapping"][i]["label"] = new_label
                 current_classes[i]["props"]["children"] = new_label
         return current_classes, "", "", annotation_store, no_update
+    # elif triggered == "conceal-annotation-class":
+    #     ann_show = annotation_store["classes_shown"]
+    #     ann_hide = annotation_store["classes_hidden"]
+    #     patched_figure["layout"]["shapes"]
+    #     print(current_annotations)
+    #     print(classes_to_hide)
+    #     return no_update, no_update, no_update, no_update, no_update
     else:
         color_to_delete = []
         color_to_keep = []
