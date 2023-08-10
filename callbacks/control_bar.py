@@ -194,6 +194,7 @@ def annotation_color(color_value, current_style):
     prevent_initial_call=True,
 )
 def open_warning_modal(delete, cancel, delete_4_real, opened):
+    """Opens and closes the modal that warns you when you're deleting all annotations"""
     return not opened
 
 
@@ -205,6 +206,7 @@ def open_warning_modal(delete, cancel, delete_4_real, opened):
     prevent_initial_call=True,
 )
 def open_annotation_class_modal(generate, create, opened):
+    """Opens and closes the modal that is used to create a new annotation class"""
     return not opened
 
 
@@ -216,6 +218,7 @@ def open_annotation_class_modal(generate, create, opened):
     prevent_initial_call=True,
 )
 def open_delete_class_modal(delete, remove, opened):
+    """Opens and closes the modal that is used to select annotation classes to delete"""
     return not opened
 
 
@@ -227,6 +230,7 @@ def open_delete_class_modal(delete, remove, opened):
     prevent_initial_call=True,
 )
 def open_edit_class_modal(edit, relabel, opened):
+    """Opens and closes the modal that allows you to relabel an existing annotation class"""
     return not opened
 
 
@@ -238,6 +242,7 @@ def open_edit_class_modal(edit, relabel, opened):
     prevent_initial_call=True,
 )
 def open_hide_class_modal(hide, conceal, opened):
+    """Opens and closes the modal that allows you to select which classes to hide/show"""
     return not opened
 
 
@@ -251,6 +256,7 @@ def open_hide_class_modal(hide, conceal, opened):
     prevent_initial_call=True,
 )
 def disable_class_creation(label, color, current_labels, current_colors):
+    """Disables the create class button when the user selects a color or label that belongs to an existing annotation class"""
     triggered_id = ctx.triggered_id
     warning_text = []
     if triggered_id == "annotation-class-label":
@@ -287,6 +293,7 @@ def disable_class_creation(label, color, current_labels, current_colors):
     prevent_initial_call=True,
 )
 def disable_class_editing(label, current_labels):
+    """Disables the edit class button when the user tries to rename a class to the same name as an existing class"""
     warning_text = []
     if label in current_labels:
         warning_text.append(
@@ -305,6 +312,7 @@ def disable_class_editing(label, current_labels):
     prevent_initial_call=True,
 )
 def disable_class_deletion(highlighted):
+    """Disables the delete class button when all classes would be removed or if no classes are selected to remove"""
     num_selected = 0
     for style in highlighted:
         if style["border"] == "3px solid black":
@@ -324,6 +332,7 @@ def disable_class_deletion(highlighted):
     prevent_initial_call=True,
 )
 def disable_class_hiding(highlighted):
+    """Disables the class hide/show button when no classes are selected to either hide or show"""
     num_selected = 0
     for style in highlighted:
         if style["border"] == "3px solid black":
