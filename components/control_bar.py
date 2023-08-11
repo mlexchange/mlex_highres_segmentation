@@ -604,7 +604,7 @@ def create_info_card_affix():
                 dmc.HoverCardDropdown(
                     [
                         dmc.Text(
-                            "Keybding shortcuts",
+                            "Keybinding Shortcuts",
                             size="lg",
                             weight=700,
                         ),
@@ -631,10 +631,6 @@ def create_info_card_affix():
                                     KEYBINDS["rectangle"].upper(),
                                     "Rectangle Annotation Mode",
                                 ),
-                                create_keybind_row(
-                                    KEYBINDS["line"],
-                                    "Line Annotation Mode",
-                                ),
                                 dmc.Divider(variant="solid", color="gray"),
                                 create_keybind_row(
                                     KEYBINDS["pan-and-zoom"].upper(),
@@ -654,7 +650,7 @@ def create_info_card_affix():
                                     "Select annotation class 1-9",
                                 ),
                                 create_keybind_row(
-                                    ["shift", "1-9"],
+                                    ["⇧ shift", "1-9"],
                                     "Select annotation class 10-19",
                                 ),
                             ],
