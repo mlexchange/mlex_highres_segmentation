@@ -2,7 +2,9 @@ import dash_mantine_components as dmc
 from dash import html, dcc
 from dash_iconify import DashIconify
 from utils import data_utils
+from constants import ANNOT_ICONS, KEYBINDS
 import random
+from dash_extensions import EventListener
 
 
 def _accordion_item(title, icon, value, children, id):
@@ -129,7 +131,9 @@ def layout():
                                                 id="open-freeform",
                                                 variant="outline",
                                                 color="gray",
-                                                children=DashIconify(icon="mdi:draw"),
+                                                children=DashIconify(
+                                                    icon=ANNOT_ICONS["open-freeform"]
+                                                ),
                                                 style={"border": "3px solid black"},
                                             ),
                                             label="Open Freeform: draw any open shape",
@@ -141,7 +145,7 @@ def layout():
                                                 variant="outline",
                                                 color="gray",
                                                 children=DashIconify(
-                                                    icon="fluent:draw-shape-20-regular"
+                                                    icon=ANNOT_ICONS["closed-freeform"]
                                                 ),
                                             ),
                                             label="Closed Freeform: draw a shape that will auto-complete",
@@ -163,7 +167,7 @@ def layout():
                                                 variant="outline",
                                                 color="gray",
                                                 children=DashIconify(
-                                                    icon="gg:shape-circle"
+                                                    icon=ANNOT_ICONS["circle"]
                                                 ),
                                             ),
                                             label="Circle: create a filled circle",
@@ -175,7 +179,7 @@ def layout():
                                                 variant="outline",
                                                 color="gray",
                                                 children=DashIconify(
-                                                    icon="gg:shape-square"
+                                                    icon=ANNOT_ICONS["rectangle"]
                                                 ),
                                             ),
                                             label="Rectangle: create a filled rectangle",
@@ -186,7 +190,9 @@ def layout():
                                                 id="eraser",
                                                 variant="outline",
                                                 color="gray",
-                                                children=DashIconify(icon="ph:eraser"),
+                                                children=DashIconify(
+                                                    icon=ANNOT_ICONS["eraser"]
+                                                ),
                                             ),
                                             label="Eraser: click on the shape to erase then click this button to delete the selected shape",
                                             multiline=True,
@@ -197,7 +203,7 @@ def layout():
                                                 variant="outline",
                                                 color="gray",
                                                 children=DashIconify(
-                                                    icon="octicon:trash-24"
+                                                    icon=ANNOT_ICONS["delete-all"]
                                                 ),
                                             ),
                                             label="Clear All Annotations",
@@ -205,10 +211,12 @@ def layout():
                                         ),
                                         dmc.Tooltip(
                                             dmc.ActionIcon(
-                                                id="drawing-off",
+                                                id="pan-and-zoom",
                                                 variant="outline",
                                                 color="gray",
-                                                children=DashIconify(icon="el:off"),
+                                                children=DashIconify(
+                                                    icon=ANNOT_ICONS["pan-and-zoom"]
+                                                ),
                                             ),
                                             label="Stop Drawing: pan, zoom, select annotations and edit them using the nodes",
                                             multiline=True,
@@ -547,29 +555,6 @@ def layout():
                         ),
                     ],
                 ),
-                dcc.Store(
-                    id="annotation-store",
-                    data={
-                        "dragmode": "drawopenpath",
-                        "visible": True,
-                        "annotations": {},
-                        "view": {},
-                        "active_img_shape": [],
-                        # TODO: Hard-coding default annotation class
-                        "label_mapping": [
-                            {
-                                "color": "rgb(249,82,82)",
-                                "label": "1",
-                                "id": "1",
-                            }
-                        ],
-                    },
-                ),
-                dmc.NotificationsProvider(html.Div(id="notifications-container")),
-                dcc.Download(id="export-annotation-metadata"),
-                dcc.Download(id="export-annotation-mask"),
-                dcc.Store(id="project-data"),
-                html.Div(id="dummy-output"),
             ],
         )
     )
@@ -602,7 +587,7 @@ def drawer_section(children):
                 position={"left": "25px", "top": "25px"},
             ),
             dmc.Drawer(
-                title=dmc.Text("Lawrence Berkeley National Laboratory", weight=700),
+                title=dmc.Text("ML Exchange", weight=700),
                 id="drawer-controls",
                 padding="md",
                 transition="slide-right",
@@ -622,7 +607,129 @@ def drawer_section(children):
                 children=children,
                 opened=True,
             ),
+            dcc.Store(
+                id="annotation-store",
+                data={
+                    "dragmode": "drawopenpath",
+                    "visible": True,
+                    "annotations": {},
+                    "view": {},
+                    "active_img_shape": [],
+                    # TODO: Hard-coding default annotation class
+                    "label_mapping": [
+                        {
+                            "color": "rgb(249,82,82)",
+                            "label": "1",
+                            "id": "1",
+                        }
+                    ],
+                    "classes_shown": {},
+                    "classes_hidden": {},
+                },
+            ),
+            create_info_card_affix(),
+            dmc.NotificationsProvider(html.Div(id="notifications-container")),
+            dcc.Download(id="export-annotation-metadata"),
+            dcc.Download(id="export-annotation-mask"),
+            dcc.Store(id="project-data"),
+            html.Div(id="dummy-output"),
+            EventListener(
+                events=[
+                    {
+                        "event": "keydown",
+                        "props": ["key", "ctrlKey", "ctrlKey"],
+                    }
+                ],
+                id="keybind-event-listener",
+            ),
         ]
+    )
+
+
+def create_keybind_row(keys, text):
+    keybinds = []
+    for key in keys:
+        keybinds.append(dmc.Kbd(key))
+        keybinds.append(" + ")
+    keybinds.pop()
+    return dmc.Group(
+        position="apart",
+        children=[html.Div(keybinds), dmc.Text(text, size="sm")],
+    )
+
+
+def create_info_card_affix():
+    return dmc.Affix(
+        position={"bottom": 20, "left": 20},
+        zIndex=9999999,
+        children=dmc.HoverCard(
+            shadow="md",
+            position="top-start",
+            children=[
+                dmc.HoverCardTarget(
+                    dmc.ActionIcon(
+                        DashIconify(icon="entypo:info"),
+                        size="lg",
+                        radius="lg",
+                        variant="filled",
+                        mb=10,
+                    ),
+                ),
+                dmc.HoverCardDropdown(
+                    [
+                        dmc.Text(
+                            "Keybinding Shortcuts",
+                            size="lg",
+                            weight=700,
+                        ),
+                        dmc.Stack(
+                            [
+                                dmc.Divider(variant="solid", color="gray"),
+                                create_keybind_row(
+                                    KEYBINDS["open-freeform"].upper(),
+                                    "Open Freeform",
+                                ),
+                                create_keybind_row(
+                                    KEYBINDS["closed-freeform"].upper(),
+                                    "Closed Freeform",
+                                ),
+                                create_keybind_row(
+                                    KEYBINDS["line"].upper(),
+                                    "Line Annotation Mode",
+                                ),
+                                create_keybind_row(
+                                    KEYBINDS["circle"].upper(),
+                                    "Circle Annotation Mode",
+                                ),
+                                create_keybind_row(
+                                    KEYBINDS["rectangle"].upper(),
+                                    "Rectangle Annotation Mode",
+                                ),
+                                dmc.Divider(variant="solid", color="gray"),
+                                create_keybind_row(
+                                    KEYBINDS["pan-and-zoom"].upper(),
+                                    "Pan and Zoom Mode",
+                                ),
+                                create_keybind_row(
+                                    KEYBINDS["erase"].upper(),
+                                    "Erase Annotation Mode",
+                                ),
+                                create_keybind_row(
+                                    KEYBINDS["delete-all"].upper(),
+                                    "Delete all annotations",
+                                ),
+                                dmc.Divider(variant="solid", color="gray"),
+                                create_keybind_row(
+                                    ["1-9"],
+                                    "Select annotation class 1-9",
+                                ),
+                            ],
+                            p=0,
+                        ),
+                    ]
+                ),
+            ],
+        ),
     )
 
 
