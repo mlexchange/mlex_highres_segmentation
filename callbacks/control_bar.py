@@ -907,4 +907,4 @@ def open_controls_drawer(n_clicks):
 def open_controls_drawer(is_opened):
     if is_opened:
         raise PreventUpdate
-    return {"padding-left": "50px"}
+    return {"padding-left": "125px"}
