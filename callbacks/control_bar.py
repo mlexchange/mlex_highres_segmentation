@@ -280,8 +280,8 @@ def annotation_color(
             keybind_event_listener.get("key", None) if keybind_event_listener else None
         )
         pressed_key = (
-            f"shift+{pressed_key}"
-            if keybind_event_listener.get("shiftKey", None)
+            f"alt+{pressed_key}"
+            if keybind_event_listener.get("altKey", None)
             else pressed_key
         )
         if not pressed_key:

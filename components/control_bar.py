@@ -563,7 +563,7 @@ def drawer_section(children):
                 events=[
                     {
                         "event": "keydown",
-                        "props": ["key", "altKey", "shiftKey"],
+                        "props": ["key", "altKey", "altKey"],
                     }
                 ],
                 id="keybind-event-listener",
@@ -650,7 +650,7 @@ def create_info_card_affix():
                                     "Select annotation class 1-9",
                                 ),
                                 create_keybind_row(
-                                    ["⇧ shift", "1-9"],
+                                    ["alt (⌥ option)", "1-9"],
                                     "Select annotation class 10-19",
                                 ),
                             ],
