@@ -1,4 +1,13 @@
-from dash import Input, Output, State, callback, ctx, Patch, clientside_callback
+from dash import (
+    Input,
+    Output,
+    State,
+    callback,
+    ctx,
+    Patch,
+    clientside_callback,
+    ClientsideFunction,
+)
 import dash
 import dash_mantine_components as dmc
 import plotly.express as px
@@ -13,15 +22,8 @@ from utils.plot_utils import (
 
 
 @callback(
-    Output("image-viewer", "figure"),
-    Output("image-viewfinder", "figure"),
+    Output("image-data", "data"),
     Output("annotation-store", "data", allow_duplicate=True),
-    Output("image-viewer-loading", "zIndex", allow_duplicate=True),
-    Output("data-selection-controls", "children", allow_duplicate=True),
-    Output("image-transformation-controls", "children", allow_duplicate=True),
-    Output("annotations-controls", "children", allow_duplicate=True),
-    Output("image-viewfinder", "style"),
-    Output("image-ratio", "data"),
     Input("image-selection-slider", "value"),
     State("project-name-src", "value"),
     State("paintbrush-width", "value"),
@@ -29,7 +31,7 @@ from utils.plot_utils import (
     State("annotation-store", "data"),
     prevent_initial_call=True,
 )
-def render_image(
+def populate_image_store(
     image_idx,
     project_name,
     annotation_width,
@@ -51,17 +53,6 @@ def render_image(
         plot_bgcolor="rgba(0,0,0,0)",
     )
     fig.update_traces(hovertemplate=None, hoverinfo="skip")
-
-    # calculate optimal canvas ratios
-    y_size = tf.shape[0]
-    x_size = tf.shape[1]
-    x_min = 0 - 0.8 * y_size
-    x_max = x_size + 0.25 * y_size
-    y_min = -0.1 * x_size
-    y_max = y_size + 0.1 * x_size
-    fig.update_xaxes(range=[x_min, x_max])
-    fig.update_yaxes(range=[y_min, y_max])
-
     # set the default annotation style
     for color_opt in annotation_colors:
         if color_opt["props"]["style"]["border"] != "1px solid":
@@ -93,24 +84,61 @@ def render_image(
     patched_annotation_store = Patch()
     patched_annotation_store["active_img_shape"] = list(tf.shape)
 
-    fig_loading_overlay = -1
-    image_ratio = round(tf.shape[1] / tf.shape[0], 2)
+    fig.update_xaxes(range=[0, tf.shape[0]])
+    fig.update_yaxes(range=[0, tf.shape[1]])
+    return (
+        fig,
+        patched_annotation_store,
+    )
 
+
+clientside_callback(
+    ClientsideFunction(namespace="clientside", function_name="canvas_resize"),
+    Output("image-resized", "data"),
+    Input("image-data", "data"),
+    prevent_initial_call=True,
+)
+
+
+@callback(
+    Output("image-viewer", "figure", allow_duplicate=True),
+    Output("image-viewfinder", "figure"),
+    Output("image-viewer-loading", "zIndex", allow_duplicate=True),
+    Output("data-selection-controls", "children", allow_duplicate=True),
+    Output("image-transformation-controls", "children", allow_duplicate=True),
+    Output("annotations-controls", "children", allow_duplicate=True),
+    Output("image-viewfinder", "style"),
+    Output("image-ratio", "data"),
+    State("image-selection-slider", "value"),
+    Input("image-resized", "data"),
+    State("project-name-src", "value"),
+    prevent_initial_call=True,
+)
+def render_image(
+    image_idx,
+    fig,
+    project_name,
+):
+    if image_idx:
+        image_idx -= 1  # slider starts at 1, so subtract 1 to get the correct index
+        tf = data[project_name][image_idx]
+    else:
+        tf = np.zeros((500, 500))
+    image_ratio = round(tf.shape[1] / tf.shape[0], 2)
     style = get_viewfinder_style(image_ratio)
     DOWNSCALED_img_max_height, DOWNSCALED_img_max_width = get_view_finder_max_min(
         image_ratio
     )
-
     fig_viewfinder = create_viewfinder(
         tf, (DOWNSCALED_img_max_height, DOWNSCALED_img_max_width)
     )
+    fig_loading_overlay = -1
     # No update is needed for the 'children' of the control components
     # since we just want to trigger the loading overlay with this callback
 
     return (
         fig,
         fig_viewfinder,
-        patched_annotation_store,
         fig_loading_overlay,
         dash.no_update,
         dash.no_update,
@@ -135,7 +163,7 @@ def update_viewfinder(relayout_data, annotation_store, image_ratio):
     """
     # Callback is triggered when the image is first loaded, but the annotation_store is not yet populated so we need to prevent the update
 
-    if not image_ratio:
+    if not image_ratio or not relayout_data:
         raise dash.exceptions.PreventUpdate
 
     patched_fig = Patch()
@@ -198,6 +226,8 @@ def locally_store_annotations(relayout_data, img_idx, annotation_store):
     this function takes the annotation shapes, and stores it in the dcc.Store, which is then used elsewhere
     to preserve drawn annotations, or to save them.
     """
+    if not relayout_data:
+        raise dash.exceptions.PreventUpdate
     if "shapes" in relayout_data:
         annotation_store["annotations"][str(img_idx - 1)] = relayout_data["shapes"]
 
