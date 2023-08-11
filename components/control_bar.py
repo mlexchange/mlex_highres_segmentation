@@ -2,7 +2,9 @@ import dash_mantine_components as dmc
 from dash import html, dcc
 from dash_iconify import DashIconify
 from utils import data_utils
+from constants import ANNOT_ICONS, KEYBINDS
 import random
+from dash_extensions import EventListener
 
 
 def _accordion_item(title, icon, value, children, id):
@@ -122,16 +124,16 @@ def layout():
                                 ),
                                 dmc.Space(h=20),
                                 dmc.Text("Annotation mode", size="sm"),
-                                dmc.Group(
-                                    spacing="xs",
-                                    grow=True,
+                                html.Div(
                                     children=[
                                         dmc.Tooltip(
                                             dmc.ActionIcon(
                                                 id="open-freeform",
                                                 variant="outline",
                                                 color="gray",
-                                                children=DashIconify(icon="mdi:draw"),
+                                                children=DashIconify(
+                                                    icon=ANNOT_ICONS["open-freeform"]
+                                                ),
                                                 style={"border": "3px solid black"},
                                             ),
                                             label="Open Freeform: draw any open shape",
@@ -143,10 +145,20 @@ def layout():
                                                 variant="outline",
                                                 color="gray",
                                                 children=DashIconify(
-                                                    icon="fluent:draw-shape-20-regular"
+                                                    icon=ANNOT_ICONS["closed-freeform"]
                                                 ),
                                             ),
                                             label="Closed Freeform: draw a shape that will auto-complete",
+                                            multiline=True,
+                                        ),
+                                        dmc.Tooltip(
+                                            dmc.ActionIcon(
+                                                id="line",
+                                                variant="outline",
+                                                color="gray",
+                                                children=DashIconify(icon="ci:line-l"),
+                                            ),
+                                            label="Line: draw a straight line",
                                             multiline=True,
                                         ),
                                         dmc.Tooltip(
@@ -155,7 +167,7 @@ def layout():
                                                 variant="outline",
                                                 color="gray",
                                                 children=DashIconify(
-                                                    icon="gg:shape-circle"
+                                                    icon=ANNOT_ICONS["circle"]
                                                 ),
                                             ),
                                             label="Circle: create a filled circle",
@@ -167,7 +179,7 @@ def layout():
                                                 variant="outline",
                                                 color="gray",
                                                 children=DashIconify(
-                                                    icon="gg:shape-square"
+                                                    icon=ANNOT_ICONS["rectangle"]
                                                 ),
                                             ),
                                             label="Rectangle: create a filled rectangle",
@@ -178,9 +190,11 @@ def layout():
                                                 id="eraser",
                                                 variant="outline",
                                                 color="gray",
-                                                children=DashIconify(icon="ph:eraser"),
+                                                children=DashIconify(
+                                                    icon=ANNOT_ICONS["eraser"]
+                                                ),
                                             ),
-                                            label="Eraser: click on shapes to delete them",
+                                            label="Eraser: click on the shape to erase then click this button to delete the selected shape",
                                             multiline=True,
                                         ),
                                         dmc.Tooltip(
@@ -189,7 +203,7 @@ def layout():
                                                 variant="outline",
                                                 color="gray",
                                                 children=DashIconify(
-                                                    icon="octicon:trash-24"
+                                                    icon=ANNOT_ICONS["delete-all"]
                                                 ),
                                             ),
                                             label="Clear All Annotations",
@@ -197,15 +211,19 @@ def layout():
                                         ),
                                         dmc.Tooltip(
                                             dmc.ActionIcon(
-                                                id="drawing-off",
+                                                id="pan-and-zoom",
                                                 variant="outline",
                                                 color="gray",
-                                                children=DashIconify(icon="el:off"),
+                                                children=DashIconify(
+                                                    icon=ANNOT_ICONS["pan-and-zoom"]
+                                                ),
                                             ),
                                             label="Stop Drawing: pan, zoom, select annotations and edit them using the nodes",
                                             multiline=True,
                                         ),
                                     ],
+                                    className="flex-row",
+                                    style={"justify-content": "space-evenly"},
                                 ),
                                 dmc.Modal(
                                     title="Warning",
@@ -244,9 +262,7 @@ def layout():
                                 ),
                                 dmc.Space(h=20),
                                 dmc.Text("Annotation class", size="sm"),
-                                dmc.Group(
-                                    spacing="xs",
-                                    grow=True,
+                                html.Div(
                                     id="annotation-class-selection",
                                     children=[
                                         dmc.ActionIcon(
@@ -259,14 +275,23 @@ def layout():
                                             style={
                                                 "background-color": "rgb(249,82,82)",
                                                 "border": "3px solid black",
+                                                "width": "fit-content",
+                                                "padding": "5px",
+                                                "margin-right": "10px",
                                             },
                                             children="1",
                                         ),
                                     ],
+                                    style={
+                                        "display": "flex",
+                                        "flex-wrap": "wrap",
+                                        "justify-content": "space-evenly",
+                                    },
                                 ),
-                                dmc.Space(h=5),
-                                html.Div(
-                                    [
+                                dmc.Space(h=10),
+                                dmc.Group(
+                                    grow=True,
+                                    children=[
                                         dmc.Button(
                                             id="generate-annotation-class",
                                             children="Generate Class",
@@ -276,16 +301,32 @@ def layout():
                                             ),
                                         ),
                                         dmc.Button(
-                                            id="delete-annotation-class",
-                                            children="Delete Class",
+                                            id="edit-annotation-class",
+                                            children="Edit Class",
                                             variant="outline",
-                                            style={"margin-left": "auto"},
+                                            leftIcon=DashIconify(icon="uil:edit"),
+                                        ),
+                                    ],
+                                ),
+                                dmc.Space(h=10),
+                                dmc.Group(
+                                    grow=True,
+                                    children=[
+                                        dmc.Button(
+                                            id="hide-annotation-class",
+                                            children="Hide/Show Classes",
+                                            variant="outline",
+                                            leftIcon=DashIconify(icon="mdi:hide"),
+                                        ),
+                                        dmc.Button(
+                                            id="delete-annotation-class",
+                                            children="Delete Classes",
+                                            variant="outline",
                                             leftIcon=DashIconify(
                                                 icon="octicon:trash-24"
                                             ),
                                         ),
                                     ],
-                                    className="flex-row",
                                 ),
                                 dmc.Modal(
                                     id="generate-annotation-class-modal",
@@ -312,6 +353,63 @@ def layout():
                                                 variant="light",
                                             ),
                                         ),
+                                        html.Div(id="bad-label-color"),
+                                    ],
+                                ),
+                                dmc.Modal(
+                                    id="edit-annotation-class-modal",
+                                    title="Edit a Custom Annotation Class",
+                                    children=[
+                                        dmc.Text("Select a generated class to edit:"),
+                                        dmc.Select(
+                                            id="current-annotation-classes-edit"
+                                        ),
+                                        dmc.Space(h=10),
+                                        dmc.Center(
+                                            dmc.TextInput(
+                                                id="annotation-class-label-edit",
+                                                placeholder="New Class Label",
+                                            ),
+                                        ),
+                                        dmc.Space(h=10),
+                                        dmc.Center(
+                                            dmc.Button(
+                                                id="relabel-annotation-class",
+                                                children="Edit Annotation Class",
+                                                variant="light",
+                                            ),
+                                        ),
+                                        html.Div(id="bad-label"),
+                                    ],
+                                ),
+                                dmc.Modal(
+                                    id="hide-annotation-class-modal",
+                                    title="Hide/Show Annotation Classes",
+                                    children=[
+                                        dmc.Text("Select annotation classes to hide:"),
+                                        html.Div(
+                                            id="current-annotation-classes-hide",
+                                            style={
+                                                "display": "flex",
+                                                "flex-wrap": "wrap",
+                                                "justify-content": "space-evenly",
+                                            },
+                                        ),
+                                        dmc.Space(h=10),
+                                        dmc.Center(
+                                            dmc.Button(
+                                                id="conceal-annotation-class",
+                                                children="Apply Changes",
+                                                variant="light",
+                                            ),
+                                        ),
+                                        dmc.Center(
+                                            dmc.Text(
+                                                "No classes selected",
+                                                color="red",
+                                                id="at-least-one-hide",
+                                            ),
+                                        ),
                                     ],
                                 ),
                                 dmc.Modal(
@@ -321,12 +419,21 @@ def layout():
                                         dmc.Text(
                                             "Select all generated classes to remove:"
                                         ),
-                                        dmc.Group(
-                                            spacing="xs",
-                                            grow=True,
+                                        html.Div(
                                             id="current-annotation-classes",
+                                            style={
+                                                "display": "flex",
+                                                "flex-wrap": "wrap",
+                                                "justify-content": "space-evenly",
+                                            },
                                         ),
                                         dmc.Space(h=10),
+                                        dmc.Center(
+                                            dmc.Text(
+                                                "NOTE: Deleting a class will delete all annotations associated with that class!",
+                                                color="red",
+                                            )
+                                        ),
                                         dmc.Center(
                                             [
                                                 dmc.Button(
@@ -336,21 +443,97 @@ def layout():
                                                 ),
                                             ]
                                         ),
-                                        dmc.Text(
-                                            "There must be at least one annotation class!",
-                                            color="red",
-                                            id="at-least-one",
+                                        dmc.Center(
+                                            dmc.Text(
+                                                "There must be at least one annotation class!",
+                                                color="red",
+                                                id="at-least-one",
+                                            ),
                                         ),
                                     ],
                                 ),
                                 dmc.Space(h=20),
                                 dmc.Center(
                                     dmc.Button(
-                                        "Export annotation",
-                                        id="export-annotation",
+                                        "Save/Load/Export",
+                                        id="open-data-management-modal-button",
                                         variant="light",
                                         style={"width": "160px", "margin": "5px"},
                                     ),
+                                ),
+                                dmc.Modal(
+                                    title="Data Management",
+                                    id="data-management-modal",
+                                    centered=True,
+                                    zIndex=10000,
+                                    children=[
+                                        dmc.Divider(
+                                            variant="solid",
+                                            label="Save data",
+                                            labelPosition="center",
+                                        ),
+                                        dmc.Center(
+                                            dmc.Button(
+                                                "Save to server",
+                                                id="save-annotations",
+                                                variant="light",
+                                                style={
+                                                    "width": "160px",
+                                                    "margin": "5px",
+                                                },
+                                            ),
+                                        ),
+                                        dmc.Text(
+                                            id="data-modal-save-status",
+                                            align="center",
+                                            italic=True,
+                                        ),
+                                        dmc.Space(h=20),
+                                        dmc.Divider(
+                                            variant="solid",
+                                            label="Load data",
+                                            labelPosition="center",
+                                        ),
+                                        dmc.Space(h=10),
+                                        dmc.Center(
+                                            dmc.HoverCard(
+                                                withArrow=True,
+                                                shadow="md",
+                                                children=[
+                                                    dmc.HoverCardTarget(
+                                                        dmc.Button(
+                                                            "From server",
+                                                            variant="light",
+                                                            style={
+                                                                "width": "160px",
+                                                                "margin": "5px",
+                                                            },
+                                                        )
+                                                    ),
+                                                    dmc.HoverCardDropdown(
+                                                        id="load-annotations-server-container",
+                                                    ),
+                                                ],
+                                            ),
+                                        ),
+                                        dmc.Space(h=20),
+                                        dmc.Divider(
+                                            variant="solid",
+                                            labelPosition="center",
+                                        ),
+                                        dmc.Space(h=10),
+                                        dmc.Center(
+                                            dmc.Button(
+                                                "Export annotation",
+                                                id="export-annotation",
+                                                variant="light",
+                                                style={
+                                                    "width": "160px",
+                                                    "margin": "5px",
+                                                },
+                                            ),
+                                        ),
+                                    ],
                                 ),
                                 dmc.Space(h=20),
                             ],
@@ -372,29 +555,6 @@ def layout():
                         ),
                     ],
                 ),
-                dcc.Store(
-                    id="annotation-store",
-                    data={
-                        "dragmode": "drawopenpath",
-                        "visible": True,
-                        "annotations": {},
-                        "view": {},
-                        "active_img_shape": [],
-                        # TODO: Hard-coding default annotation class
-                        "label_mapping": [
-                            {
-                                "color": "rgb(249,82,82)",
-                                "label": "1",
-                                "id": random.randint(1, 100),
-                            }
-                        ],
-                    },
-                ),
-                dmc.NotificationsProvider(html.Div(id="notifications-container")),
-                dcc.Download(id="export-annotation-metadata"),
-                dcc.Download(id="export-annotation-mask"),
-                dcc.Store(id="project-data"),
-                html.Div(id="dummy-output"),
             ],
         )
     )
@@ -427,7 +587,7 @@ def drawer_section(children):
                 position={"left": "25px", "top": "25px"},
             ),
             dmc.Drawer(
-                title=dmc.Text("Lawrence Berkeley National Laboratory", weight=700),
+                title=dmc.Text("ML Exchange", weight=700),
                 id="drawer-controls",
                 padding="md",
                 transition="slide-right",
@@ -447,5 +607,148 @@ def drawer_section(children):
                 children=children,
                 opened=True,
             ),
+            dcc.Store(
+                id="annotation-store",
+                data={
+                    "dragmode": "drawopenpath",
+                    "visible": True,
+                    "annotations": {},
+                    "view": {},
+                    "active_img_shape": [],
+                    # TODO: Hard-coding default annotation class
+                    "label_mapping": [
+                        {
+                            "color": "rgb(249,82,82)",
+                            "label": "1",
+                            "id": "1",
+                        }
+                    ],
+                    "classes_shown": {},
+                    "classes_hidden": {},
+                },
+            ),
+            create_info_card_affix(),
+            dmc.NotificationsProvider(html.Div(id="notifications-container")),
+            dcc.Download(id="export-annotation-metadata"),
+            dcc.Download(id="export-annotation-mask"),
+            dcc.Store(id="project-data"),
+            html.Div(id="dummy-output"),
+            EventListener(
+                events=[
+                    {
+                        "event": "keydown",
+                        "props": ["key", "ctrlKey", "ctrlKey"],
+                    }
+                ],
+                id="keybind-event-listener",
+            ),
         ]
+    )
+
+
+def create_keybind_row(keys, text):
+    keybinds = []
+    for key in keys:
+        keybinds.append(dmc.Kbd(key))
+        keybinds.append(" + ")
+    keybinds.pop()
+    return dmc.Group(
+        position="apart",
+        children=[html.Div(keybinds), dmc.Text(text, size="sm")],
+    )
+
+
+def create_info_card_affix():
+    return dmc.Affix(
+        position={"bottom": 20, "left": 20},
+        zIndex=9999999,
+        children=dmc.HoverCard(
+            shadow="md",
+            position="top-start",
+            children=[
+                dmc.HoverCardTarget(
+                    dmc.ActionIcon(
+                        DashIconify(icon="entypo:info"),
+                        size="lg",
+                        radius="lg",
+                        variant="filled",
+                        mb=10,
+                    ),
+                ),
+                dmc.HoverCardDropdown(
+                    [
+                        dmc.Text(
+                            "Keybinding Shortcuts",
+                            size="lg",
+                            weight=700,
+                        ),
+                        dmc.Stack(
+                            [
+                                dmc.Divider(variant="solid", color="gray"),
+                                create_keybind_row(
+                                    KEYBINDS["open-freeform"].upper(),
+                                    "Open Freeform",
+                                ),
+                                create_keybind_row(
+                                    KEYBINDS["closed-freeform"].upper(),
+                                    "Closed Freeform",
+                                ),
+                                create_keybind_row(
+                                    KEYBINDS["line"].upper(),
+                                    "Line Annotation Mode",
+                                ),
+                                create_keybind_row(
+                                    KEYBINDS["circle"].upper(),
+                                    "Circle Annotation Mode",
+                                ),
+                                create_keybind_row(
+                                    KEYBINDS["rectangle"].upper(),
+                                    "Rectangle Annotation Mode",
+                                ),
+                                dmc.Divider(variant="solid", color="gray"),
+                                create_keybind_row(
+                                    KEYBINDS["pan-and-zoom"].upper(),
+                                    "Pan and Zoom Mode",
+                                ),
+                                create_keybind_row(
+                                    KEYBINDS["erase"].upper(),
+                                    "Erase Annotation Mode",
+                                ),
+                                create_keybind_row(
+                                    KEYBINDS["delete-all"].upper(),
+                                    "Delete all annotations",
+                                ),
+                                dmc.Divider(variant="solid", color="gray"),
+                                create_keybind_row(
+                                    ["1-9"],
+                                    "Select annotation class 1-9",
+                                ),
+                            ],
+                            p=0,
+                        ),
+                    ]
+                ),
+            ],
+        ),
+    )
+
+
+def class_action_icon(class_color, class_label, label_color):
+    """
+    This component creates an action icon for the given annotation class.
+    """
+    style = {
+        "background-color": class_color,
+        "width": "fit-content",
+        "border": "1px solid black",
+        "color": label_color,
+        "padding": "5px",
+        "margin-right": "10px",
+    }
+    return dmc.ActionIcon(
+        id={"type": "annotation-color", "index": class_color},
+        w=30,
+        variant="filled",
+        style=style,
+        children=class_label,
     )

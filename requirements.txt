@@ -30,3 +30,4 @@ scikit-image
 svgpathtools
 matplotlib
 scipy
+dash-extensions==1.0.1
