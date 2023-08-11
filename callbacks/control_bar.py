@@ -279,11 +279,6 @@ def annotation_color(
         pressed_key = (
             keybind_event_listener.get("key", None) if keybind_event_listener else None
         )
-        pressed_key = (
-            f"ctrl+{pressed_key}"
-            if keybind_event_listener.get("ctrlKey", None)
-            else pressed_key
-        )
         if not pressed_key:
             raise PreventUpdate
         if pressed_key not in KEYBINDS["classes"]:

@@ -649,10 +649,6 @@ def create_info_card_affix():
                                     ["1-9"],
                                     "Select annotation class 1-9",
                                 ),
-                                create_keybind_row(
-                                    ["clrl (control)", "1-9"],
-                                    "Select annotation class 10-19",
-                                ),
                             ],
                             p=0,
                         ),
