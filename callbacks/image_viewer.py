@@ -190,14 +190,23 @@ def update_viewfinder(relayout_data, annotation_store, image_ratio):
             annotation_store["active_img_shape"],
             (DOWNSCALED_img_max_height, DOWNSCALED_img_max_width),
         )
+        # patched_fig["layout"]["shapes"][0]["x0"] = x0 if x0 > 0 else 0
+        # patched_fig["layout"]["shapes"][0]["y0"] = (
+        #     y0 if y0 < DOWNSCALED_img_max_height else DOWNSCALED_img_max_height
+        # )
+        # patched_fig["layout"]["shapes"][0]["x1"] = (
+        #     x1 if x1 < DOWNSCALED_img_max_width else DOWNSCALED_img_max_width
+        # )
+        # patched_fig["layout"]["shapes"][0]["y1"] = y1 if y1 > 0 else 0
+
         patched_fig["layout"]["shapes"][0]["x0"] = x0 if x0 > 0 else 0
-        patched_fig["layout"]["shapes"][0]["y0"] = (
-            y0 if y0 < DOWNSCALED_img_max_height else DOWNSCALED_img_max_height
-        )
+        patched_fig["layout"]["shapes"][0]["y0"] = y0 if y0 > 0 else 0
         patched_fig["layout"]["shapes"][0]["x1"] = (
             x1 if x1 < DOWNSCALED_img_max_width else DOWNSCALED_img_max_width
         )
-        patched_fig["layout"]["shapes"][0]["y1"] = y1 if y1 > 0 else 0
+        patched_fig["layout"]["shapes"][0]["y1"] = (
+            y1 if y1 < DOWNSCALED_img_max_height else DOWNSCALED_img_max_height
+        )
 
     return patched_fig
 

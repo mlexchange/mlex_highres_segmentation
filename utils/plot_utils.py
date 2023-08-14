@@ -83,9 +83,9 @@ def create_viewfinder(image_data, downscaled_image_shape):
     """
 
     x0 = 0
-    y0 = img_max_height
+    y0 = 0
     x1 = img_max_width
-    y1 = 0
+    y1 = img_max_height
 
     # Create the viewfinder box
     fig.add_shape(
