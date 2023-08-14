@@ -3,24 +3,12 @@ import dash_mantine_components as dmc
 from dash_iconify import DashIconify
 from utils.plot_utils import blank_fig
 
-COMPONENT_STYLE = {
-    "width": "calc(100vw)",
-    "height": "calc(100vh)",
-    "padding": "10px",
-    "borderRadius": "5px",
-    "border": "1px solid rgb(222, 226, 230)",
-    "overflowY": "auto",
-}
-
-FIGURE_CONFIG = {
-    "displayModeBar": False,
-    "scrollZoom": True,
-}
-
 
 def layout():
     return html.Div(
-        style=COMPONENT_STYLE,
+        style={
+            "width": "calc(100vw)",
+        },
         children=[
             dmc.Grid(
                 id="image-slice-selection-parent",
@@ -87,14 +75,15 @@ def layout():
                     dcc.Store(id="image-resized"),
                     dcc.Graph(
                         id="image-viewer",
-                        config=FIGURE_CONFIG,
+                        config={
+                            "displayModeBar": False,
+                            "scrollZoom": True,
+                        },
                         figure=blank_fig(),
                         style={
-                            "height": "90vh",
-                            "width": "90vw",
+                            "height": "100%",
+                            "width": "100vw",
                             "position": "fixed",
-                            "top": "10vh",
-                            "left": "10hw",
                         },
                     ),
                     dcc.Graph(
@@ -110,10 +99,6 @@ def layout():
                         },
                     ),
                 ],
-                style={
-                    "height": "100%",
-                    "width": "90vw",
-                },
             ),
         ],
     )
