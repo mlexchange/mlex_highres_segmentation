@@ -53,6 +53,58 @@ def layout():
                                     placeholder="Select an image to view...",
                                 ),
                                 dmc.Space(h=20),
+                                dmc.Grid(
+                                    id="image-slice-selection-parent",
+                                    children=[
+                                        dmc.Col(
+                                            dmc.Tooltip(
+                                                label="Previous image",
+                                                children=dmc.ActionIcon(
+                                                    DashIconify(
+                                                        icon="ooui:previous-ltr",
+                                                        width=20,
+                                                    ),
+                                                    variant="filled",
+                                                    id="image-selection-previous",
+                                                    mt=15,
+                                                ),
+                                            ),
+                                            span=1,
+                                        ),
+                                        dmc.Col(
+                                            [
+                                                dmc.Text(
+                                                    "Selected image: 1",
+                                                    align="center",
+                                                    id="image-selection-text",
+                                                ),
+                                                dmc.Slider(
+                                                    min=1,
+                                                    max=1000,
+                                                    step=1,
+                                                    value=25,
+                                                    id="image-selection-slider",
+                                                ),
+                                            ],
+                                            span="auto",
+                                        ),
+                                        dmc.Col(
+                                            dmc.Tooltip(
+                                                label="Next image",
+                                                children=dmc.ActionIcon(
+                                                    DashIconify(
+                                                        icon="ooui:previous-rtl",
+                                                        width=20,
+                                                    ),
+                                                    variant="filled",
+                                                    id="image-selection-next",
+                                                    mt=15,
+                                                ),
+                                            ),
+                                            span=1,
+                                        ),
+                                    ],
+                                ),
                             ],
                         ),
                         _accordion_item(
@@ -582,15 +634,16 @@ def drawer_section(children):
                     radius="sm",
                     compact=True,
                     variant="outline",
-                    color="indigo",
+                    color="gray",
                 ),
                 position={"left": "25px", "top": "25px"},
             ),
             dmc.Drawer(
-                title=dmc.Text("ML Exchange", weight=700),
+                title=dmc.Text("ML Exchange Image Segmentation", weight=700),
                 id="drawer-controls",
                 padding="md",
-                transition="slide-right",
+                transition="fade",
+                transitionDuration=50,
                 shadow="md",
                 withOverlay=False,
                 position="left",
@@ -599,9 +652,10 @@ def drawer_section(children):
                     "drawer": {
                         "width": "fit-content",
                         "height": "fit-content",
-                        "max-height": "90%",
+                        "max-height": "100%",
                         "overflow-y": "auto",
-                        "margin": "20px 0 0 20px",
+                        "margin": "0px",
+                        "opacity": "0.95",
                     },
                 },
                 children=children,
@@ -660,7 +714,7 @@ def create_keybind_row(keys, text):
 
 def create_info_card_affix():
     return dmc.Affix(
-        position={"bottom": 20, "left": 20},
+        position={"bottom": 20, "right": 20},
         zIndex=9999999,
         children=dmc.HoverCard(
             shadow="md",
@@ -676,9 +730,10 @@ def create_info_card_affix():
                     ),
                 ),
                 dmc.HoverCardDropdown(
-                    [
+                    style={"marginRight": "20px"},
+                    children=[
                         dmc.Text(
-                            "Keybinding Shortcuts",
+                            "Shortcuts",
                             size="lg",
                             weight=700,
                         ),
@@ -726,7 +781,7 @@ def create_info_card_affix():
                             ],
                             p=0,
                         ),
-                    ]
+                    ],
                 ),
             ],
         ),

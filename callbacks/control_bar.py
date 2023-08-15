@@ -891,20 +891,18 @@ def load_and_apply_selected_annotations(selected_annotation, image_src, img_idx)
 
 @callback(
     Output("drawer-controls", "opened"),
-    Output("image-slice-selection-parent", "style"),
     Input("drawer-controls-open-button", "n_clicks"),
-    # prevent_initial_call=True,
 )
 def open_controls_drawer(n_clicks):
-    return True, {"padding-left": "450px"}
+    return True
 
 
 @callback(
-    Output("image-slice-selection-parent", "style", allow_duplicate=True),
+    Output("drawer-controls-open-button", "style"),
     Input("drawer-controls", "opened"),
     prevent_initial_call=True,
 )
 def open_controls_drawer(is_opened):
     if is_opened:
-        raise PreventUpdate
-    return {"padding-left": "125px"}
+        return {"display": "none"}
+    return {}

@@ -22,54 +22,6 @@ def layout():
     return html.Div(
         style=COMPONENT_STYLE,
         children=[
-            dmc.Grid(
-                id="image-slice-selection-parent",
-                style={"padding-left": "450px"},
-                children=[
-                    dmc.Col(
-                        dmc.Tooltip(
-                            label="Previous image",
-                            children=dmc.ActionIcon(
-                                DashIconify(icon="ooui:previous-ltr", width=20),
-                                variant="filled",
-                                id="image-selection-previous",
-                                mt=15,
-                            ),
-                        ),
-                        span=1,
-                    ),
-                    dmc.Col(
-                        [
-                            dmc.Text(
-                                "Selected image: 1",
-                                align="center",
-                                id="image-selection-text",
-                            ),
-                            dmc.Slider(
-                                min=1,
-                                max=1000,
-                                step=1,
-                                value=25,
-                                id="image-selection-slider",
-                            ),
-                        ],
-                        span="auto",
-                    ),
-                    dmc.Col(
-                        dmc.Tooltip(
-                            label="Next image",
-                            children=dmc.ActionIcon(
-                                DashIconify(icon="ooui:previous-rtl", width=20),
-                                variant="filled",
-                                id="image-selection-next",
-                                mt=15,
-                            ),
-                        ),
-                        span=1,
-                    ),
-                ],
-            ),
-            dmc.Space(h=20),
             dmc.LoadingOverlay(
                 id="image-viewer-loading",
                 overlayOpacity=0.15,
