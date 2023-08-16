@@ -7,6 +7,13 @@ import random
 from dash_extensions import EventListener
 
 
+def _control_item(title, item):
+    return dmc.Grid([
+        dmc.Text(title, size="sm", style={"width": "80px"}, align="right"),
+        item
+    ])
+
+
 def _accordion_item(title, icon, value, children, id):
     return dmc.AccordionItem(
         [
@@ -45,17 +52,21 @@ def layout():
                             "data-select",
                             id="data-selection-controls",
                             children=[
-                                dmc.Text("Image"),
-                                dmc.Select(
-                                    id="project-name-src",
-                                    data=DATA_OPTIONS,
-                                    value=DATA_OPTIONS[0] if DATA_OPTIONS else None,
-                                    placeholder="Select an image to view...",
-                                ),
+                                dmc.Grid([
+                                    dmc.Text("Image", size="sm"),
+                                    dmc.Select(
+                                        id="project-name-src",
+                                        data=DATA_OPTIONS,
+                                        value=DATA_OPTIONS[0] if DATA_OPTIONS else None,
+                                        placeholder="Select an image to view...",
+                                    ),
+                                ]),
+                                
                                 dmc.Space(h=20),
                                 dmc.Grid(
                                     id="image-slice-selection-parent",
                                     children=[
+                                        dmc.Text("Slice 1", id="image-selection-text", size="sm", style={"margin": "auto"}),
                                         dmc.Col(
                                             dmc.Tooltip(
                                                 label="Previous image",
@@ -73,11 +84,11 @@ def layout():
                                         ),
                                         dmc.Col(
                                             [
-                                                dmc.Text(
-                                                    "Selected image: 1",
-                                                    align="center",
-                                                    id="image-selection-text",
-                                                ),
+                                                # dmc.Text(
+                                                #     "Selected image: 1",
+                                                #     align="center",
+                                                    
+                                                # ),
                                                 dmc.Slider(
                                                     min=1,
                                                     max=1000,
@@ -114,27 +125,33 @@ def layout():
                             id="image-transformation-controls",
                             children=html.Div(
                                 [
-                                    dmc.Text("Brightness", size="sm"),
-                                    dmc.Slider(
-                                        id=f"figure-brightness",
-                                        value=100,
-                                        min=0,
-                                        max=255,
-                                        step=1,
-                                        color="gray",
-                                        size="sm",
-                                    ),
+                                    dmc.Grid([
+                                        dmc.Text("Brightness", size="sm", style={"width": "80px"}, align="right"),
+                                        dmc.Slider(
+                                            id=f"figure-brightness",
+                                            value=100,
+                                            min=0,
+                                            max=255,
+                                            step=1,
+                                            color="gray",
+                                            size="sm",
+                                            style={"width": "300px"}
+                                        ), 
+                                    ]),
                                     dmc.Space(h=5),
-                                    dmc.Text("Contrast", size="sm"),
-                                    dmc.Slider(
-                                        id=f"figure-contrast",
-                                        value=100,
-                                        min=0,
-                                        max=255,
-                                        step=1,
-                                        color="gray",
-                                        size="sm",
-                                    ),
+                                    dmc.Grid([
+                                        dmc.Text("Contrast", size="sm", style={"width": "80px"}, align="right"),
+                                        dmc.Slider(
+                                            id=f"figure-contrast",
+                                            value=100,
+                                            min=0,
+                                            max=255,
+                                            step=1,
+                                            color="gray",
+                                            size="sm",
+                                            style={"width": "300px"}
+                                        ),
+                                    ]),
                                     dmc.Space(h=10),
                                     dmc.ActionIcon(
                                         dmc.Tooltip(

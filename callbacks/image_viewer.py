@@ -369,5 +369,5 @@ def update_selection_and_image(
         new_slider_value,
         disable_previous_image,
         disable_next_image,
-        f"Selected image: {new_slider_value}",
+        f"Slice {new_slider_value}",
     )
