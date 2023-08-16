@@ -61,7 +61,6 @@ def create_viewfinder(image_data, downscaled_image_shape):
         binary_string=True,
         width=img_max_width,
         height=img_max_height,
-        origin="lower",
     )
 
     """
