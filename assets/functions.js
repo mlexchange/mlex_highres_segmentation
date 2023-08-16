@@ -53,8 +53,10 @@ window.dash_clientside = Object.assign({}, window.dash_clientside, {
                     figure.layout.yaxis.range[0] = 0;
                 }
             }
-           
             return figure;
+        },
+        enable_loading_overlay: function(zIndex) {
+            return 9999;
         }
     }
 });

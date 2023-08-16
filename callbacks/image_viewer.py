@@ -22,16 +22,23 @@ from utils.plot_utils import (
 
 
 @callback(
-    Output("image-data", "data"),
+    Output("image-viewer", "figure"),
+    Output("image-viewfinder", "figure"),
     Output("annotation-store", "data", allow_duplicate=True),
+    Output("image-viewer-loading", "zIndex", allow_duplicate=True),
+    Output("data-selection-controls", "children", allow_duplicate=True),
+    Output("image-transformation-controls", "children", allow_duplicate=True),
+    Output("annotations-controls", "children", allow_duplicate=True),
+    Output("image-viewfinder", "style"),
+    Output("image-ratio", "data"),
     Input("image-selection-slider", "value"),
     State("project-name-src", "value"),
     State("paintbrush-width", "value"),
     State("annotation-class-selection", "children"),
     State("annotation-store", "data"),
-    prevent_initial_call=True,
+    prevent_initial_call="initial_duplicate",
 )
-def populate_image_store(
+def render_image(
     image_idx,
     project_name,
     annotation_width,
@@ -84,46 +91,6 @@ def populate_image_store(
     patched_annotation_store = Patch()
     patched_annotation_store["active_img_shape"] = list(tf.shape)
 
-    fig.update_xaxes(range=[0, tf.shape[0]])
-    fig.update_yaxes(range=[0, tf.shape[1]])
-    return (
-        fig,
-        patched_annotation_store,
-    )
-
-
-clientside_callback(
-    ClientsideFunction(namespace="clientside", function_name="canvas_resize"),
-    Output("image-resized", "data"),
-    Input("image-data", "data"),
-    prevent_initial_call=True,
-)
-
-
-@callback(
-    Output("image-viewer", "figure", allow_duplicate=True),
-    Output("image-viewfinder", "figure"),
-    Output("image-viewer-loading", "zIndex", allow_duplicate=True),
-    Output("data-selection-controls", "children", allow_duplicate=True),
-    Output("image-transformation-controls", "children", allow_duplicate=True),
-    Output("annotations-controls", "children", allow_duplicate=True),
-    Output("image-viewfinder", "style"),
-    Output("image-ratio", "data"),
-    State("image-selection-slider", "value"),
-    Input("image-resized", "data"),
-    State("project-name-src", "value"),
-    prevent_initial_call=True,
-)
-def render_image(
-    image_idx,
-    fig,
-    project_name,
-):
-    if image_idx:
-        image_idx -= 1  # slider starts at 1, so subtract 1 to get the correct index
-        tf = data[project_name][image_idx]
-    else:
-        tf = np.zeros((500, 500))
     image_ratio = round(tf.shape[1] / tf.shape[0], 2)
     style = get_viewfinder_style(image_ratio)
     DOWNSCALED_img_max_height, DOWNSCALED_img_max_width = get_view_finder_max_min(
@@ -132,6 +99,26 @@ def render_image(
     fig_viewfinder = create_viewfinder(
         tf, (DOWNSCALED_img_max_height, DOWNSCALED_img_max_width)
     )
+
+    if annotation_store["view"]:
+        x0, y0, x1, y1 = downscale_view(
+            annotation_store["view"]["xaxis_range_0"],
+            annotation_store["view"]["yaxis_range_0"],
+            annotation_store["view"]["xaxis_range_1"],
+            annotation_store["view"]["yaxis_range_1"],
+            annotation_store["active_img_shape"],
+            (DOWNSCALED_img_max_height, DOWNSCALED_img_max_width),
+        )
+
+        fig_viewfinder["layout"]["shapes"][0]["x0"] = x0 if x0 > 0 else 0
+        fig_viewfinder["layout"]["shapes"][0]["y0"] = y0 if y0 > 0 else 0
+        fig_viewfinder["layout"]["shapes"][0]["x1"] = (
+            x1 if x1 < DOWNSCALED_img_max_width else DOWNSCALED_img_max_width
+        )
+        fig_viewfinder["layout"]["shapes"][0]["y1"] = (
+            y1 if y1 < DOWNSCALED_img_max_height else DOWNSCALED_img_max_height
+        )
+
     fig_loading_overlay = -1
     # No update is needed for the 'children' of the control components
     # since we just want to trigger the loading overlay with this callback
@@ -139,6 +126,7 @@ def render_image(
     return (
         fig,
         fig_viewfinder,
+        patched_annotation_store,
         fig_loading_overlay,
         dash.no_update,
         dash.no_update,
@@ -148,12 +136,20 @@ def render_image(
     )
 
 
+clientside_callback(
+    ClientsideFunction(namespace="clientside", function_name="canvas_resize"),
+    Output("image-viewer", "figure", allow_duplicate=True),
+    Input("image-data", "data"),
+    prevent_initial_call=True,
+)
+
+
 @callback(
     Output("image-viewfinder", "figure", allow_duplicate=True),
     Input("image-viewer", "relayoutData"),
     State("annotation-store", "data"),
     State("image-ratio", "data"),
-    prevent_initial_call=True,
+    prevent_initial_call="initial_duplicate",
 )
 def update_viewfinder(relayout_data, annotation_store, image_ratio):
     """
@@ -162,7 +158,6 @@ def update_viewfinder(relayout_data, annotation_store, image_ratio):
     The viewfinder box is containen within the figure layout, so that if the user zooms out/pans away, they will still be able to see the viewfinder box.
     """
     # Callback is triggered when the image is first loaded, but the annotation_store is not yet populated so we need to prevent the update
-
     if not image_ratio or not relayout_data:
         raise dash.exceptions.PreventUpdate
 
@@ -212,13 +207,10 @@ def update_viewfinder(relayout_data, annotation_store, image_ratio):
 
 
 clientside_callback(
-    """
-    function EnableImageLoadingOverlay(zIndex) {
-        return 9999;
-    }
-    """,
+    ClientsideFunction(namespace="clientside", function_name="enable_loading_overlay"),
     Output("image-viewer-loading", "zIndex"),
     Input("image-selection-slider", "value"),
+    prevent_initial_call=True,
 )
 
 
@@ -227,7 +219,7 @@ clientside_callback(
     Input("image-viewer", "relayoutData"),
     State("image-selection-slider", "value"),
     State("annotation-store", "data"),
-    prevent_initial_call=True,
+    prevent_initial_call="initial_duplicate",
 )
 def locally_store_annotations(relayout_data, img_idx, annotation_store):
     """
@@ -265,6 +257,7 @@ def locally_store_annotations(relayout_data, img_idx, annotation_store):
     Output("data-selection-controls", "children"),
     Output("image-transformation-controls", "children"),
     Output("annotations-controls", "children"),
+    Output("image-data", "data"),
     Input("project-name-src", "value"),
     State("annotation-store", "data"),
 )
@@ -287,6 +280,27 @@ def update_slider_values(project_name, annotation_store):
     max_slider_value = 0 if disable_slider else len(tiff_file)
     slider_value = 0 if disable_slider else 1
     annotation_store["annotations"] = {}
+
+    if data[project_name]:
+        tf = data[project_name][0]
+    else:
+        tf = np.zeros((500, 500))
+    annotation_store["active_img_shape"] = list(tf.shape)
+    annotation_store["view"] = {}
+
+    fig = px.imshow(tf, binary_string=True)
+    fig.update_layout(
+        margin=dict(l=0, r=0, t=0, b=0),
+        xaxis=dict(visible=False),
+        yaxis=dict(visible=False),
+        dragmode="drawopenpath",
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+    )
+    fig.update_traces(hovertemplate=None, hoverinfo="skip")
+    fig.update_xaxes(range=[0, tf.shape[0]])
+    fig.update_yaxes(range=[0, tf.shape[1]])
+
     return (
         min_slider_value,
         max_slider_value,
@@ -298,6 +312,7 @@ def update_slider_values(project_name, annotation_store):
         dash.no_update,
         dash.no_update,
         dash.no_update,
+        fig,
     )
 
 
@@ -311,7 +326,7 @@ def update_slider_values(project_name, annotation_store):
     Input("image-selection-slider", "value"),
     State("image-selection-slider", "min"),
     State("image-selection-slider", "max"),
-    prevent_initial_call=True,
+    prevent_initial_call="initial_duplicate",
 )
 def update_selection_and_image(
     previous_image, next_image, slider_value, slider_min, slider_max
