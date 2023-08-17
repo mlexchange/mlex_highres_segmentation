@@ -110,7 +110,7 @@ def annotation_mode(
         keybind_event_listener.get("key", None) if keybind_event_listener else None
     )
 
-    if pressed_key in key_modes:
+    if pressed_key in key_modes and triggered == "keybind-event-listener":
         mode, triggered = key_modes[pressed_key]
     else:
         # if the callback was triggered by pressing a key that is not in the `key_modes`, stop the callback
