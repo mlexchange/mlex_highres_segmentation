@@ -372,6 +372,7 @@ def open_warning_modal(delete, cancel, delete_4_real, keybind_event_listener, op
             # if key pressed is not a valid keybind for class selection
             raise PreventUpdate
         return True
+    return not opened
 
 
 @callback(
