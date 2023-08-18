@@ -181,6 +181,8 @@ def resize_canvas(h, w, H, W, figure):
             x0 = 0 - h * (screen_ratio - img_ratio) / 2
             y1 = h
             y0 = 0
+
+    figure.update_yaxes(range=[y1, y0])
     figure.update_xaxes(range=[x0, x1])
-    figure.update_yaxes(range=[y0, y1])
+
     return figure
