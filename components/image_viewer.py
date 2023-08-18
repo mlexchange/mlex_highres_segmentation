@@ -46,9 +46,7 @@ def layout():
                         config={"displayModeBar": False},
                     ),
                 ],
-                style={
-                    "display": "flex",
-                },
+                style={"height": "100vh", "width": "100vw"},
             ),
         ],
     )
