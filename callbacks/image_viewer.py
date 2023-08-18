@@ -20,8 +20,6 @@ from utils.plot_utils import (
     resize_canvas,
 )
 
-DOWNSCALED_img_max_height, DOWNSCALED_img_max_width = 250, 250
-
 clientside_callback(
     ClientsideFunction(namespace="clientside", function_name="get_container_size"),
     Output("screen-size", "data"),
@@ -121,6 +119,7 @@ def render_image(
     fig_loading_overlay = -1
 
     image_ratio = round(tf.shape[1] / tf.shape[0], 2)
+    patched_annotation_store["image_ratio"] = image_ratio
     DOWNSCALED_img_max_height, DOWNSCALED_img_max_width = get_view_finder_max_min(
         image_ratio
     )
@@ -166,12 +165,16 @@ def update_viewfinder(relayout_data, annotation_store):
     print(relayout_data)
     patched_fig = Patch()
 
+    DOWNSCALED_img_max_height, DOWNSCALED_img_max_width = get_view_finder_max_min(
+        annotation_store["image_ratio"]
+    )
+
     # If user resets the view by double clicking on the image, reset the viewfinder
     if "xaxis.autorange" in relayout_data and relayout_data["xaxis.autorange"]:
         patched_fig["layout"]["shapes"][0]["x0"] = 0
-        patched_fig["layout"]["shapes"][0]["y0"] = DOWNSCALED_img_max_height
+        patched_fig["layout"]["shapes"][0]["y0"] = 0
         patched_fig["layout"]["shapes"][0]["x1"] = DOWNSCALED_img_max_width
-        patched_fig["layout"]["shapes"][0]["y1"] = 0
+        patched_fig["layout"]["shapes"][0]["y1"] = DOWNSCALED_img_max_height
     elif "xaxis.range[0]" not in relayout_data:
         raise dash.exceptions.PreventUpdate
     else:
@@ -183,14 +186,16 @@ def update_viewfinder(relayout_data, annotation_store):
             annotation_store["active_img_shape"],
             (DOWNSCALED_img_max_height, DOWNSCALED_img_max_width),
         )
-        patched_fig["layout"]["shapes"][0]["x0"] = x0 if x0 < 0 else 0
-        patched_fig["layout"]["shapes"][0]["y0"] = y0 if y0 < 0 else 0
+        print(x1, DOWNSCALED_img_max_width, x1 < DOWNSCALED_img_max_width)
+        patched_fig["layout"]["shapes"][0]["x0"] = x0 if x0 > 0 else 0
+        patched_fig["layout"]["shapes"][0]["y0"] = (
+            y0 if y0 < DOWNSCALED_img_max_height else DOWNSCALED_img_max_height
+        )
         patched_fig["layout"]["shapes"][0]["x1"] = (
             x1 if x1 < DOWNSCALED_img_max_width else DOWNSCALED_img_max_width
         )
-        patched_fig["layout"]["shapes"][0]["y1"] = (
-            y1 if y1 < DOWNSCALED_img_max_height else DOWNSCALED_img_max_height
-        )
+        patched_fig["layout"]["shapes"][0]["y1"] = y1 if y1 > 0 else 0
+    print(patched_fig)
     return patched_fig
 
 
