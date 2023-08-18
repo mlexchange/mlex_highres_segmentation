@@ -93,13 +93,14 @@ def render_image(
                 ]
 
         view = annotation_store["view"]
-        if "xaxis_range_0" in view and annotation_store["active_img_shape"] == list(
-            tf.shape
-        ):
-            fig.update_layout(
-                xaxis=dict(range=[view["xaxis_range_0"], view["xaxis_range_1"]]),
-                yaxis=dict(range=[view["yaxis_range_0"], view["yaxis_range_1"]]),
-            )
+        if view:
+            if "xaxis_range_0" in view and annotation_store["active_img_shape"] == list(
+                tf.shape
+            ):
+                fig.update_layout(
+                    xaxis=dict(range=[view["xaxis_range_0"], view["xaxis_range_1"]]),
+                    yaxis=dict(range=[view["yaxis_range_0"], view["yaxis_range_1"]]),
+                )
 
     if (
         project_name != image_metadata["name"]
@@ -123,7 +124,6 @@ def render_image(
     DOWNSCALED_img_max_height, DOWNSCALED_img_max_width = get_view_finder_max_min(
         image_ratio
     )
-
     fig_viewfinder = create_viewfinder(
         tf, (DOWNSCALED_img_max_height, DOWNSCALED_img_max_width), view
     )
@@ -256,6 +256,8 @@ def update_slider_values(project_name, annotation_store):
     max_slider_value = 0 if disable_slider else len(tiff_file)
     slider_value = 0 if disable_slider else 1
     annotation_store["annotations"] = {}
+    annotation_store["view"] = {}
+    annotation_store["image_ratio"] = 1
     return (
         min_slider_value,
         max_slider_value,
