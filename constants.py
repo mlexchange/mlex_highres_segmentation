@@ -7,6 +7,8 @@ KEYBINDS = {
     "pan-and-zoom": "a",
     "erase": "s",
     "delete-all": "d",
+    "slice-right": "ArrowRight",
+    "slice-left": "ArrowLeft",
     "classes": [
         "1",
         "2",
@@ -29,6 +31,8 @@ ANNOT_ICONS = {
     "eraser": "ph:eraser",
     "delete-all": "octicon:trash-24",
     "pan-and-zoom": "el:off",
+    "slice-right": "line-md:arrow-right",
+    "slice-left": "line-md:arrow-left",
 }
 
 ANNOT_NOTIFICATION_MSGS = {
@@ -40,4 +44,6 @@ ANNOT_NOTIFICATION_MSGS = {
     "eraser": "Eraser annotation mode",
     "delete-all": "Delete all annotations",
     "pan-and-zoom": "Pan and zoom mode",
+    "slice-right": "Next slice",
+    "slice-left": "Previous slice",
 }
