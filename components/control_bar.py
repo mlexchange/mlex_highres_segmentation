@@ -743,6 +743,15 @@ def create_info_card_affix():
                             [
                                 dmc.Divider(variant="solid", color="gray"),
                                 create_keybind_row(
+                                    "→",
+                                    "Next slice",
+                                ),
+                                create_keybind_row(
+                                    "←",
+                                    "Previous slice",
+                                ),
+                                dmc.Divider(variant="solid", color="gray"),
+                                create_keybind_row(
                                     KEYBINDS["open-freeform"].upper(),
                                     "Open Freeform",
                                 ),

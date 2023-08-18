@@ -1,10 +1,14 @@
 from dash import Input, Output, State, callback, ctx, Patch, clientside_callback
 import dash
 import dash_mantine_components as dmc
+from dash.exceptions import PreventUpdate
 import plotly.express as px
 import numpy as np
+import random
+from dash_iconify import DashIconify
 from utils.data_utils import data
 from utils.plot_utils import create_viewfinder, downscale_view
+from constants import KEYBINDS, ANNOT_ICONS, ANNOT_NOTIFICATION_MSGS
 
 DOWNSCALED_img_max_height, DOWNSCALED_img_max_width = 250, 250
 
@@ -93,6 +97,62 @@ def render_image(
         dash.no_update,
         dash.no_update,
     )
+
+
+@callback(
+    Output("image-selection-slider", "value", allow_duplicate=True),
+    Output("notifications-container", "children", allow_duplicate=True),
+    Input("keybind-event-listener", "n_events"),
+    Input("keybind-event-listener", "event"),
+    State("image-selection-slider", "value"),
+    State("image-selection-slider", "max"),
+    prevent_initial_call=True,
+)
+def keybind_image_slider(n_events, keybind_event_listener, current_slice, max_slice):
+    """Allows user to use left/right arrow keys to navigate through images"""
+    pressed_key = (
+        keybind_event_listener.get("key", None) if keybind_event_listener else None
+    )
+    if not pressed_key:
+        raise PreventUpdate
+    if pressed_key not in [KEYBINDS["slice-right"], KEYBINDS["slice-left"]]:
+        # if key pressed is not a valid keybind for right/left slice
+        raise PreventUpdate
+
+    if pressed_key == KEYBINDS["slice-left"]:
+        if current_slice == 1:
+            message = "No more images to the left"
+            new_slice = dash.no_update
+            icon = "pajamas:warning-solid"
+        else:
+            new_slice = current_slice - 1
+            message = f"{ANNOT_NOTIFICATION_MSGS['slice-left']} ({new_slice}) selected"
+            icon = ANNOT_ICONS["slice-left"]
+    elif pressed_key == KEYBINDS["slice-right"]:
+        if current_slice == max_slice:
+            message = "No more images to the right"
+            new_slice = dash.no_update
+            icon = "pajamas:warning-solid"
+        else:
+            new_slice = current_slice + 1
+            message = f"{ANNOT_NOTIFICATION_MSGS['slice-right']} ({new_slice}) selected"
+            icon = ANNOT_ICONS["slice-right"]
+
+    notification = dmc.Notification(
+        title=message,
+        message="",
+        id=f"notification-{random.randint(0, 10000)}",
+        action="show",
+        icon=DashIconify(icon=icon, width=30),
+        styles={
+            "icon": {
+                "height": "50px",
+                "width": "50px",
+            }
+        },
+    )
+
+    return new_slice, notification
 
 
 @callback(
