@@ -80,9 +80,9 @@ def create_viewfinder(image_data, downscaled_image_shape, view):
             )
         else:
             x0 = 0
-            y0 = img_max_height
+            y0 = 0
             x1 = img_max_width
-            y1 = 0
+            y1 = img_max_height
 
     # Create the viewfinder box
     fig.add_shape(
@@ -118,29 +118,6 @@ def create_viewfinder(image_data, downscaled_image_shape, view):
         hovermode=False,
     )
     return fig
-
-
-def get_viewfinder_style(image_ratio):
-    if image_ratio < 1:
-        return (
-            {
-                "width": f"calc(10vh/{image_ratio})",
-                "height": f"10vh",
-                "position": "absolute",
-                "top": "30px",
-                "right": "10px",
-            },
-        )
-    else:
-        return (
-            {
-                "width": "10vh",
-                "height": f"calc(10vh/{image_ratio})",
-                "position": "absolute",
-                "top": "30px",
-                "right": "10px",
-            },
-        )
 
 
 def get_view_finder_max_min(image_ratio):

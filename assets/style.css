@@ -20,12 +20,17 @@
 /* remove mouse pointer from the figure viewfinder */
 #image-viewfinder * {
     pointer-events: none !important;
-    position: absolute;
-    top: 0;
-    right: 0;
 }
 
-body{
+#image-viewer .cartesianlayer image {
+    transform: none !important;
+    -webkit-transform: none !important;
+    -moz-transform: none !important;
+    -ms-transform: none !important;
+    -o-transform: none !important;
+}
+
+body {
     margin: 0px;
     padding: 0px;
 }

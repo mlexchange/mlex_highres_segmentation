@@ -44,6 +44,11 @@ def layout():
                         id="image-viewfinder",
                         figure=blank_fig(),
                         config={"displayModeBar": False},
+                        style={
+                            "position": "absolute",
+                            "top": "30px",
+                            "right": "10px",
+                        },
                     ),
                 ],
                 style={"height": "100vh", "width": "100vw"},

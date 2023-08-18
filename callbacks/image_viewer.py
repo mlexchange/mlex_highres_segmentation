@@ -17,7 +17,6 @@ from utils.plot_utils import (
     create_viewfinder,
     downscale_view,
     get_view_finder_max_min,
-    get_viewfinder_style,
     resize_canvas,
 )
 
@@ -39,7 +38,6 @@ clientside_callback(
     Output("image-transformation-controls", "children", allow_duplicate=True),
     Output("annotations-controls", "children", allow_duplicate=True),
     Output("image-metadata", "data"),
-    Output("image-viewfinder", "style"),
     Input("image-selection-slider", "value"),
     State("project-name-src", "value"),
     State("paintbrush-width", "value"),
@@ -123,7 +121,6 @@ def render_image(
     fig_loading_overlay = -1
 
     image_ratio = round(tf.shape[1] / tf.shape[0], 2)
-    style = get_viewfinder_style(image_ratio)
     DOWNSCALED_img_max_height, DOWNSCALED_img_max_width = get_view_finder_max_min(
         image_ratio
     )
@@ -136,17 +133,8 @@ def render_image(
     # since we just want to trigger the loading overlay with this callback
     if project_name != image_metadata["name"] or image_metadata["name"] is None:
         curr_image_metadata = {"size": tf.shape, "name": project_name}
-        return (
-            fig,
-            fig_viewfinder,
-            patched_annotation_store,
-            fig_loading_overlay,
-            dash.no_update,
-            dash.no_update,
-            dash.no_update,
-            curr_image_metadata,
-            *style,
-        )
+    else:
+        curr_image_metadata = dash.no_update
 
     return (
         fig,
@@ -156,8 +144,7 @@ def render_image(
         dash.no_update,
         dash.no_update,
         dash.no_update,
-        dash.no_update,
-        *style,
+        curr_image_metadata,
     )
 
 
@@ -176,7 +163,7 @@ def update_viewfinder(relayout_data, annotation_store):
     # Callback is triggered when the image is first loaded, but the annotation_store is not yet populated so we need to prevent the update
     if not annotation_store["active_img_shape"]:
         raise dash.exceptions.PreventUpdate
-
+    print(relayout_data)
     patched_fig = Patch()
 
     # If user resets the view by double clicking on the image, reset the viewfinder
@@ -196,14 +183,14 @@ def update_viewfinder(relayout_data, annotation_store):
             annotation_store["active_img_shape"],
             (DOWNSCALED_img_max_height, DOWNSCALED_img_max_width),
         )
-        patched_fig["layout"]["shapes"][0]["x0"] = x0 if x0 > 0 else 0
-        patched_fig["layout"]["shapes"][0]["y0"] = (
-            y0 if y0 < DOWNSCALED_img_max_height else DOWNSCALED_img_max_height
-        )
+        patched_fig["layout"]["shapes"][0]["x0"] = x0 if x0 < 0 else 0
+        patched_fig["layout"]["shapes"][0]["y0"] = y0 if y0 < 0 else 0
         patched_fig["layout"]["shapes"][0]["x1"] = (
             x1 if x1 < DOWNSCALED_img_max_width else DOWNSCALED_img_max_width
         )
-        patched_fig["layout"]["shapes"][0]["y1"] = y1 if y1 > 0 else 0
+        patched_fig["layout"]["shapes"][0]["y1"] = (
+            y1 if y1 < DOWNSCALED_img_max_height else DOWNSCALED_img_max_height
+        )
     return patched_fig
 
 
@@ -233,7 +220,6 @@ def locally_store_annotations(relayout_data, img_idx, annotation_store):
     """
     if "shapes" in relayout_data:
         annotation_store["annotations"][str(img_idx - 1)] = relayout_data["shapes"]
-
     if "xaxis.range[0]" in relayout_data:
         annotation_store["view"]["xaxis_range_0"] = relayout_data["xaxis.range[0]"]
         annotation_store["view"]["xaxis_range_1"] = relayout_data["xaxis.range[1]"]
