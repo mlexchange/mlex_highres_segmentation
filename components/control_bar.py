@@ -643,7 +643,7 @@ def drawer_section(children):
                 id="drawer-controls",
                 padding="md",
                 transition="fade",
-                transitionDuration=50,
+                transitionDuration=500,
                 shadow="md",
                 withOverlay=False,
                 position="left",
