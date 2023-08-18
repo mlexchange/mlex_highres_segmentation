@@ -1,12 +1,27 @@
-from dash import Input, Output, State, callback, ctx, Patch, clientside_callback
+from dash import (
+    Input,
+    Output,
+    State,
+    callback,
+    ctx,
+    Patch,
+    clientside_callback,
+    ClientsideFunction,
+)
 import dash
 import dash_mantine_components as dmc
 import plotly.express as px
 import numpy as np
 from utils.data_utils import data
-from utils.plot_utils import create_viewfinder, downscale_view
+from utils.plot_utils import create_viewfinder, downscale_view, resize_canvas
 
 DOWNSCALED_img_max_height, DOWNSCALED_img_max_width = 250, 250
+
+clientside_callback(
+    ClientsideFunction(namespace="clientside", function_name="get_container_size"),
+    Output("screen-size", "data"),
+    Input("url", "href"),
+)
 
 
 @callback(
@@ -17,11 +32,14 @@ DOWNSCALED_img_max_height, DOWNSCALED_img_max_width = 250, 250
     Output("data-selection-controls", "children", allow_duplicate=True),
     Output("image-transformation-controls", "children", allow_duplicate=True),
     Output("annotations-controls", "children", allow_duplicate=True),
+    Output("image-metadata", "data"),
     Input("image-selection-slider", "value"),
     State("project-name-src", "value"),
     State("paintbrush-width", "value"),
     State("annotation-class-selection", "children"),
     State("annotation-store", "data"),
+    State("image-metadata", "data"),
+    State("screen-size", "data"),
     prevent_initial_call=True,
 )
 def render_image(
@@ -30,12 +48,15 @@ def render_image(
     annotation_width,
     annotation_colors,
     annotation_store,
+    image_metadata,
+    screen_size,
 ):
     if image_idx:
         image_idx -= 1  # slider starts at 1, so subtract 1 to get the correct index
         tf = data[project_name][image_idx]
     else:
         tf = np.zeros((500, 500))
+
     fig = px.imshow(tf, binary_string=True)
     fig.update_layout(
         margin=dict(l=0, r=0, t=0, b=0),
@@ -45,8 +66,8 @@ def render_image(
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
     )
-    fig.update_traces(hovertemplate=None, hoverinfo="skip")
 
+    fig.update_traces(hovertemplate=None, hoverinfo="skip")
     # set the default annotation style
     for color_opt in annotation_colors:
         if color_opt["props"]["style"]["border"] != "1px solid":
@@ -57,6 +78,7 @@ def render_image(
             fillcolor=color,
         )
     )
+
     if annotation_store:
         fig["layout"]["dragmode"] = annotation_store["dragmode"]
         if not annotation_store["visible"]:
@@ -75,6 +97,20 @@ def render_image(
                 xaxis=dict(range=[view["xaxis_range_0"], view["xaxis_range_1"]]),
                 yaxis=dict(range=[view["yaxis_range_0"], view["yaxis_range_1"]]),
             )
+
+    if (
+        project_name != image_metadata["name"]
+        or image_metadata["name"] is None
+        and screen_size
+    ):
+        curr_image_metadata = {"size": tf.shape, "name": project_name}
+        # fig.update_xaxes(range=[0, tf.shape[0]])
+        # fig.update_yaxes(range=[0, tf.shape[1]])
+        print(screen_size)
+        fig = resize_canvas(
+            tf.shape[0], tf.shape[1], screen_size["H"], screen_size["W"], fig
+        )
+
     patched_annotation_store = Patch()
     patched_annotation_store["active_img_shape"] = list(tf.shape)
     fig_loading_overlay = -1
@@ -82,13 +118,28 @@ def render_image(
     fig_viewfinder = create_viewfinder(
         tf, annotation_store, (DOWNSCALED_img_max_height, DOWNSCALED_img_max_width)
     )
+
     # No update is needed for the 'children' of the control components
     # since we just want to trigger the loading overlay with this callback
+    if project_name != image_metadata["name"] or image_metadata["name"] is None:
+        curr_image_metadata = {"size": tf.shape, "name": project_name}
+        return (
+            fig,
+            fig_viewfinder,
+            patched_annotation_store,
+            fig_loading_overlay,
+            dash.no_update,
+            dash.no_update,
+            dash.no_update,
+            curr_image_metadata,
+        )
+
     return (
         fig,
         fig_viewfinder,
         patched_annotation_store,
         fig_loading_overlay,
+        dash.no_update,
         dash.no_update,
         dash.no_update,
         dash.no_update,
@@ -255,7 +306,13 @@ def update_selection_and_image(
 
     disable_previous_image = new_slider_value == slider_min
     disable_next_image = new_slider_value == slider_max
-
+    if new_slider_value == slider_value:
+        return (
+            dash.no_update,
+            disable_previous_image,
+            disable_next_image,
+            f"Selected image: {new_slider_value}",
+        )
     return (
         new_slider_value,
         disable_previous_image,
