@@ -40,18 +40,18 @@ def layout():
                             "z-index": 1,
                         },
                     ),
-                    dcc.Graph(
-                        id="image-viewfinder",
-                        figure=blank_fig(),
-                        config={"displayModeBar": False},
-                        style={
-                            "position": "absolute",
-                            "top": "30px",
-                            "right": "10px",
-                        },
-                    ),
                 ],
                 style={"height": "100vh", "width": "100vw"},
+            ),
+            dcc.Graph(
+                id="image-viewfinder",
+                figure=blank_fig(),
+                config={"displayModeBar": False},
+                style={
+                    "position": "absolute",
+                    "top": "30px",
+                    "right": "10px",
+                },
             ),
         ],
     )
