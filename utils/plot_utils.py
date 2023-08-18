@@ -72,17 +72,16 @@ def create_viewfinder(image_data, downscaled_image_shape, view):
         if "xaxis_range_0" in view:
             x0, y0, x1, y1 = downscale_view(
                 view["xaxis_range_0"],
-                view["yaxis_range_1"],
-                view["xaxis_range_1"],
                 view["yaxis_range_0"],
+                view["xaxis_range_1"],
+                view["yaxis_range_1"],
                 image_data.shape,
                 (img_max_height, img_max_width),
             )
-        else:
-            x0 = 0
-            y0 = img_max_height
-            x1 = img_max_width
-            y1 = 0
+            x0 = x0 if x0 > 0 else 0
+            y0 = y0 if y0 < img_max_height else img_max_height
+            x1 = x1 if x1 < img_max_width else img_max_width
+            y1 = y1 if y1 > 0 else 0
 
     # Create the viewfinder box
     fig.add_shape(
@@ -118,29 +117,6 @@ def create_viewfinder(image_data, downscaled_image_shape, view):
         hovermode=False,
     )
     return fig
-
-
-def get_viewfinder_style(image_ratio):
-    if image_ratio < 1:
-        return (
-            {
-                "width": f"calc(10vh/{image_ratio})",
-                "height": f"10vh",
-                "position": "absolute",
-                "top": "30px",
-                "right": "10px",
-            },
-        )
-    else:
-        return (
-            {
-                "width": "10vh",
-                "height": f"calc(10vh/{image_ratio})",
-                "position": "absolute",
-                "top": "30px",
-                "right": "10px",
-            },
-        )
 
 
 def get_view_finder_max_min(image_ratio):
@@ -180,7 +156,6 @@ def resize_canvas(h, w, H, W, figure):
             x1 = w * (screen_ratio / img_ratio) - h * (screen_ratio - img_ratio) / 2
             x0 = 0 - h * (screen_ratio - img_ratio) / 2
             y1 = h
-            y0 = 0
 
     figure.update_yaxes(range=[y1, y0])
     figure.update_xaxes(range=[x0, x1])

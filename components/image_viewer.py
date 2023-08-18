@@ -9,10 +9,7 @@ COMPONENT_STYLE = {
     "overflowY": "auto",
 }
 
-FIGURE_CONFIG = {
-    "displayModeBar": False,
-    "scrollZoom": True,
-}
+FIGURE_CONFIG = {"displayModeBar": False, "scrollZoom": True, "doubleClick": False}
 
 
 def layout():
@@ -40,14 +37,17 @@ def layout():
                             "z-index": 1,
                         },
                     ),
-                    dcc.Graph(
-                        id="image-viewfinder",
-                        figure=blank_fig(),
-                        config={"displayModeBar": False},
-                    ),
                 ],
+                style={"height": "100vh", "width": "100vw"},
+            ),
+            dcc.Graph(
+                id="image-viewfinder",
+                figure=blank_fig(),
+                config={"displayModeBar": False},
                 style={
-                    "display": "flex",
+                    "position": "absolute",
+                    "top": "30px",
+                    "right": "10px",
                 },
             ),
         ],

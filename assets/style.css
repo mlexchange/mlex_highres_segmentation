@@ -17,12 +17,9 @@
 /* remove mouse pointer from the figure viewfinder */
 #image-viewfinder * {
     pointer-events: none !important;
-    position: absolute;
-    top: 0;
-    right: 0;
 }
 
-body{
+body {
     margin: 0px;
     padding: 0px;
 }
