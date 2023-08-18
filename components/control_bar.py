@@ -655,6 +655,8 @@ def drawer_section(children):
                         "max-height": "100%",
                         "overflow-y": "auto",
                         "margin": "0px",
+                    },
+                    "root": {
                         "opacity": "0.95",
                     },
                 },
