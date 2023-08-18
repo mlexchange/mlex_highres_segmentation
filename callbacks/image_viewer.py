@@ -162,7 +162,6 @@ def update_viewfinder(relayout_data, annotation_store):
     # Callback is triggered when the image is first loaded, but the annotation_store is not yet populated so we need to prevent the update
     if not annotation_store["active_img_shape"]:
         raise dash.exceptions.PreventUpdate
-    print(relayout_data)
     patched_fig = Patch()
 
     DOWNSCALED_img_max_height, DOWNSCALED_img_max_width = get_view_finder_max_min(
@@ -180,7 +179,6 @@ def update_viewfinder(relayout_data, annotation_store):
             annotation_store["active_img_shape"],
             (DOWNSCALED_img_max_height, DOWNSCALED_img_max_width),
         )
-        print(x1, DOWNSCALED_img_max_width, x1 < DOWNSCALED_img_max_width)
         patched_fig["layout"]["shapes"][0]["x0"] = x0 if x0 > 0 else 0
         patched_fig["layout"]["shapes"][0]["y0"] = (
             y0 if y0 < DOWNSCALED_img_max_height else DOWNSCALED_img_max_height
