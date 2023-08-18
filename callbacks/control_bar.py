@@ -6,6 +6,7 @@ from dash import (
     callback,
     Patch,
     ALL,
+    MATCH,
     ctx,
     clientside_callback,
     no_update,
@@ -118,8 +119,8 @@ def annotation_mode(
             raise PreventUpdate
         mode = None
 
-    active = {"border": "3px solid black"}
-    inactive = {"border": "1px solid"}
+    active = {"backgroundColor": "#EAECEF"}
+    inactive = {"border": "1px solid white"}
 
     patched_figure = Patch()
 
@@ -372,6 +373,7 @@ def open_warning_modal(delete, cancel, delete_4_real, keybind_event_listener, op
             # if key pressed is not a valid keybind for class selection
             raise PreventUpdate
         return True
+    return not opened
 
 
 @callback(
@@ -682,22 +684,19 @@ clientside_callback(
     }
     """,
     Output("dummy-output", "children", allow_duplicate=True),
-    Input("figure-brightness", "value"),
-    Input("figure-contrast", "value"),
+    Input({"type": "slider", "index": "brightness"}, "value"),
+    Input({"type": "slider", "index": "contrast"}, "value"),
     prevent_initial_call=True,
 )
 
 
 @callback(
-    Output("figure-brightness", "value", allow_duplicate=True),
-    Output("figure-contrast", "value", allow_duplicate=True),
-    Input("filters-reset", "n_clicks"),
+    Output({"type": "slider", "index": MATCH}, "value", allow_duplicate=True),
+    Input({"type": "reset", "index": MATCH}, "n_clicks"),
     prevent_initial_call=True,
 )
 def reset_filters(n_clicks):
-    default_brightness = 100
-    default_contrast = 100
-    return default_brightness, default_contrast
+    return 100
 
 
 # TODO: check this when plotly is updated
@@ -891,20 +890,18 @@ def load_and_apply_selected_annotations(selected_annotation, image_src, img_idx)
 
 @callback(
     Output("drawer-controls", "opened"),
-    Output("image-slice-selection-parent", "style"),
     Input("drawer-controls-open-button", "n_clicks"),
-    # prevent_initial_call=True,
 )
 def open_controls_drawer(n_clicks):
-    return True, {"padding-left": "450px"}
+    return True
 
 
 @callback(
-    Output("image-slice-selection-parent", "style", allow_duplicate=True),
+    Output("drawer-controls-open-button", "style"),
     Input("drawer-controls", "opened"),
     prevent_initial_call=True,
 )
 def open_controls_drawer(is_opened):
     if is_opened:
-        raise PreventUpdate
-    return {"padding-left": "125px"}
+        return {"display": "none"}
+    return {}
