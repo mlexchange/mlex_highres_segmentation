@@ -18,25 +18,35 @@ DOWNSCALED_img_max_height, DOWNSCALED_img_max_width = 250, 250
     Output("image-transformation-controls", "children", allow_duplicate=True),
     Output("annotations-controls", "children", allow_duplicate=True),
     Input("image-selection-slider", "value"),
+    Input("show-result-overlay", "checked"),
     State("project-name-src", "value"),
     State("paintbrush-width", "value"),
     State("annotation-class-selection", "children"),
     State("annotation-store", "data"),
+    State("result-selector", "value"),
     prevent_initial_call=True,
 )
 def render_image(
     image_idx,
+    toggle_result,
     project_name,
     annotation_width,
     annotation_colors,
     annotation_store,
+    result_name,
 ):
     if image_idx:
         image_idx -= 1  # slider starts at 1, so subtract 1 to get the correct index
         tf = data[project_name][image_idx]
+        if toggle_result:
+            result = data[result_name][image_idx]
+            tf = 0.1 * tf + 0.9 * result
+
     else:
         tf = np.zeros((500, 500))
+
     fig = px.imshow(tf, binary_string=True)
+
     fig.update_layout(
         margin=dict(l=0, r=0, t=0, b=0),
         xaxis=dict(visible=False),
@@ -46,7 +56,6 @@ def render_image(
         plot_bgcolor="rgba(0,0,0,0)",
     )
     fig.update_traces(hovertemplate=None, hoverinfo="skip")
-
     # set the default annotation style
     for color_opt in annotation_colors:
         if color_opt["props"]["style"]["border"] != "1px solid":

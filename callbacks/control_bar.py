@@ -25,6 +25,7 @@ from utils.data_utils import (
 
 import os
 import time
+from utils import data_utils
 
 # TODO - temporary local file path and user for annotation saving and exporting
 EXPORT_FILE_PATH = "data/exported_annotation_data.json"
@@ -908,3 +909,46 @@ def open_controls_drawer(is_opened):
     if is_opened:
         raise PreventUpdate
     return {"padding-left": "125px"}
+
+
+@callback(
+    Output("result-selector", "data"),
+    Output("result-selector", "value"),
+    Output("overlay-switch-container", "children"),
+    Input("project-name-src", "value"),
+)
+def populate_classification_results(image_src):
+    results = [
+        item
+        for item in data_utils.get_data_project_names()
+        if ("seg" in item and image_src in item)
+    ]
+    if results:
+        value = results[0]
+        switch = (
+            dmc.Switch(
+                id="show-result-overlay",
+                size="sm",
+                radius="lg",
+                color="gray",
+                label="View segmentation overlay",
+                checked=True,
+                disabled=False,
+                styles={"trackLabel": {"cursor": "pointer"}},
+            ),
+        )
+    else:
+        value = None
+        switch = (
+            dmc.Switch(
+                id="show-result-overlay",
+                size="sm",
+                radius="lg",
+                color="gray",
+                label="View segmentation overlay",
+                checked=False,
+                disabled=True,
+                styles={"trackLabel": {"cursor": "pointer"}},
+            ),
+        )
+    return results, value, switch

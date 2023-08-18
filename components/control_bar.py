@@ -29,7 +29,9 @@ def _accordion_item(title, icon, value, children, id):
 
 
 def layout():
-    DATA_OPTIONS = data_utils.get_data_project_names()
+    DATA_OPTIONS = [
+        item for item in data_utils.get_data_project_names() if "seg" not in item
+    ]
     return drawer_section(
         dmc.Stack(
             style={"width": "400px"},
@@ -549,6 +551,28 @@ def layout():
                                     id="run-model",
                                     variant="light",
                                     style={"width": "160px", "margin": "5px"},
+                                ),
+                                html.Div(
+                                    id="overlay-switch-container",
+                                    children=[
+                                        dmc.Switch(
+                                            id="show-result-overlay",
+                                            size="sm",
+                                            radius="lg",
+                                            color="gray",
+                                            label="View segmentation overlay",
+                                            checked=False,
+                                            disabled=True,
+                                            styles={
+                                                "trackLabel": {"cursor": "pointer"}
+                                            },
+                                        ),
+                                    ],
+                                ),
+                                dmc.Text("Results"),
+                                dmc.Select(
+                                    id="result-selector",
+                                    placeholder="Select an ML result...",
                                 ),
                                 html.Div(id="output-placeholder"),
                             ],
