@@ -643,7 +643,7 @@ def drawer_section(children):
                 id="drawer-controls",
                 padding="md",
                 transition="fade",
-                transitionDuration=50,
+                transitionDuration=500,
                 shadow="md",
                 withOverlay=False,
                 position="left",
@@ -655,6 +655,8 @@ def drawer_section(children):
                         "max-height": "100%",
                         "overflow-y": "auto",
                         "margin": "0px",
+                    },
+                    "root": {
                         "opacity": "0.95",
                     },
                 },
@@ -739,6 +741,15 @@ def create_info_card_affix():
                         ),
                         dmc.Stack(
                             [
+                                dmc.Divider(variant="solid", color="gray"),
+                                create_keybind_row(
+                                    "→",
+                                    "Next slice",
+                                ),
+                                create_keybind_row(
+                                    "←",
+                                    "Previous slice",
+                                ),
                                 dmc.Divider(variant="solid", color="gray"),
                                 create_keybind_row(
                                     KEYBINDS["open-freeform"].upper(),
