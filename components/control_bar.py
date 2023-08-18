@@ -147,49 +147,89 @@ def layout():
                                     _control_item(
                                         "Brightness",
                                         "bightness-text",
-                                        dmc.Slider(
-                                            id=f"figure-brightness",
-                                            value=100,
-                                            min=0,
-                                            max=255,
-                                            step=1,
-                                            color="gray",
-                                            size="sm",
-                                        ),
+                                        [
+                                            dmc.Grid(
+                                                [
+                                                    dmc.Slider(
+                                                        id={
+                                                            "type": "slider",
+                                                            "index": "brightness",
+                                                        },
+                                                        value=100,
+                                                        min=0,
+                                                        max=255,
+                                                        step=1,
+                                                        color="gray",
+                                                        size="sm",
+                                                        style={"width": "225px"},
+                                                    ),
+                                                    dmc.ActionIcon(
+                                                        dmc.Tooltip(
+                                                            label="Reset brightness",
+                                                            children=[
+                                                                DashIconify(
+                                                                    icon="fluent:arrow-reset-32-regular",
+                                                                    width=15,
+                                                                ),
+                                                            ],
+                                                        ),
+                                                        size="xs",
+                                                        variant="subtle",
+                                                        id={
+                                                            "type": "reset",
+                                                            "index": "brightness",
+                                                        },
+                                                        n_clicks=0,
+                                                        style={"margin": "auto"},
+                                                    ),
+                                                ],
+                                                style={"margin": "0px"},
+                                            )
+                                        ],
                                     ),
                                     dmc.Space(h=20),
                                     _control_item(
                                         "Contrast",
                                         "contrast-text",
-                                        dmc.Slider(
-                                            id=f"figure-contrast",
-                                            value=100,
-                                            min=0,
-                                            max=255,
-                                            step=1,
-                                            color="gray",
-                                            size="sm",
+                                        dmc.Grid(
+                                            [
+                                                dmc.Slider(
+                                                    id={
+                                                        "type": "slider",
+                                                        "index": "contrast",
+                                                    },
+                                                    value=100,
+                                                    min=0,
+                                                    max=255,
+                                                    step=1,
+                                                    color="gray",
+                                                    size="sm",
+                                                    style={"width": "225px"},
+                                                ),
+                                                dmc.ActionIcon(
+                                                    dmc.Tooltip(
+                                                        label="Reset contrast",
+                                                        children=[
+                                                            DashIconify(
+                                                                icon="fluent:arrow-reset-32-regular",
+                                                                width=15,
+                                                            ),
+                                                        ],
+                                                    ),
+                                                    size="xs",
+                                                    variant="subtle",
+                                                    id={
+                                                        "type": "reset",
+                                                        "index": "contrast",
+                                                    },
+                                                    n_clicks=0,
+                                                    style={"margin": "auto"},
+                                                ),
+                                            ],
+                                            style={"margin": "0px"},
                                         ),
                                     ),
                                     dmc.Space(h=10),
-                                    # dmc.ActionIcon(
-                                    #     dmc.Tooltip(
-                                    #         label="Reset filters",
-                                    #         children=[
-                                    #             DashIconify(
-                                    #                 icon="fluent:arrow-reset-32-regular",
-                                    #                 width=20,
-                                    #             ),
-                                    #         ],
-                                    #     ),
-                                    #     size="lg",
-                                    #     variant="filled",
-                                    #     id="filters-reset",
-                                    #     n_clicks=0,
-                                    #     mb=10,
-                                    #     ml="auto",
-                                    #     style={"margin": "auto"},
-                                    # ),
                                 ]
                             ),
                         ),
@@ -466,9 +506,12 @@ def layout():
                                                 ),
                                             ],
                                         ),
-
                                     ],
-                                    style={"border": "1px solid #EAECEF", "borderRadius": "5px", "padding": "10px"},
+                                    style={
+                                        "border": "1px solid #EAECEF",
+                                        "borderRadius": "5px",
+                                        "padding": "10px",
+                                    },
                                 ),
                                 dmc.Modal(
                                     id="generate-annotation-class-modal",

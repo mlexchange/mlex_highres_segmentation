@@ -6,6 +6,7 @@ from dash import (
     callback,
     Patch,
     ALL,
+    MATCH,
     ctx,
     clientside_callback,
     no_update,
@@ -683,22 +684,19 @@ clientside_callback(
     }
     """,
     Output("dummy-output", "children", allow_duplicate=True),
-    Input("figure-brightness", "value"),
-    Input("figure-contrast", "value"),
+    Input({"type": "slider", "index": "brightness"}, "value"),
+    Input({"type": "slider", "index": "contrast"}, "value"),
     prevent_initial_call=True,
 )
 
 
 @callback(
-    Output("figure-brightness", "value", allow_duplicate=True),
-    Output("figure-contrast", "value", allow_duplicate=True),
-    Input("filters-reset", "n_clicks"),
+    Output({"type": "slider", "index": MATCH}, "value", allow_duplicate=True),
+    Input({"type": "reset", "index": MATCH}, "n_clicks"),
     prevent_initial_call=True,
 )
 def reset_filters(n_clicks):
-    default_brightness = 100
-    default_contrast = 100
-    return default_brightness, default_contrast
+    return 100
 
 
 # TODO: check this when plotly is updated
