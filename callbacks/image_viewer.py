@@ -13,7 +13,13 @@ import dash_mantine_components as dmc
 import plotly.express as px
 import numpy as np
 from utils.data_utils import data
-from utils.plot_utils import create_viewfinder, downscale_view, resize_canvas
+from utils.plot_utils import (
+    create_viewfinder,
+    downscale_view,
+    get_view_finder_max_min,
+    get_viewfinder_style,
+    resize_canvas,
+)
 
 DOWNSCALED_img_max_height, DOWNSCALED_img_max_width = 250, 250
 
@@ -33,6 +39,7 @@ clientside_callback(
     Output("image-transformation-controls", "children", allow_duplicate=True),
     Output("annotations-controls", "children", allow_duplicate=True),
     Output("image-metadata", "data"),
+    Output("image-viewfinder", "style"),
     Input("image-selection-slider", "value"),
     State("project-name-src", "value"),
     State("paintbrush-width", "value"),
@@ -104,19 +111,25 @@ def render_image(
         and screen_size
     ):
         curr_image_metadata = {"size": tf.shape, "name": project_name}
-        # fig.update_xaxes(range=[0, tf.shape[0]])
-        # fig.update_yaxes(range=[0, tf.shape[1]])
-        print(screen_size)
         fig = resize_canvas(
             tf.shape[0], tf.shape[1], screen_size["H"], screen_size["W"], fig
         )
+        view = None
+    else:
+        view = annotation_store["view"]
 
     patched_annotation_store = Patch()
     patched_annotation_store["active_img_shape"] = list(tf.shape)
     fig_loading_overlay = -1
 
+    image_ratio = round(tf.shape[1] / tf.shape[0], 2)
+    style = get_viewfinder_style(image_ratio)
+    DOWNSCALED_img_max_height, DOWNSCALED_img_max_width = get_view_finder_max_min(
+        image_ratio
+    )
+
     fig_viewfinder = create_viewfinder(
-        tf, annotation_store, (DOWNSCALED_img_max_height, DOWNSCALED_img_max_width)
+        tf, (DOWNSCALED_img_max_height, DOWNSCALED_img_max_width), view
     )
 
     # No update is needed for the 'children' of the control components
@@ -132,6 +145,7 @@ def render_image(
             dash.no_update,
             dash.no_update,
             curr_image_metadata,
+            *style,
         )
 
     return (
@@ -143,6 +157,7 @@ def render_image(
         dash.no_update,
         dash.no_update,
         dash.no_update,
+        *style,
     )
 
 

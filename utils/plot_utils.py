@@ -46,7 +46,7 @@ def downscale_view(
     return x0, y0, x1, y1
 
 
-def create_viewfinder(image_data, annotation_store, downscaled_image_shape):
+def create_viewfinder(image_data, downscaled_image_shape, view):
     """
     Creates a viewfinder for the image viewer. The viewfinder is a small box that shows the current view of the image
     in the image viewer. It is used to quickly navigate to different parts of the image.
@@ -59,25 +59,30 @@ def create_viewfinder(image_data, annotation_store, downscaled_image_shape):
     fig = px.imshow(
         img_resized,
         binary_string=True,
-        width=img_max_height,
-        height=img_max_width,
+        width=img_max_width,
+        height=img_max_height,
     )
 
-    view = annotation_store["view"]
-    if "xaxis_range_0" in view:
-        x0, y0, x1, y1 = downscale_view(
-            view["xaxis_range_0"],
-            view["yaxis_range_1"],
-            view["xaxis_range_1"],
-            view["yaxis_range_0"],
-            image_data.shape,
-            (img_max_height, img_max_width),
-        )
-    else:
-        x0 = 0
-        y0 = img_max_height
-        x1 = img_max_width
-        y1 = 0
+    x0 = 0
+    y0 = 0
+    x1 = img_max_width
+    y1 = img_max_height
+
+    if view:
+        if "xaxis_range_0" in view:
+            x0, y0, x1, y1 = downscale_view(
+                view["xaxis_range_0"],
+                view["yaxis_range_1"],
+                view["xaxis_range_1"],
+                view["yaxis_range_0"],
+                image_data.shape,
+                (img_max_height, img_max_width),
+            )
+        else:
+            x0 = 0
+            y0 = img_max_height
+            x1 = img_max_width
+            y1 = 0
 
     # Create the viewfinder box
     fig.add_shape(
@@ -113,6 +118,36 @@ def create_viewfinder(image_data, annotation_store, downscaled_image_shape):
         hovermode=False,
     )
     return fig
+
+
+def get_viewfinder_style(image_ratio):
+    if image_ratio < 1:
+        return (
+            {
+                "width": f"calc(10vh/{image_ratio})",
+                "height": f"10vh",
+                "position": "absolute",
+                "top": "30px",
+                "right": "10px",
+            },
+        )
+    else:
+        return (
+            {
+                "width": "10vh",
+                "height": f"calc(10vh/{image_ratio})",
+                "position": "absolute",
+                "top": "30px",
+                "right": "10px",
+            },
+        )
+
+
+def get_view_finder_max_min(image_ratio):
+    if image_ratio < 1:
+        return 250, 250 * image_ratio
+    else:
+        return 250 / image_ratio, 250
 
 
 def resize_canvas(h, w, H, W, figure):
