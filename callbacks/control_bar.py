@@ -118,8 +118,8 @@ def annotation_mode(
             raise PreventUpdate
         mode = None
 
-    active = {"border": "3px solid black"}
-    inactive = {"border": "1px solid"}
+    active = {"backgroundColor": "#EAECEF"}
+    inactive = {"border": "1px solid white"}
 
     patched_figure = Patch()
 

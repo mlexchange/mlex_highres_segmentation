@@ -8,6 +8,26 @@
 }
 
 
+.mantine-1oydwvi {
+    border: 1px solid white;
+}
+
+/* vertically align switch */
+.mantine-15po0m8 {
+    margin: auto;
+}
+
+/* less padding on buttons */
+.mantine-1ezgr03 {
+    padding: 0px 10px 0px 10px;
+    font-size: 14px;
+}
+
+/* bold accordion titles*/
+.mantine-pildck {
+    font-weight: bold;
+}
+
 /* make figure viewfinder transparent */
 #image-viewfinder {
     filter: opacity(0.5);
