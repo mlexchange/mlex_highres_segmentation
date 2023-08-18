@@ -169,13 +169,7 @@ def update_viewfinder(relayout_data, annotation_store):
         annotation_store["image_ratio"]
     )
 
-    # If user resets the view by double clicking on the image, reset the viewfinder
-    if "xaxis.autorange" in relayout_data and relayout_data["xaxis.autorange"]:
-        patched_fig["layout"]["shapes"][0]["x0"] = 0
-        patched_fig["layout"]["shapes"][0]["y0"] = 0
-        patched_fig["layout"]["shapes"][0]["x1"] = DOWNSCALED_img_max_width
-        patched_fig["layout"]["shapes"][0]["y1"] = DOWNSCALED_img_max_height
-    elif "xaxis.range[0]" not in relayout_data:
+    if "xaxis.range[0]" not in relayout_data:
         raise dash.exceptions.PreventUpdate
     else:
         x0, y0, x1, y1 = downscale_view(
@@ -195,7 +189,6 @@ def update_viewfinder(relayout_data, annotation_store):
             x1 if x1 < DOWNSCALED_img_max_width else DOWNSCALED_img_max_width
         )
         patched_fig["layout"]["shapes"][0]["y1"] = y1 if y1 > 0 else 0
-    print(patched_fig)
     return patched_fig
 
 
@@ -230,13 +223,6 @@ def locally_store_annotations(relayout_data, img_idx, annotation_store):
         annotation_store["view"]["xaxis_range_1"] = relayout_data["xaxis.range[1]"]
         annotation_store["view"]["yaxis_range_0"] = relayout_data["yaxis.range[0]"]
         annotation_store["view"]["yaxis_range_1"] = relayout_data["yaxis.range[1]"]
-    elif "xaxis.autorange" in relayout_data and relayout_data["xaxis.autorange"]:
-        # if user resets the view by double clicking on the image, reset the viewfinder
-        max_height, max_width = annotation_store["active_img_shape"]
-        annotation_store["view"]["xaxis_range_0"] = 1
-        annotation_store["view"]["xaxis_range_1"] = max_width - 1
-        annotation_store["view"]["yaxis_range_0"] = max_height - 1
-        annotation_store["view"]["yaxis_range_1"] = 1
 
     return annotation_store
 

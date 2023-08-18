@@ -9,10 +9,7 @@ COMPONENT_STYLE = {
     "overflowY": "auto",
 }
 
-FIGURE_CONFIG = {
-    "displayModeBar": False,
-    "scrollZoom": True,
-}
+FIGURE_CONFIG = {"displayModeBar": False, "scrollZoom": True, "doubleClick": False}
 
 
 def layout():
