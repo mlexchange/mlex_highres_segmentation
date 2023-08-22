@@ -127,38 +127,38 @@ def get_view_finder_max_min(image_ratio):
 
 
 def resize_canvas(h, w, H, W, figure):
-    img_ratio = w / h
-    screen_ratio = W / H
-    if w <= W and h <= H:
-        x1 = W - (W - w) / 2
-        x0 = -(W - w) / 2
-        y1 = H - (H - h) / 2
-        y0 = -(H - h) / 2
-    elif w > W:
-        if img_ratio <= screen_ratio:
-            x1 = h * screen_ratio - h * (screen_ratio - img_ratio) / 2
-            x0 = -h * (screen_ratio - img_ratio) / 2
-            y1 = h
-            y0 = 0
-        else:
-            x1 = w
-            x0 = 0
-            y1 = w / screen_ratio - w * (1 / screen_ratio - 1 / img_ratio) / 2
-            y0 = -w * (1 / screen_ratio - 1 / img_ratio) / 2
+    # img_ratio = w / h
+    # screen_ratio = W / H
+    # if w <= W and h <= H:
+    #     x1 = W - (W - w) / 2
+    #     x0 = -(W - w) / 2
+    #     y1 = H - (H - h) / 2
+    #     y0 = -(H - h) / 2
+    # elif w > W:
+    #     if img_ratio <= screen_ratio:
+    #         x1 = h * screen_ratio - h * (screen_ratio - img_ratio) / 2
+    #         x0 = -h * (screen_ratio - img_ratio) / 2
+    #         y1 = h
+    #         y0 = 0
+    #     else:
+    #         x1 = w
+    #         x0 = 0
+    #         y1 = w / screen_ratio - w * (1 / screen_ratio - 1 / img_ratio) / 2
+    #         y0 = -w * (1 / screen_ratio - 1 / img_ratio) / 2
 
-    elif w < W and h > H:
-        if w >= h:
-            x1 = w * (screen_ratio / img_ratio) - h * (screen_ratio - img_ratio) / 2
-            x0 = 0 - h * (screen_ratio - img_ratio) / 2
-            y1 = h
-            y0 = 0
-        else:
-            x1 = w * (screen_ratio / img_ratio) - h * (screen_ratio - img_ratio) / 2
-            x0 = 0 - h * (screen_ratio - img_ratio) / 2
-            y1 = h
-            y0 = 0
+    # elif w < W and h > H:
+    #     if w >= h:
+    #         x1 = w * (screen_ratio / img_ratio) - h * (screen_ratio - img_ratio) / 2
+    #         x0 = 0 - h * (screen_ratio - img_ratio) / 2
+    #         y1 = h
+    #         y0 = 0
+    #     else:
+    #         x1 = w * (screen_ratio / img_ratio) - h * (screen_ratio - img_ratio) / 2
+    #         x0 = 0 - h * (screen_ratio - img_ratio) / 2
+    #         y1 = h
+    #         y0 = 0
 
-    figure.update_yaxes(range=[y1, y0])
-    figure.update_xaxes(range=[x0, x1])
+    figure.update_yaxes(range=[0, H])
+    figure.update_xaxes(range=[0, W])
 
     return figure

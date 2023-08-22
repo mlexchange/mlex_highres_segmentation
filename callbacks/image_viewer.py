@@ -86,7 +86,11 @@ def render_image(
             fillcolor=color,
         )
     )
-
+    if screen_size:
+        curr_image_metadata = {"size": tf.shape, "name": project_name}
+        fig = resize_canvas(
+            tf.shape[0], tf.shape[1], screen_size["H"], screen_size["W"], fig
+        )
     if annotation_store:
         fig["layout"]["dragmode"] = annotation_store["dragmode"]
         if not annotation_store["visible"]:
@@ -106,19 +110,6 @@ def render_image(
                     xaxis=dict(range=[view["xaxis_range_0"], view["xaxis_range_1"]]),
                     yaxis=dict(range=[view["yaxis_range_0"], view["yaxis_range_1"]]),
                 )
-
-    if (
-        project_name != image_metadata["name"]
-        or image_metadata["name"] is None
-        and screen_size
-    ):
-        curr_image_metadata = {"size": tf.shape, "name": project_name}
-        fig = resize_canvas(
-            tf.shape[0], tf.shape[1], screen_size["H"], screen_size["W"], fig
-        )
-        view = None
-    else:
-        view = annotation_store["view"]
 
     patched_annotation_store = Patch()
     patched_annotation_store["active_img_shape"] = list(tf.shape)
