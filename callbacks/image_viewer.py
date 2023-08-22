@@ -27,7 +27,8 @@ from utils.plot_utils import (
 clientside_callback(
     ClientsideFunction(namespace="clientside", function_name="get_container_size"),
     Output("screen-size", "data"),
-    Input("url", "href"),
+    Input("interval", "n_intervals"),
+    State("screen-size", "data"),
 )
 
 
@@ -41,22 +42,22 @@ clientside_callback(
     Output("annotations-controls", "children", allow_duplicate=True),
     Output("image-metadata", "data"),
     Input("image-selection-slider", "value"),
+    Input("screen-size", "data"),
     State("project-name-src", "value"),
     State("paintbrush-width", "value"),
     State("annotation-class-selection", "children"),
     State("annotation-store", "data"),
     State("image-metadata", "data"),
-    State("screen-size", "data"),
     prevent_initial_call=True,
 )
 def render_image(
     image_idx,
+    screen_size,
     project_name,
     annotation_width,
     annotation_colors,
     annotation_store,
     image_metadata,
-    screen_size,
 ):
     if image_idx:
         image_idx -= 1  # slider starts at 1, so subtract 1 to get the correct index

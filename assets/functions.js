@@ -11,13 +11,14 @@ function changeFilters(js_path, brightness, contrast) {
 
 window.dash_clientside = Object.assign({}, window.dash_clientside, {
     clientside: {
-        get_container_size: function(url) {
+        get_container_size: function (interval, prev_screen_params) {
             let W = window.innerWidth;
             let H = window.innerHeight;
-            if(W == 0 || H == 0){
+            let screen_params = { 'W': W, 'H': H };
+            if (W == 0 || H == 0 || JSON.stringify(screen_params) === JSON.stringify(prev_screen_params)) {
                 return dash_clientside.no_update
             }
-            return {'W': W, 'H':H}
+            return screen_params
         },
     }
 });
