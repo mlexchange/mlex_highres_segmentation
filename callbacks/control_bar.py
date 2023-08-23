@@ -10,7 +10,6 @@ from dash import (
 )
 from dash.exceptions import PreventUpdate
 import dash_mantine_components as dmc
-from utils.data_utils import data
 
 
 @callback(
