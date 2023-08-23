@@ -73,7 +73,10 @@ def run_job(n_clicks, annotation_store, project_name):
         if MODE == "dev":
             job_uid = uuid.uuid4()
             return (
-                f"Workflow has been succesfully submitted with uid: {job_uid}",
+                dmc.Text(
+                    f"Workflow has been succesfully submitted with uid: {job_uid}",
+                    size="sm",
+                ),
                 job_uid,
             )
         else:
@@ -84,12 +87,18 @@ def run_job(n_clicks, annotation_store, project_name):
             job_uid = job_submitted.json()
             if job_submitted.status_code == 200:
                 return (
-                    f"Workflow has been succesfully submitted with uid: {job_uid}",
+                    dmc.Text(
+                        f"Workflow has been succesfully submitted with uid: {job_uid}",
+                        size="sm",
+                    ),
                     job_uid,
                 )
             else:
                 return (
-                    f"Workflow presented error code: {job_submitted.status_code}",
+                    dmc.Text(
+                        f"Workflow presented error code: {job_submitted.status_code}",
+                        size="sm",
+                    ),
                     job_uid,
                 )
     return no_update, no_update
@@ -110,13 +119,26 @@ def check_job(job_id, n_intervals):
 
     # TODO: Connect with the computing API when not in "dev" mode
     """
-    output_layout = [dmc.Text]
+    output_layout = [
+        dmc.Text(
+            f"Workflow {job_id} completed successfully. Click button below to view segmentation results.",
+            size="sm",
+        ),
+        dmc.Space(h=20),
+        dmc.Switch(
+            size="sm",
+            radius="lg",
+            label="Show output results",
+            id="show-results",
+            checked=False,
+        ),
+    ]
 
     if MODE == "dev":
         if job_id:
             time.sleep(3)
             return (
-                f"Workflow {job_id} completed successfully. Click button below to view segmentation results.",
+                output_layout,
                 None,
             )
         raise PreventUpdate
