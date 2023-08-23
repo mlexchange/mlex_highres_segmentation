@@ -1,10 +1,8 @@
 from dash import Input, Output, State, callback, ctx, Patch, clientside_callback
 import dash
-import dash_mantine_components as dmc
-from tifffile import imread
 import plotly.express as px
 import numpy as np
-from utils.data_utils import data
+from constants import DATA
 
 
 @callback(
@@ -30,7 +28,7 @@ def render_image(
 ):
     if image_idx:
         image_idx -= 1  # slider starts at 1, so subtract 1 to get the correct index
-        tf = data[project_name][image_idx]
+        tf = DATA[project_name][image_idx]
     else:
         tf = np.zeros((500, 500))
     fig = px.imshow(tf, binary_string=True)
@@ -147,7 +145,7 @@ def update_slider_values(project_name, annotation_store):
 
     disable_slider = project_name is None
     if not disable_slider:
-        tiff_file = data[project_name]
+        tiff_file = DATA[project_name]
     min_slider_value = 0 if disable_slider else 1
     max_slider_value = 0 if disable_slider else len(tiff_file)
     slider_value = 0 if disable_slider else 1

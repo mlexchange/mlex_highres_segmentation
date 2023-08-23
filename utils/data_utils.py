@@ -1,10 +1,6 @@
 import os
 import requests
-from urllib.parse import urlparse
-
-from tiled.client import from_uri
-from tiled.client.cache import Cache
-from dotenv import load_dotenv
+from constants import DATA
 
 
 def DEV_download_google_sample_data():
@@ -54,20 +50,5 @@ def DEV_download_google_sample_data():
     print("All files downloaded successfully.")
 
 
-load_dotenv()
-
-TILED_URI = os.getenv("TILED_URI")
-API_KEY = os.getenv("API_KEY")
-
-if os.getenv("SERVE_LOCALLY", False):
-    print("To run Tiled server locally run `tiled serve directory --public data`")
-    DEV_download_google_sample_data()
-    client = from_uri("http://localhost:8000")
-    data = client
-else:
-    client = from_uri(TILED_URI, api_key=API_KEY)
-    data = client["data"]
-
-
 def get_data_project_names():
-    return list(data)
+    return list(DATA)
