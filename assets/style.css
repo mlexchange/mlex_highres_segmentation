@@ -73,3 +73,9 @@ body {
 .mantine-1dcetaa:hover {
     background-color: #00313C;
 }
+
+#drawer-controls-open-button {
+    background-color: #f5f5f57f;
+    color: #00313C;
+    border: 1px solid #00313C;
+}
