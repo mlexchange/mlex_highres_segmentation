@@ -4,6 +4,8 @@ import os
 import uuid
 import requests
 import time
+import dash_mantine_components as dmc
+from utils import data_utils
 
 MODE = os.getenv("MODE", "")
 
@@ -64,9 +66,8 @@ def run_job(n_clicks, annotation_store, project_name):
     If the app is run from "dev" mode, then only a placeholder job_uid will be created.
     The job_uid is saved in a dcc.Store for reference by the check_job callback below.
 
-    # TODO: This callback should also save the user's annotations to the Tiled server in
-    mask format, so that the path can be submitted as part of the API request.
-
+    # TODO: Appropriately paramaterize the DEMO_WORKFLOW json depending on user inputs
+    and relevant file paths
     """
     if n_clicks:
         if MODE == "dev":
@@ -76,6 +77,7 @@ def run_job(n_clicks, annotation_store, project_name):
                 job_uid,
             )
         else:
+            data_utils.save_annotations_data(annotation_store, project_name)
             job_submitted = requests.post(
                 "http://job-service:8080/api/v0/workflows", json=DEMO_WORKFLOW
             )
@@ -108,6 +110,8 @@ def check_job(job_id, n_intervals):
 
     # TODO: Connect with the computing API when not in "dev" mode
     """
+    output_layout = [dmc.Text]
+
     if MODE == "dev":
         if job_id:
             time.sleep(3)

@@ -1,10 +1,9 @@
 import os
 import json
 import requests
-from urllib.parse import urlparse
-
+from utils.annotations import Annotations
+import numpy as np
 from tiled.client import from_uri
-from tiled.client.cache import Cache
 from dotenv import load_dotenv
 
 
@@ -86,6 +85,39 @@ def DEV_load_exported_json_data(file_path, USER_NAME, PROJECT_NAME):
 
 def DEV_filter_json_data_by_timestamp(data, timestamp):
     return [data for data in data if data["time"] == timestamp]
+
+
+def save_annotations_data(annotation_store, project_name):
+    """
+    Transforms annotations data to a pixelated mask and outputs to
+    the Tiled server
+
+    # TODO: Save data to Tiled server after transformation
+    """
+    annotations = Annotations(annotation_store)
+    annotations.create_annotation_metadata()
+    annotations.create_annotation_mask(
+        sparse=False
+    )  # TODO: Would sparse need to be true?
+
+    # Get metadata and annotation data
+    metadata = annotations.get_annotations()
+    mask = annotations.get_annotation_mask()
+
+    # Get raw images associated with each annotated slice
+    img_idx = list(metadata.keys())
+    img = data[project_name]
+    raw = []
+    for idx in img_idx:
+        ar = img[int(idx)]
+        raw.append(ar)
+    try:
+        raw = np.stack(raw)
+        mask = np.stack(mask)
+    except ValueError:
+        return "No annotations to process."
+
+    return
 
 
 load_dotenv()
