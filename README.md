@@ -11,11 +11,12 @@
 pip install -r requirements.txt
 ```
 
-2. Configure a connection to the Tiled server via a `.env` file with the following environment variables:
+2. Create a `.env` file with the following environment variables:
 
 ```
-TILED_URI=https://mlex-segmentation.als.lbl.gov
+TILED_URI='https://mlex-segmentation.als.lbl.gov'
 API_KEY=<key-provided-on-request>
+MODE='dev'
 ```
 
 3. Start a local server: 
