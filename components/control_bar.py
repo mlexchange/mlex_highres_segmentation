@@ -16,7 +16,7 @@ def _control_item(title, title_id, item):
                 style={"width": "100px", "margin": "auto", "paddingRight": "5px"},
                 align="right",
             ),
-            html.Div(item, style={"width": "275px", "margin": "auto"}),
+            html.Div(item, style={"width": "265px", "margin": "auto"}),
         ]
     )
 
@@ -28,7 +28,7 @@ def _accordion_item(title, icon, value, children, id):
                 title,
                 icon=DashIconify(
                     icon=icon,
-                    color=dmc.theme.DEFAULT_COLORS["blue"][6],
+                    color="#00313C",
                     width=20,
                 ),
             ),
