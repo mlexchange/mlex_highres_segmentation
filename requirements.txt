@@ -26,3 +26,8 @@ tiled[client]==0.1.0a96
 gunicorn==20.1.0
 requests==2.26.0
 python-dotenv
+scikit-image
+svgpathtools
+matplotlib
+scipy
+dash-extensions==1.0.1

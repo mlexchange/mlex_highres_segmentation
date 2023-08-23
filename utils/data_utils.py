@@ -1,4 +1,5 @@
 import os
+import json
 import requests
 from constants import DATA
 
@@ -48,6 +49,39 @@ def DEV_download_google_sample_data():
             print(f"Downloaded {destination}")
 
     print("All files downloaded successfully.")
+
+
+def DEV_load_exported_json_data(file_path, USER_NAME, PROJECT_NAME):
+    """
+    This function is used to load the exported json, which was saved in a local file.
+    User name is used to filter the data by user.
+    Project name is used to filter the data by project.
+    It is sorted by timestamp with the latest timestamp first.
+
+    TODO: this function will be replaced with a database query in the future.
+    """
+    DATA_JSON = []
+
+    with open(file_path, "r") as f:
+        for line in f:
+            if line.strip():
+                json_data = json.loads(line)
+                json_data["data"] = json.loads(json_data["data"])
+                DATA_JSON.append(json_data)
+
+    data = [
+        data
+        for data in DATA_JSON
+        if data["user"] == USER_NAME and data["source"] == PROJECT_NAME
+    ]
+    if data:
+        data = sorted(data, key=lambda x: x["time"], reverse=True)
+
+    return data
+
+
+def DEV_filter_json_data_by_timestamp(data, timestamp):
+    return [data for data in data if data["time"] == timestamp]
 
 
 def get_data_project_names():
