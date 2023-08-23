@@ -71,7 +71,7 @@ def run_job(n_clicks, annotation_store, project_name):
     """
     if n_clicks:
         if MODE == "dev":
-            job_uid = uuid.uuid4()
+            job_uid = str(uuid.uuid4())
             return (
                 dmc.Text(
                     f"Workflow has been succesfully submitted with uid: {job_uid}",
