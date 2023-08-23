@@ -6,6 +6,12 @@ from constants import ANNOT_ICONS, KEYBINDS
 from dash_extensions import EventListener
 
 
+def _tooltip(text, children):
+    return dmc.Tooltip(
+        label=text, withArrow=True, position="top", color="#464646", children=children
+    )
+
+
 def _control_item(title, title_id, item):
     return dmc.Grid(
         [
@@ -78,8 +84,8 @@ def layout():
                                         dmc.Grid(
                                             [
                                                 dmc.Col(
-                                                    dmc.Tooltip(
-                                                        label="Previous image",
+                                                    _tooltip(
+                                                        "Previous image",
                                                         children=dmc.ActionIcon(
                                                             DashIconify(
                                                                 icon="ooui:previous-ltr",
@@ -112,8 +118,8 @@ def layout():
                                                     style={"margin": "auto"},
                                                 ),
                                                 dmc.Col(
-                                                    dmc.Tooltip(
-                                                        label="Next image",
+                                                    _tooltip(
+                                                        "Next image",
                                                         children=dmc.ActionIcon(
                                                             DashIconify(
                                                                 icon="ooui:previous-rtl",
@@ -164,8 +170,8 @@ def layout():
                                                         style={"width": "225px"},
                                                     ),
                                                     dmc.ActionIcon(
-                                                        dmc.Tooltip(
-                                                            label="Reset brightness",
+                                                        _tooltip(
+                                                            "Reset brightness",
                                                             children=[
                                                                 DashIconify(
                                                                     icon="fluent:arrow-reset-32-regular",
@@ -207,8 +213,8 @@ def layout():
                                                     style={"width": "225px"},
                                                 ),
                                                 dmc.ActionIcon(
-                                                    dmc.Tooltip(
-                                                        label="Reset contrast",
+                                                    _tooltip(
+                                                        "Reset contrast",
                                                         children=[
                                                             DashIconify(
                                                                 icon="fluent:arrow-reset-32-regular",
@@ -244,7 +250,8 @@ def layout():
                                     [
                                         html.Div(
                                             children=[
-                                                dmc.Tooltip(
+                                                _tooltip(
+                                                    "Open freeform (Q)",
                                                     dmc.ActionIcon(
                                                         id="open-freeform",
                                                         variant="subtle",
@@ -260,10 +267,9 @@ def layout():
                                                         },
                                                         size="lg",
                                                     ),
-                                                    label="Open Freeform: draw any open shape",
-                                                    multiline=True,
                                                 ),
-                                                dmc.Tooltip(
+                                                _tooltip(
+                                                    "Closed freeform (W)",
                                                     dmc.ActionIcon(
                                                         id="closed-freeform",
                                                         variant="subtle",
@@ -276,10 +282,9 @@ def layout():
                                                         ),
                                                         size="lg",
                                                     ),
-                                                    label="Closed Freeform: draw a shape that will auto-complete",
-                                                    multiline=True,
                                                 ),
-                                                dmc.Tooltip(
+                                                _tooltip(
+                                                    "Line (E)",
                                                     dmc.ActionIcon(
                                                         id="line",
                                                         variant="subtle",
@@ -289,10 +294,9 @@ def layout():
                                                         ),
                                                         size="lg",
                                                     ),
-                                                    label="Line: draw a straight line",
-                                                    multiline=True,
                                                 ),
-                                                dmc.Tooltip(
+                                                _tooltip(
+                                                    "Circle (R)",
                                                     dmc.ActionIcon(
                                                         id="circle",
                                                         variant="subtle",
@@ -303,10 +307,9 @@ def layout():
                                                         ),
                                                         size="lg",
                                                     ),
-                                                    label="Circle: create a filled circle",
-                                                    multiline=True,
                                                 ),
-                                                dmc.Tooltip(
+                                                _tooltip(
+                                                    "Rectangle (T)",
                                                     dmc.ActionIcon(
                                                         id="rectangle",
                                                         variant="subtle",
@@ -319,10 +322,9 @@ def layout():
                                                         ),
                                                         size="lg",
                                                     ),
-                                                    label="Rectangle: create a filled rectangle",
-                                                    multiline=True,
                                                 ),
-                                                dmc.Tooltip(
+                                                _tooltip(
+                                                    "Eraser (S)",
                                                     dmc.ActionIcon(
                                                         id="eraser",
                                                         variant="subtle",
@@ -333,8 +335,6 @@ def layout():
                                                         ),
                                                         size="lg",
                                                     ),
-                                                    label="Eraser: click on the shape to erase then click this button to delete the selected shape",
-                                                    multiline=True,
                                                 ),
                                                 dmc.Tooltip(
                                                     dmc.ActionIcon(
@@ -352,7 +352,8 @@ def layout():
                                                     label="Clear All Annotations",
                                                     multiline=True,
                                                 ),
-                                                dmc.Tooltip(
+                                                _tooltip(
+                                                    "Pan and zoom (A)",
                                                     dmc.ActionIcon(
                                                         id="pan-and-zoom",
                                                         variant="subtle",
@@ -365,8 +366,6 @@ def layout():
                                                         ),
                                                         size="lg",
                                                     ),
-                                                    label="Stop Drawing: pan, zoom, select annotations and edit them using the nodes",
-                                                    multiline=True,
                                                 ),
                                             ],
                                             className="flex-row",
