@@ -55,8 +55,6 @@ def layout():
             style={"width": "400px"},
             children=[
                 dmc.AccordionMultiple(
-                    chevron=DashIconify(icon="ant-design:plus-outlined"),
-                    disableChevronRotation=True,
                     value=["data-select", "image-transformations", "annotations"],
                     children=[
                         _accordion_item(
@@ -637,13 +635,19 @@ def layout():
                                     ],
                                 ),
                                 dmc.Space(h=20),
-                                dmc.Center(
-                                    dmc.Button(
-                                        "Save / Load / Export",
-                                        id="open-data-management-modal-button",
-                                        variant="light",
-                                        style={"width": "200px", "margin": "5px"},
-                                    ),
+                                dmc.Button(
+                                    "Clear all annotations",
+                                    id="clear-all",
+                                    variant="outline",
+                                    style={"width": "100%"}
+                                ),
+                                dmc.Space(h=3),
+                                dmc.Button(
+                                    "Save and export",
+                                    id="open-data-management-modal-button",
+                                    variant="outline",
+                                    color="#00313C",
+                                    style={"width": "100%"},
                                 ),
                                 dmc.Modal(
                                     title="Data Management",
