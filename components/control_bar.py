@@ -21,7 +21,15 @@ def _control_item(title, title_id, item):
     )
 
 
-def _accordion_item(title, icon, value, children, id):
+def _accordion_item(title, icon, value, children, id, loading=True):
+    if loading:
+        panel = dmc.LoadingOverlay(
+            dmc.AccordionPanel(children=children, id=id),
+            loaderProps={"size": 0},
+            overlayOpacity=0.4,
+        )
+    else:
+        panel = dmc.AccordionPanel(children=children, id=id)
     return dmc.AccordionItem(
         [
             dmc.AccordionControl(
@@ -32,11 +40,7 @@ def _accordion_item(title, icon, value, children, id):
                     width=20,
                 ),
             ),
-            dmc.LoadingOverlay(
-                dmc.AccordionPanel(children=children, id=id),
-                loaderProps={"size": 0},
-                overlayOpacity=0.4,
-            ),
+            panel,
         ],
         value=value,
     )
@@ -735,8 +739,9 @@ def layout():
                                     variant="light",
                                     style={"width": "160px", "margin": "5px"},
                                 ),
-                                html.Div(id="output-placeholder"),
+                                html.Div(id="output-details"),
                             ],
+                            loading=False,
                         ),
                     ],
                 ),
@@ -821,6 +826,10 @@ def drawer_section(children):
             dcc.Download(id="export-annotation-metadata"),
             dcc.Download(id="export-annotation-mask"),
             dcc.Store(id="project-data"),
+            dcc.Store(id="submitted-job-id"),
+            dcc.Interval(
+                id="model-check", interval=5000
+            ),  # TODO: May want to increase frequency
             html.Div(id="dummy-output"),
             EventListener(
                 events=[
