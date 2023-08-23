@@ -1,8 +1,5 @@
-from dash import callback, Input, Output, State, no_update, ctx
+from dash import callback, Input, Output, State, no_update
 from dash.exceptions import PreventUpdate
-from utils.annotations import Annotations
-from utils.data_utils import data
-import numpy as np
 import os
 import uuid
 import requests
