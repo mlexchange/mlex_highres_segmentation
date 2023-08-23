@@ -158,7 +158,9 @@ def resize_canvas(h, w, H, W, figure):
             y1 = h
             y0 = 0
 
-    figure.update_yaxes(range=[y1, y0])
-    figure.update_xaxes(range=[x0, x1])
+    figure.update_layout(
+        xaxis=dict(range=[x0, x1]),
+        yaxis=dict(range=[y1, y0]),
+    )
 
     return figure
