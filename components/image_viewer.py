@@ -21,7 +21,7 @@ def layout():
             dcc.Location("url"),
             dmc.LoadingOverlay(
                 id="image-viewer-loading",
-                overlayOpacity=0.15,
+                overlayOpacity=0,
                 loaderProps=dict(
                     color=dmc.theme.DEFAULT_COLORS["blue"][6], variant="bars"
                 ),

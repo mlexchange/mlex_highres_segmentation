@@ -1,4 +1,4 @@
-from dash import Dash, dcc, clientside_callback, ClientsideFunction
+from dash import Dash, dcc
 import dash_mantine_components as dmc
 from components.control_bar import layout as control_bar_layout
 from components.image_viewer import layout as image_viewer_layout
