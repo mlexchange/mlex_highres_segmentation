@@ -639,7 +639,7 @@ def layout():
                                     "Clear all annotations",
                                     id="clear-all",
                                     variant="outline",
-                                    style={"width": "100%"}
+                                    style={"width": "100%"},
                                 ),
                                 dmc.Space(h=3),
                                 dmc.Button(
