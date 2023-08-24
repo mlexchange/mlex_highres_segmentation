@@ -15,7 +15,7 @@ app.layout = dmc.MantineProvider(
         control_bar_layout(),
         image_viewer_layout(),
         dcc.Store(id="current-ann-mode"),
-        dcc.Interval(id="interval"),
+        dcc.Interval(id="interval", interval=100),
     ],
 )
 
