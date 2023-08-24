@@ -164,3 +164,15 @@ def resize_canvas(h, w, H, W, figure):
     )
 
     return figure
+
+
+def resize_canvas_with_zoom(view, screen_size, fig):
+    H = screen_size["H"]
+    W = screen_size["W"]
+    x0 = view["xaxis_range_0"]
+    y0 = view["yaxis_range_0"]
+    x1 = view["xaxis_range_1"]
+    y1 = view["yaxis_range_1"]
+    y1 = y0 - H / W * (x1 - x0)
+    fig.update_layout(xaxis=dict(range=[x0, x1]), yaxis=dict(range=[y0, y1]))
+    return fig

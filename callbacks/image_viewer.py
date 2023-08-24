@@ -22,6 +22,7 @@ from utils.plot_utils import (
     downscale_view,
     get_view_finder_max_min,
     resize_canvas,
+    resize_canvas_with_zoom,
 )
 
 clientside_callback(
@@ -71,8 +72,8 @@ def render_image(
         xaxis=dict(visible=False),
         yaxis=dict(visible=False),
         dragmode="drawopenpath",
-        paper_bgcolor="red",
-        plot_bgcolor="blue",
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
     )
 
     fig.update_traces(hovertemplate=None, hoverinfo="skip")
@@ -95,18 +96,16 @@ def render_image(
                 fig["layout"]["shapes"] = annotation_store["annotations"][
                     str(image_idx)
                 ]
-
         view = annotation_store["view"]
     else:
         view = None
 
     if screen_size:
+        # we have a zoom level to take into account
         if view:
             if "xaxis_range_0" in view:
-                fig.update_layout(
-                    xaxis=dict(range=[view["xaxis_range_0"], view["xaxis_range_1"]]),
-                    yaxis=dict(range=[view["yaxis_range_0"], view["yaxis_range_1"]]),
-                )
+                fig = resize_canvas_with_zoom(view, screen_size, fig)
+        # If the image has not been zoomed in yet (initial load: center the image)
         else:
             fig = resize_canvas(
                 tf.shape[0], tf.shape[1], screen_size["H"], screen_size["W"], fig
