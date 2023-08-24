@@ -175,4 +175,5 @@ def resize_canvas_with_zoom(view, screen_size, fig):
     y1 = view["yaxis_range_1"]
     y1 = y0 - H / W * (x1 - x0)
     fig.update_layout(xaxis=dict(range=[x0, x1]), yaxis=dict(range=[y0, y1]))
-    return fig
+    view["yaxis_range_1"] = y1
+    return fig, view

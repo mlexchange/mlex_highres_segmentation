@@ -104,7 +104,7 @@ def render_image(
         # we have a zoom level to take into account
         if view:
             if "xaxis_range_0" in view:
-                fig = resize_canvas_with_zoom(view, screen_size, fig)
+                fig, view = resize_canvas_with_zoom(view, screen_size, fig)
         # If the image has not been zoomed in yet (initial load: center the image)
         else:
             fig = resize_canvas(
