@@ -98,3 +98,8 @@ body {
 #open-data-management-modal-button:hover {
     background-color: #00313c0e;
 }
+
+.mantine-UnstyledButton-root.mantine-Button-root.add-class-btn.mantine-l8qp3y {
+    color: #9EA4AB !important;
+    border-color: #EAECEF !important;
+}

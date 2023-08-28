@@ -48,6 +48,68 @@ def _accordion_item(title, icon, value, children, id):
     )
 
 
+def _annotation_class_item():
+    return html.Div(
+        [
+            html.Div(
+                [
+                    html.Div(
+                        style={
+                            "width": "25px",
+                            "height": "25px",
+                            "background-color": "lightblue",
+                            "margin": "5px",
+                            "borderRadius": "3px",
+                            "border": "2px solid blue",
+                        },
+                    ),
+                    html.Div("Class 1"),
+                ],
+                style={
+                    "display": "flex",
+                    "justify-content": "flex-row",
+                    "align-items": "center",
+                    "color": "#9EA4AB",
+                },
+            ),
+            html.Div(
+                [
+                    dmc.ActionIcon(
+                        variant="subtle",
+                        color="gray",
+                        children=DashIconify(icon="mdi:hide"),
+                        size="lg",
+                    ),
+                    dmc.ActionIcon(
+                        variant="subtle",
+                        color="gray",
+                        children=DashIconify(icon="uil:edit"),
+                        size="lg",
+                    ),
+                    dmc.ActionIcon(
+                        variant="subtle",
+                        color="gray",
+                        children=DashIconify(icon="octicon:trash-24"),
+                        size="lg",
+                    ),
+                ],
+                style={
+                    "display": "flex",
+                    "justify-content": "flex-row",
+                    "align-items": "center",
+                },
+            ),
+        ],
+        style={
+            "border": "1px solid #EAECEF",
+            "borderRadius": "3px",
+            "marginBottom": "4px",
+            "display": "flex",
+            "justifyContent": "space-between",
+        },
+    )
+
+
 def layout():
     DATA_OPTIONS = data_utils.get_data_project_names()
     return drawer_section(
@@ -430,7 +492,20 @@ def layout():
                                 ),
                                 html.Div(
                                     [
-                                        dmc.Text("Manage classes", size="sm"),
+                                        dmc.Text(
+                                            "Manage classes",
+                                            size="sm",
+                                            align="right",
+                                            color="#9EA4AB",
+                                        ),
+                                        dmc.Space(h=10),
+                                        _annotation_class_item(),
+                                        dmc.Button(
+                                            "+ Add new class... ",
+                                            variant="outline",
+                                            style={"width": "100%"},
+                                            className="add-class-btn",
+                                        ),
                                         html.Div(
                                             id="annotation-class-selection",
                                             children=[
@@ -505,9 +580,9 @@ def layout():
                                         ),
                                     ],
                                     style={
-                                        "border": "1px solid #EAECEF",
-                                        "borderRadius": "5px",
-                                        "padding": "10px",
+                                        # "border": "1px solid #EAECEF",
+                                        # "borderRadius": "5px",
+                                        # "padding": "10px",
                                     },
                                 ),
                                 dmc.Modal(
