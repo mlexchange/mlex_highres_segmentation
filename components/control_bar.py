@@ -48,7 +48,7 @@ def _accordion_item(title, icon, value, children, id):
     )
 
 
-def _annotation_class_item():
+def annotation_class_item(class_color, class_label):
     return html.Div(
         [
             html.Div(
@@ -57,13 +57,13 @@ def _annotation_class_item():
                         style={
                             "width": "25px",
                             "height": "25px",
-                            "background-color": "lightblue",
+                            "background-color": class_color,
                             "margin": "5px",
                             "borderRadius": "3px",
                             "border": "2px solid blue",
                         },
                     ),
-                    html.Div("Class 1"),
+                    html.Div(class_label),
                 ],
                 style={
                     "display": "flex",
@@ -107,6 +107,7 @@ def _annotation_class_item():
             "display": "flex",
             "justifyContent": "space-between",
         },
+        id={"type": "annotation-class", "index": "class_label"},
     )
 
 
@@ -499,9 +500,15 @@ def layout():
                                             color="#9EA4AB",
                                         ),
                                         dmc.Space(h=10),
-                                        _annotation_class_item(),
+                                        html.Div(
+                                            children=[
+                                                annotation_class_item("red", "class 1")
+                                            ],
+                                            id="annotation-class-container",
+                                        ),
                                         dmc.Button(
                                             "+ Add new class... ",
+                                            id="generate-annotation-class",
                                             variant="outline",
                                             style={"width": "100%"},
                                             className="add-class-btn",
@@ -536,16 +543,16 @@ def layout():
                                         dmc.Grid(
                                             justify="space-between",
                                             children=[
-                                                dmc.Button(
-                                                    id="generate-annotation-class",
-                                                    children="Add",
-                                                    variant="subtle",
-                                                    color="gray",
-                                                    style={"width": "85px"},
-                                                    leftIcon=DashIconify(
-                                                        icon="ic:baseline-plus"
-                                                    ),
-                                                ),
+                                                # dmc.Button(
+                                                #     id="generate-annotation-class",
+                                                #     children="Add",
+                                                #     variant="subtle",
+                                                #     color="gray",
+                                                #     style={"width": "85px"},
+                                                #     leftIcon=DashIconify(
+                                                #         icon="ic:baseline-plus"
+                                                #     ),
+                                                # ),
                                                 dmc.Button(
                                                     id="edit-annotation-class",
                                                     children="Edit",

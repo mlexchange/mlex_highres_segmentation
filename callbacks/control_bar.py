@@ -16,7 +16,7 @@ import dash_mantine_components as dmc
 from dash_iconify import DashIconify
 import json
 from utils.annotations import Annotations
-from components.control_bar import class_action_icon
+from components.control_bar import class_action_icon, annotation_class_item
 from constants import KEYBINDS, ANNOT_ICONS, ANNOT_NOTIFICATION_MSGS
 import copy
 from utils.data_utils import (
@@ -522,7 +522,18 @@ def disable_class_hiding(highlighted):
 
 
 @callback(
-    Output("annotation-class-selection", "children"),
+    Output("annotation-store", "data", allow_duplicate=True),
+    Input({"type": "annotation-class", "index": ALL}, "n_clicks"),
+    prevent_initial_call=True,
+)
+def test(a):
+    print(ctx.triggered)
+    print(a)
+    return no_update
+
+
+@callback(
+    Output("annotation-class-container", "children"),
     Output("annotation-class-label", "value"),
     Output("annotation-class-label-edit", "value"),
     Output("annotation-store", "data", allow_duplicate=True),
@@ -533,7 +544,7 @@ def disable_class_hiding(highlighted):
     Input("conceal-annotation-class", "n_clicks"),
     State("annotation-class-label", "value"),
     State("annotation-class-colorpicker", "value"),
-    State("annotation-class-selection", "children"),
+    State("annotation-class-container", "children"),
     State({"type": "annotation-delete-buttons", "index": ALL}, "style"),
     State({"type": "annotation-hide-buttons", "index": ALL}, "style"),
     State("current-annotation-classes-edit", "value"),
@@ -581,10 +592,8 @@ def add_delete_edit_hide_classes(
                 "label": class_label,
             }
         )
-        if class_color == "rgb(255,255,255)":
-            current_classes.append(class_action_icon(class_color, class_label, "black"))
-        else:
-            current_classes.append(class_action_icon(class_color, class_label, "white"))
+        current_classes.append(annotation_class_item(class_color, class_label))
+
         return current_classes, "", "", annotation_store, no_update
     elif triggered == "relabel-annotation-class":
         for i in range(len(current_stored_classes)):
