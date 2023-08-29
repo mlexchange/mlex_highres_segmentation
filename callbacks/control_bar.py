@@ -40,6 +40,18 @@ import random
 
 
 @callback(
+    Output("current-class-selection", "data"),
+    Input({"type": "annotation-class", "index": ALL}, "n_clicks"),
+    prevent_inital_call=True,
+)
+def update_current_class_selection(n_clicks):
+    current_selection = None
+    if ctx.triggered_id:
+        current_selection = ctx.triggered_id["index"]
+    return current_selection
+
+
+@callback(
     Output("image-viewer", "figure", allow_duplicate=True),
     Output("open-freeform", "style"),
     Output("closed-freeform", "style"),
@@ -522,29 +534,18 @@ def disable_class_hiding(highlighted):
 
 
 @callback(
-    Output("annotation-store", "data", allow_duplicate=True),
-    Input({"type": "annotation-class", "index": ALL}, "n_clicks"),
-    prevent_initial_call=True,
-)
-def test(a):
-    print(ctx.triggered)
-    print(a)
-    return no_update
-
-
-@callback(
     Output("annotation-class-container", "children"),
     Output("annotation-class-label", "value"),
     Output("annotation-class-label-edit", "value"),
     Output("annotation-store", "data", allow_duplicate=True),
     Output("image-viewer", "figure", allow_duplicate=True),
     Input("create-annotation-class", "n_clicks"),
-    Input("remove-annotation-class", "n_clicks"),
-    Input("relabel-annotation-class", "n_clicks"),
-    Input("conceal-annotation-class", "n_clicks"),
+    Input({"type": "hide-annotation-class", "index": ALL}, "n_clicks"),
+    Input({"type": "edit-annotation-class", "index": ALL}, "n_clicks"),
+    Input({"type": "delete-annotation-class", "index": ALL}, "n_clicks"),
+    State("annotation-class-container", "children"),
     State("annotation-class-label", "value"),
     State("annotation-class-colorpicker", "value"),
-    State("annotation-class-container", "children"),
     State({"type": "annotation-delete-buttons", "index": ALL}, "style"),
     State({"type": "annotation-hide-buttons", "index": ALL}, "style"),
     State("current-annotation-classes-edit", "value"),
@@ -553,14 +554,14 @@ def test(a):
     State("image-selection-slider", "value"),
     prevent_initial_call=True,
 )
-def add_delete_edit_hide_classes(
+def add_delete_edit_hide_classes2(
     create,
     remove,
     edit,
     hide,
-    class_label,
-    class_color,
     current_classes,
+    new_class_label,
+    new_class_color,
     classes_to_delete,
     classes_to_hide,
     old_label,
@@ -574,16 +575,22 @@ def add_delete_edit_hide_classes(
     are added or deleted like removing annotations or updating
     the drawing mode.
     """
-    triggered = ctx.triggered_id
-    image_idx = str(image_idx - 1)
     patched_figure = Patch()
     current_stored_classes = annotation_store["label_mapping"]
     current_annotations = annotation_store["annotations"]
-    if class_color is None:
-        class_color = "rgb(255,255,255)"
+    image_idx = str(image_idx - 1)
+    if ctx.triggered_id == "create-annotation-class":
+        action = "create-annotation-class"
+        class_label = new_class_label
+        class_color = new_class_color
     else:
-        class_color = class_color.replace(" ", "")
-    if triggered == "create-annotation-class":
+        action = ctx.triggered_id["type"]
+        annotation_class = ctx.triggered_id["index"].split(";")
+        class_label = annotation_class[0]
+        class_color = annotation_class[1]
+
+    # Case 1: add a new annotation class. Add it to the UI and update the annotation_store
+    if action == "create-annotation-class":
         last_id = int(current_stored_classes[-1]["id"])
         annotation_store["label_mapping"].append(
             {
@@ -593,53 +600,168 @@ def add_delete_edit_hide_classes(
             }
         )
         current_classes.append(annotation_class_item(class_color, class_label))
+        return current_classes, "", "", annotation_store, no_update
+    # Case 2: hide annotaion class
+    elif action == "hide-annotation-class":
+        pass
+    # Case 3: edit annotaion class
+    elif action == "edit-annotation-class":
+        pass
+    # Case 4: delete annotaion class
+    elif action == "delete-annotation-class":
+        pass
+    return [no_update] * 5
 
-        return current_classes, "", "", annotation_store, no_update
-    elif triggered == "relabel-annotation-class":
-        for i in range(len(current_stored_classes)):
-            if current_stored_classes[i]["label"] == old_label:
-                annotation_store["label_mapping"][i]["label"] = new_label
-                current_classes[i]["props"]["children"] = new_label
-        return current_classes, "", "", annotation_store, no_update
-    # elif triggered == "conceal-annotation-class":
-    #     ann_show = annotation_store["classes_shown"]
-    #     ann_hide = annotation_store["classes_hidden"]
-    #     patched_figure["layout"]["shapes"]
-    #     print(current_annotations)
-    #     print(classes_to_hide)
-    #     return no_update, no_update, no_update, no_update, no_update
-    else:
-        color_to_delete = []
-        color_to_keep = []
-        annotations_to_keep = {}
-        for i in range(len(classes_to_delete)):
-            if classes_to_delete[i]["border"] == "3px solid black":
-                color_to_delete.append(
-                    classes_to_delete[i]["background-color"].replace(" ", "")
-                )
-        current_stored_classes = [
-            class_pair
-            for class_pair in current_stored_classes
-            if class_pair["color"] not in color_to_delete
-        ]
-        for key, val in current_annotations.items():
-            val = [
-                shape for shape in val if shape["line"]["color"] not in color_to_delete
-            ]
-            if len(val):
-                annotations_to_keep[key] = val
-        for color in current_classes:
-            if color["props"]["id"]["index"] not in color_to_delete:
-                color_to_keep.append(color)
-        annotation_store["label_mapping"] = current_stored_classes
-        annotation_store["annotations"] = annotations_to_keep
-        if image_idx in annotation_store["annotations"]:
-            patched_figure["layout"]["shapes"] = annotation_store["annotations"][
-                image_idx
-            ]
-        else:
-            patched_figure["layout"]["shapes"] = []
-        return color_to_keep, "", "", annotation_store, patched_figure
+
+#     # elif triggered == "conceal-annotation-class":
+#     #     ann_show = annotation_store["classes_shown"]
+#     #     ann_hide = annotation_store["classes_hidden"]
+#     #     patched_figure["layout"]["shapes"]
+#     #     print(current_annotations)
+#     #     print(classes_to_hide)
+#     #     return no_update, no_update, no_update, no_update, no_update
+#     else:
+#         color_to_delete = []
+#         color_to_keep = []
+#         annotations_to_keep = {}
+#         for i in range(len(classes_to_delete)):
+#             if classes_to_delete[i]["border"] == "3px solid black":
+#                 color_to_delete.append(
+#                     classes_to_delete[i]["background-color"].replace(" ", "")
+#                 )
+#         current_stored_classes = [
+#             class_pair
+#             for class_pair in current_stored_classes
+#             if class_pair["color"] not in color_to_delete
+#         ]
+#         for key, val in current_annotations.items():
+#             val = [
+#                 shape for shape in val if shape["line"]["color"] not in color_to_delete
+#             ]
+#             if len(val):
+#                 annotations_to_keep[key] = val
+#         for color in current_classes:
+#             if color["props"]["id"]["index"] not in color_to_delete:
+#                 color_to_keep.append(color)
+#         annotation_store["label_mapping"] = current_stored_classes
+#         annotation_store["annotations"] = annotations_to_keep
+#         if image_idx in annotation_store["annotations"]:
+#             patched_figure["layout"]["shapes"] = annotation_store["annotations"][
+#                 image_idx
+#             ]
+#         else:
+#             patched_figure["layout"]["shapes"] = []
+#         return color_to_keep, "", "", annotation_store, patched_figure
+
+
+# @callback(
+#     Output("annotation-class-container", "children"),
+#     Output("annotation-class-label", "value"),
+#     Output("annotation-class-label-edit", "value"),
+#     Output("annotation-store", "data", allow_duplicate=True),
+#     Output("image-viewer", "figure", allow_duplicate=True),
+#     Input("create-annotation-class", "n_clicks"),
+#     Input("remove-annotation-class", "n_clicks"),
+#     Input("relabel-annotation-class", "n_clicks"),
+#     Input("conceal-annotation-class", "n_clicks"),
+#     State("annotation-class-label", "value"),
+#     State("annotation-class-colorpicker", "value"),
+#     State("annotation-class-container", "children"),
+#     State({"type": "annotation-delete-buttons", "index": ALL}, "style"),
+#     State({"type": "annotation-hide-buttons", "index": ALL}, "style"),
+#     State("current-annotation-classes-edit", "value"),
+#     State("annotation-class-label-edit", "value"),
+#     State("annotation-store", "data"),
+#     State("image-selection-slider", "value"),
+#     prevent_initial_call=True,
+# )
+# def add_delete_edit_hide_classes(
+#     create,
+#     remove,
+#     edit,
+#     hide,
+#     class_label,
+#     class_color,
+#     current_classes,
+#     classes_to_delete,
+#     classes_to_hide,
+#     old_label,
+#     new_label,
+#     annotation_store,
+#     image_idx,
+# ):
+#     """
+#     Updates the list of available annotation classes,
+#     triggers other things that should happen when classes
+#     are added or deleted like removing annotations or updating
+#     the drawing mode.
+#     """
+#     triggered = ctx.triggered_id
+#     image_idx = str(image_idx - 1)
+#     patched_figure = Patch()
+#     current_stored_classes = annotation_store["label_mapping"]
+#     current_annotations = annotation_store["annotations"]
+#     if class_color is None:
+#         class_color = "rgb(255,255,255)"
+#     else:
+#         class_color = class_color.replace(" ", "")
+#     if triggered == "create-annotation-class":
+#         last_id = int(current_stored_classes[-1]["id"])
+#         annotation_store["label_mapping"].append(
+#             {
+#                 "color": class_color,
+#                 "id": last_id + 1,
+#                 "label": class_label,
+#             }
+#         )
+#         current_classes.append(annotation_class_item(class_color, class_label))
+
+#         return current_classes, "", "", annotation_store, no_update
+#     elif triggered == "relabel-annotation-class":
+#         for i in range(len(current_stored_classes)):
+#             if current_stored_classes[i]["label"] == old_label:
+#                 annotation_store["label_mapping"][i]["label"] = new_label
+#                 current_classes[i]["props"]["children"] = new_label
+#         return current_classes, "", "", annotation_store, no_update
+#     # elif triggered == "conceal-annotation-class":
+#     #     ann_show = annotation_store["classes_shown"]
+#     #     ann_hide = annotation_store["classes_hidden"]
+#     #     patched_figure["layout"]["shapes"]
+#     #     print(current_annotations)
+#     #     print(classes_to_hide)
+#     #     return no_update, no_update, no_update, no_update, no_update
+#     else:
+#         color_to_delete = []
+#         color_to_keep = []
+#         annotations_to_keep = {}
+#         for i in range(len(classes_to_delete)):
+#             if classes_to_delete[i]["border"] == "3px solid black":
+#                 color_to_delete.append(
+#                     classes_to_delete[i]["background-color"].replace(" ", "")
+#                 )
+#         current_stored_classes = [
+#             class_pair
+#             for class_pair in current_stored_classes
+#             if class_pair["color"] not in color_to_delete
+#         ]
+#         for key, val in current_annotations.items():
+#             val = [
+#                 shape for shape in val if shape["line"]["color"] not in color_to_delete
+#             ]
+#             if len(val):
+#                 annotations_to_keep[key] = val
+#         for color in current_classes:
+#             if color["props"]["id"]["index"] not in color_to_delete:
+#                 color_to_keep.append(color)
+#         annotation_store["label_mapping"] = current_stored_classes
+#         annotation_store["annotations"] = annotations_to_keep
+#         if image_idx in annotation_store["annotations"]:
+#             patched_figure["layout"]["shapes"] = annotation_store["annotations"][
+#                 image_idx
+#             ]
+#         else:
+#             patched_figure["layout"]["shapes"] = []
+#         return color_to_keep, "", "", annotation_store, patched_figure
 
 
 @callback(

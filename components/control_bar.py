@@ -52,7 +52,6 @@ def annotation_class_item(class_color, class_label):
     border_color = class_color
     class_color = class_color.replace("rgb", "rgba")
     class_color = class_color[:-1] + ",0.5)"
-    print(class_color)
     return html.Div(
         [
             html.Div(
@@ -66,8 +65,18 @@ def annotation_class_item(class_color, class_label):
                             "borderRadius": "3px",
                             "border": f"2px solid {border_color}",
                         },
+                        id={
+                            "type": "annotation-class-color",
+                            "index": f"{class_label};{class_color}",
+                        },
                     ),
-                    html.Div(class_label),
+                    html.Div(
+                        class_label,
+                        id={
+                            "type": "annotation-class-label",
+                            "index": f"{class_label};{class_color}",
+                        },
+                    ),
                 ],
                 style={
                     "display": "flex",
@@ -79,18 +88,30 @@ def annotation_class_item(class_color, class_label):
             html.Div(
                 [
                     dmc.ActionIcon(
+                        id={
+                            "type": "hide-annotation-class",
+                            "index": f"{class_label};{class_color}",
+                        },
                         variant="subtle",
                         color="gray",
                         children=DashIconify(icon="mdi:hide"),
                         size="lg",
                     ),
                     dmc.ActionIcon(
+                        id={
+                            "type": "edit-annotation-class",
+                            "index": f"{class_label};{class_color}",
+                        },
                         variant="subtle",
                         color="gray",
                         children=DashIconify(icon="uil:edit"),
                         size="lg",
                     ),
                     dmc.ActionIcon(
+                        id={
+                            "type": "delete-annotation-class",
+                            "index": f"{class_label};{class_color}",
+                        },
                         variant="subtle",
                         color="gray",
                         children=DashIconify(icon="octicon:trash-24"),
@@ -111,7 +132,7 @@ def annotation_class_item(class_color, class_label):
             "display": "flex",
             "justifyContent": "space-between",
         },
-        id={"type": "annotation-class", "index": "class_label"},
+        id={"type": "annotation-class", "index": f"{class_label};{class_color}"},
     )
 
 
@@ -519,6 +540,7 @@ def layout():
                                             style={"width": "100%"},
                                             className="add-class-btn",
                                         ),
+                                        dmc.Space(h=20),
                                         html.Div(
                                             id="annotation-class-selection",
                                             children=[
