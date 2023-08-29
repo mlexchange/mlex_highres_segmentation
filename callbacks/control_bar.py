@@ -251,38 +251,6 @@ def annotation_width(width_value):
 
 
 @callback(
-    Output({"type": "annotation-delete-buttons", "index": ALL}, "style"),
-    Input({"type": "annotation-delete-buttons", "index": ALL}, "n_clicks"),
-    State({"type": "annotation-delete-buttons", "index": ALL}, "style"),
-    prevent_initial_call=True,
-)
-def highlight_selected_classes(selected_classes, current_styles):
-    """Highlights selected buttons in delete modal"""
-    for i in range(len(selected_classes)):
-        if selected_classes[i] is not None and selected_classes[i] % 2 != 0:
-            current_styles[i]["border"] = "3px solid black"
-        else:
-            current_styles[i]["border"] = "1px solid"
-    return current_styles
-
-
-@callback(
-    Output({"type": "annotation-hide-buttons", "index": ALL}, "style"),
-    Input({"type": "annotation-hide-buttons", "index": ALL}, "n_clicks"),
-    State({"type": "annotation-hide-buttons", "index": ALL}, "style"),
-    prevent_initial_call=True,
-)
-def highlight_selected_hide_classes(selected_classes, current_styles):
-    """Highlights selected buttons in hide modal"""
-    for i in range(len(selected_classes)):
-        if selected_classes[i] is not None and selected_classes[i] % 2 != 0:
-            current_styles[i]["border"] = "3px solid black"
-        else:
-            current_styles[i]["border"] = "1px solid"
-    return current_styles
-
-
-@callback(
     Output("image-viewer", "figure", allow_duplicate=True),
     Output("notifications-container", "children", allow_duplicate=True),
     Input("current-class-selection", "data"),
