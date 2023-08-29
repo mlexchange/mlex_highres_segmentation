@@ -49,6 +49,10 @@ def _accordion_item(title, icon, value, children, id):
 
 
 def annotation_class_item(class_color, class_label):
+    border_color = class_color
+    class_color = class_color.replace("rgb", "rgba")
+    class_color = class_color[:-1] + ",0.5)"
+    print(class_color)
     return html.Div(
         [
             html.Div(
@@ -60,7 +64,7 @@ def annotation_class_item(class_color, class_label):
                             "background-color": class_color,
                             "margin": "5px",
                             "borderRadius": "3px",
-                            "border": "2px solid blue",
+                            "border": f"2px solid {border_color}",
                         },
                     ),
                     html.Div(class_label),
@@ -502,7 +506,9 @@ def layout():
                                         dmc.Space(h=10),
                                         html.Div(
                                             children=[
-                                                annotation_class_item("red", "class 1")
+                                                annotation_class_item(
+                                                    "rgb(22,17,79)", "class 1"
+                                                )
                                             ],
                                             id="annotation-class-container",
                                         ),
