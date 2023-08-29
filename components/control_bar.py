@@ -652,11 +652,6 @@ def layout():
                                     id="edit-annotation-class-modal",
                                     title="Edit a Custom Annotation Class",
                                     children=[
-                                        dmc.Text("Select a generated class to edit:"),
-                                        dmc.Select(
-                                            id="current-annotation-classes-edit"
-                                        ),
-                                        dmc.Space(h=10),
                                         dmc.Center(
                                             dmc.TextInput(
                                                 id="annotation-class-label-edit",
