@@ -284,30 +284,23 @@ def highlight_selected_hide_classes(selected_classes, current_styles):
 
 @callback(
     Output("image-viewer", "figure", allow_duplicate=True),
-    Output({"type": "annotation-color", "index": ALL}, "style"),
-    Output({"type": "annotation-color", "index": ALL}, "n_clicks"),
     Output("notifications-container", "children", allow_duplicate=True),
-    Input({"type": "annotation-class", "index": ALL}, "n_clicks"),
-    Input({"type": "annotation-color", "index": ALL}, "n_clicks"),
+    Input("current-class-selection", "data"),
     Input("keybind-event-listener", "event"),
-    State({"type": "annotation-color", "index": ALL}, "style"),
     State("generate-annotation-class-modal", "opened"),
     State("edit-annotation-class-modal", "opened"),
-    State("annotation-store", "data"),
     prevent_initial_call=True,
 )
 def annotation_color(
     current_color,
-    color_value,
     keybind_event_listener,
-    current_style,
     generate_modal_opened,
     edit_annotation_modal_opened,
-    annotation_store,
 ):
     """
     This callback is responsible for changing the color of the brush.
     """
+    print(current_color)
     if ctx.triggered_id == "keybind-event-listener":
         if generate_modal_opened or edit_annotation_modal_opened:
             # user is going to type on this page and we don't want to trigger this callback using keys
@@ -322,51 +315,30 @@ def annotation_color(
             raise PreventUpdate
         selected_color_idx = KEYBINDS["classes"].index(pressed_key)
 
-        if selected_color_idx >= len(current_style):
-            # if the key pressed corresponds to a class that doesn't exist
-            raise PreventUpdate
-
-        color = current_style[selected_color_idx]["background-color"]
-        color_label = annotation_store["label_mapping"][selected_color_idx]["label"]
-        for i in range(len(current_style)):
-            if current_style[i]["background-color"] == color:
-                current_style[i]["border"] = "3px solid black"
-            else:
-                current_style[i]["border"] = "1px solid"
-    else:
-        color = ctx.triggered_id["index"]
-        if color_value[-1] is None:
-            color = current_style[-1]["background-color"]
-            color_value[-1] = 1
-        selected_color_idx = -1
-        for i in range(len(current_style)):
-            if current_style[i]["background-color"] == color:
-                current_style[i]["border"] = "3px solid black"
-                selected_color_idx = i
-            else:
-                current_style[i]["border"] = "1px solid"
-        color_label = annotation_store["label_mapping"][selected_color_idx]["label"]
+        # if selected_color_idx >= len(current_style):
+        #     # if the key pressed corresponds to a class that doesn't exist
+        #     raise PreventUpdate
 
     patched_figure = Patch()
-    patched_figure["layout"]["newshape"]["fillcolor"] = color
-    patched_figure["layout"]["newshape"]["line"]["color"] = color
+    patched_figure["layout"]["newshape"]["fillcolor"] = current_color
+    patched_figure["layout"]["newshape"]["line"]["color"] = current_color
 
-    label_name = color_label
+    label_name = current_color
     notification = dmc.Notification(
         title=f"{label_name} class selected",
-        message="",
-        id=f"notification-{random.randint(0, 10000)}",
+        message=None,
+        id=f"notification-{current_color}",
         action="show",
         icon=DashIconify(icon="mdi:color", width=30),
         styles={
             "icon": {
                 "height": "50px",
                 "width": "50px",
-                "background-color": f"{color} !important",
+                "background-color": f"{current_color} !important",
             }
         },
     )
-    return patched_figure, current_style, color_value, notification
+    return patched_figure, notification
 
 
 @callback(
