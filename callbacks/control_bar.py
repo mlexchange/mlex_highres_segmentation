@@ -16,9 +16,10 @@ import dash_mantine_components as dmc
 from dash_iconify import DashIconify
 import json
 from utils.annotations import Annotations
-from components.control_bar import class_action_icon, annotation_class_item
+from components.control_bar import annotation_class_item
 from constants import KEYBINDS, ANNOT_ICONS, ANNOT_NOTIFICATION_MSGS
-import copy
+import ast
+import json
 from utils.data_utils import (
     DEV_load_exported_json_data,
     DEV_filter_json_data_by_timestamp,
@@ -40,17 +41,21 @@ import random
 
 
 @callback(
-    Output("current-class-selection", "data"),
+    Output("current-class-selection", "data", allow_duplicate=True),
     Input({"type": "annotation-class", "index": ALL}, "n_clicks"),
-    Input({"type": "edit-annotation-class", "index": ALL}, "n_clicks"),
-    Input({"type": "delete-annotation-class", "index": ALL}, "n_clicks"),
-    Input({"type": "hide-annotation-class", "index": ALL}, "n_clicks"),
-    prevent_inital_call=True,
+    State({"type": "annotation-class-label", "index": ALL}, "children"),
+    # Input({"type": "edit-annotation-class", "index": ALL}, "n_clicks"),
+    # Input({"type": "delete-annotation-class", "index": ALL}, "n_clicks"),
+    # Input({"type": "hide-annotation-class", "index": ALL}, "n_clicks"),
+    prevent_initial_call=True,
 )
-def update_current_class_selection(class_selected, edit, delete, hide):
+def update_current_class_selection(class_selected, class_label):
+    print(class_label)
+    print(ctx.triggered_id)
     current_selection = None
     if ctx.triggered_id:
         current_selection = ctx.triggered_id["index"]
+
     return current_selection
 
 
@@ -228,28 +233,6 @@ def annotation_width(width_value):
     return patched_figure
 
 
-# @callback(
-#     Output("current-annotation-classes", "children"),
-#     Output("current-annotation-classes-edit", "data"),
-#     Output("current-annotation-classes-hide", "children"),
-#     Input("annotation-class-selection", "children"),
-# )
-# def make_class_delete_edit_hide_modal(current_classes):
-#     """Creates buttons for the delete selected classes and edit selected class modal"""
-#     current_classes_edit = [button["props"]["children"] for button in current_classes]
-#     current_classes_delete = copy.deepcopy(current_classes)
-#     current_classes_hide = copy.deepcopy(current_classes)
-#     for button in current_classes_delete:
-#         color = button["props"]["style"]["background-color"]
-#         button["props"]["id"] = {"type": "annotation-delete-buttons", "index": color}
-#         button["props"]["style"]["border"] = "1px solid"
-#     for button in current_classes_hide:
-#         color = button["props"]["style"]["background-color"]
-#         button["props"]["id"] = {"type": "annotation-hide-buttons", "index": color}
-#         button["props"]["style"]["border"] = "1px solid"
-#     return current_classes_delete, current_classes_edit, current_classes_hide
-
-
 @callback(
     Output("image-viewer", "figure", allow_duplicate=True),
     Output("notifications-container", "children", allow_duplicate=True),
@@ -268,7 +251,6 @@ def annotation_color(
     """
     This callback is responsible for changing the color of the brush.
     """
-    print(current_color)
     if ctx.triggered_id == "keybind-event-listener":
         if generate_modal_opened or edit_annotation_modal_opened:
             # user is going to type on this page and we don't want to trigger this callback using keys
@@ -438,44 +420,29 @@ def open_edit_class_modal(edit_button, edit_modal, opened):
 #         return False, {"display": "none"}
 
 
-# @callback(
-#     Output("conceal-annotation-class", "disabled"),
-#     Output("at-least-one-hide", "style"),
-#     Input({"type": "annotation-hide-buttons", "index": ALL}, "style"),
-#     prevent_initial_call=True,
-# )
-# def disable_class_hiding(highlighted):
-#     """Disables the class hide/show button when no classes are selected to either hide or show"""
-#     num_selected = 0
-#     for style in highlighted:
-#         if style["border"] == "3px solid black":
-#             num_selected += 1
-#     if num_selected == 0:
-#         return True, {"display": "initial"}
-#     else:
-#         return False, {"display": "none"}
-
-
 @callback(
+    # to clear the modal
     Output("annotation-class-label-edit", "value"),
-    Output("annotation-store", "data", allow_duplicate=True),
     Output({"type": "annotation-class-label", "index": ALL}, "children"),
+    Output({"type": "annotation-class", "index": ALL}, "id"),
+    Output("current-class-selection", "data", allow_duplicate=True),
     Input("relabel-annotation-class", "n_clicks"),
     State("annotation-class-label-edit", "value"),
-    State("annotation-store", "data"),
     State("current-class-selection", "data"),
     State({"type": "annotation-class-label", "index": ALL}, "children"),
+    State({"type": "annotation-class", "index": ALL}, "id"),
     prevent_initial_call=True,
 )
 def edit_annotation_class(
-    edit_clicked, new_label, annotation_store, current_class_selection, all_classes
+    edit_clicked, new_label, current_class_selection, all_classes, all_ids
 ):
     current_class = current_class_selection.split(";")[0]
-    all_classes = [new_label if c == current_class else c for c in all_classes]
-    # TODO update annotation store
-    # print(annotation_store["label_mapping"])
-
-    return "", no_update, all_classes
+    updated_class_selection = current_class_selection.replace(current_class, new_label)
+    updated_classes = [new_label if c == current_class else c for c in all_classes]
+    for c in all_ids:
+        if c["index"] == current_class_selection:
+            c["index"] = updated_class_selection
+    return "", updated_classes, all_ids, updated_class_selection
 
 
 @callback(
@@ -826,7 +793,7 @@ def save_data(n_clicks, annotation_store, image_src):
     State("data-management-modal", "opened"),
     prevent_initial_call=True,
 )
-def toggle_ssave_load_modal(n_clicks, opened):
+def toggle_save_load_modal(n_clicks, opened):
     return not opened, ""
 
 
@@ -876,7 +843,6 @@ def populate_load_annotations_dropdown_menu_options(modal_opened, image_src):
     Output("image-viewer", "figure", allow_duplicate=True),
     Output("annotation-store", "data", allow_duplicate=True),
     Output("data-management-modal", "opened", allow_duplicate=True),
-    Output("annotation-class-selection", "children", allow_duplicate=True),
     Input({"type": "load-server-annotations", "index": ALL}, "n_clicks"),
     State("project-name-src", "value"),
     State("image-selection-slider", "value"),
@@ -906,11 +872,7 @@ def load_and_apply_selected_annotations(selected_annotation, image_src, img_idx)
     else:
         patched_figure["layout"]["shapes"] = []
 
-    labels = [
-        class_action_icon(label["color"], label["label"], "white")
-        for label in data["label_mapping"]
-    ]
-    return patched_figure, data, False, labels
+    return patched_figure, data, False
 
 
 @callback(

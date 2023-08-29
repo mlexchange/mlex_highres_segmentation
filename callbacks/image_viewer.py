@@ -43,7 +43,7 @@ clientside_callback(
     Input("image-selection-slider", "value"),
     State("project-name-src", "value"),
     State("paintbrush-width", "value"),
-    State("annotation-class-selection", "children"),
+    # State("annotation-class-selection", "children"),
     State("annotation-store", "data"),
     State("image-metadata", "data"),
     State("screen-size", "data"),
@@ -53,7 +53,7 @@ def render_image(
     image_idx,
     project_name,
     annotation_width,
-    annotation_colors,
+    # annotation_colors,
     annotation_store,
     image_metadata,
     screen_size,
@@ -76,15 +76,15 @@ def render_image(
 
     fig.update_traces(hovertemplate=None, hoverinfo="skip")
     # set the default annotation style
-    for color_opt in annotation_colors:
-        if color_opt["props"]["style"]["border"] != "1px solid":
-            color = color_opt["props"]["style"]["background-color"]
-    fig.update_layout(
-        newshape=dict(
-            line=dict(color=color, width=annotation_width),
-            fillcolor=color,
-        )
-    )
+    # for color_opt in annotation_colors:
+    #     if color_opt["props"]["style"]["border"] != "1px solid":
+    #         color = color_opt["props"]["style"]["background-color"]
+    # fig.update_layout(
+    #     newshape=dict(
+    #         line=dict(color=color, width=annotation_width),
+    #         fillcolor=color,
+    #     )
+    # )
 
     if annotation_store:
         fig["layout"]["dragmode"] = annotation_store["dragmode"]
