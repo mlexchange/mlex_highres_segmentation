@@ -132,7 +132,7 @@ def annotation_class_item(class_color, class_label):
             "display": "flex",
             "justifyContent": "space-between",
         },
-        id={"type": "annotation-class", "index": f"{class_label};{border_color}"},
+        id={"type": "annotation-class", "index": border_color},
     )
 
 
@@ -788,11 +788,7 @@ def drawer_section(children):
                     "active_img_shape": [],
                     # TODO: Hard-coding default annotation class
                     "label_mapping": [
-                        {
-                            "color": "rgb(249,82,82)",
-                            "label": "1",
-                            "id": "1",
-                        }
+                        {"color": "rgb(22,17,79)", "id": "1", "label": "class 1"}
                     ],
                     "classes_shown": {},
                     "classes_hidden": {},

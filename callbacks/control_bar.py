@@ -50,8 +50,6 @@ import random
     prevent_initial_call=True,
 )
 def update_current_class_selection(class_selected, class_label):
-    print(class_label)
-    print(ctx.triggered_id)
     current_selection = None
     if ctx.triggered_id:
         current_selection = ctx.triggered_id["index"]
@@ -424,25 +422,23 @@ def open_edit_class_modal(edit_button, edit_modal, opened):
     # to clear the modal
     Output("annotation-class-label-edit", "value"),
     Output({"type": "annotation-class-label", "index": ALL}, "children"),
-    Output({"type": "annotation-class", "index": ALL}, "id"),
-    Output("current-class-selection", "data", allow_duplicate=True),
+    Output("annotation-store", "data", allow_duplicate=True),
     Input("relabel-annotation-class", "n_clicks"),
     State("annotation-class-label-edit", "value"),
     State("current-class-selection", "data"),
     State({"type": "annotation-class-label", "index": ALL}, "children"),
-    State({"type": "annotation-class", "index": ALL}, "id"),
+    State("annotation-store", "data"),
     prevent_initial_call=True,
 )
 def edit_annotation_class(
-    edit_clicked, new_label, current_class_selection, all_classes, all_ids
+    edit_clicked, new_label, current_class, all_classes, annotation_store
 ):
-    current_class = current_class_selection.split(";")[0]
-    updated_class_selection = current_class_selection.replace(current_class, new_label)
-    updated_classes = [new_label if c == current_class else c for c in all_classes]
-    for c in all_ids:
-        if c["index"] == current_class_selection:
-            c["index"] = updated_class_selection
-    return "", updated_classes, all_ids, updated_class_selection
+    for label in annotation_store["label_mapping"]:
+        if label["color"] == current_class:
+            old_label = label["label"]
+            label["label"] = new_label
+            updated_labels = [new_label if c == old_label else c for c in all_classes]
+    return "", updated_labels, annotation_store
 
 
 @callback(
@@ -465,6 +461,7 @@ def add_annotation_class(
     image_idx,
 ):
     current_stored_classes = annotation_store["label_mapping"]
+    print(current_stored_classes)
     image_idx = str(image_idx - 1)
     # Case 1: add a new annotation class. Add it to the UI and update the annotation_store
     last_id = int(current_stored_classes[-1]["id"])
