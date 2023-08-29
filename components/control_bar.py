@@ -571,26 +571,6 @@ def layout():
                                         dmc.Grid(
                                             justify="space-between",
                                             children=[
-                                                # dmc.Button(
-                                                #     id="generate-annotation-class",
-                                                #     children="Add",
-                                                #     variant="subtle",
-                                                #     color="gray",
-                                                #     style={"width": "85px"},
-                                                #     leftIcon=DashIconify(
-                                                #         icon="ic:baseline-plus"
-                                                #     ),
-                                                # ),
-                                                dmc.Button(
-                                                    id="edit-annotation-class",
-                                                    children="Edit",
-                                                    variant="subtle",
-                                                    color="gray",
-                                                    style={"width": "85px"},
-                                                    leftIcon=DashIconify(
-                                                        icon="uil:edit"
-                                                    ),
-                                                ),
                                                 dmc.Button(
                                                     id="hide-annotation-class",
                                                     children="View",
@@ -599,16 +579,6 @@ def layout():
                                                     style={"width": "85px"},
                                                     leftIcon=DashIconify(
                                                         icon="mdi:hide"
-                                                    ),
-                                                ),
-                                                dmc.Button(
-                                                    id="delete-annotation-class",
-                                                    children="Delete",
-                                                    variant="subtle",
-                                                    color="gray",
-                                                    style={"width": "90px"},
-                                                    leftIcon=DashIconify(
-                                                        icon="octicon:trash-24"
                                                     ),
                                                 ),
                                             ],
@@ -669,52 +639,40 @@ def layout():
                                         html.Div(id="bad-label"),
                                     ],
                                 ),
-                                dmc.Modal(
-                                    id="hide-annotation-class-modal",
-                                    title="Hide/Show Annotation Classes",
-                                    children=[
-                                        dmc.Text("Select annotation classes to hide:"),
-                                        html.Div(
-                                            id="current-annotation-classes-hide",
-                                            style={
-                                                "display": "flex",
-                                                "flex-wrap": "wrap",
-                                                "justify-content": "flex-start",
-                                            },
-                                        ),
-                                        dmc.Space(h=10),
-                                        dmc.Center(
-                                            dmc.Button(
-                                                id="conceal-annotation-class",
-                                                children="Apply Changes",
-                                                variant="light",
-                                            ),
-                                        ),
-                                        dmc.Center(
-                                            dmc.Text(
-                                                "No classes selected",
-                                                color="red",
-                                                id="at-least-one-hide",
-                                            ),
-                                        ),
-                                    ],
-                                ),
+                                # dmc.Modal(
+                                #     id="hide-annotation-class-modal",
+                                #     title="Hide/Show Annotation Classes",
+                                #     children=[
+                                #         dmc.Text("Select annotation classes to hide:"),
+                                #         html.Div(
+                                #             id="current-annotation-classes-hide",
+                                #             style={
+                                #                 "display": "flex",
+                                #                 "flex-wrap": "wrap",
+                                #                 "justify-content": "flex-start",
+                                #             },
+                                #         ),
+                                #         dmc.Space(h=10),
+                                #         dmc.Center(
+                                #             dmc.Button(
+                                #                 id="conceal-annotation-class",
+                                #                 children="Apply Changes",
+                                #                 variant="light",
+                                #             ),
+                                #         ),
+                                #         dmc.Center(
+                                #             dmc.Text(
+                                #                 "No classes selected",
+                                #                 color="red",
+                                #                 id="at-least-one-hide",
+                                #             ),
+                                #         ),
+                                #     ],
+                                # ),
                                 dmc.Modal(
                                     id="delete-annotation-class-modal",
-                                    title="Delete Custom Annotation Class(es)",
+                                    title="Delete Custom Annotation Class",
                                     children=[
-                                        dmc.Text(
-                                            "Select all generated classes to remove:"
-                                        ),
-                                        html.Div(
-                                            id="current-annotation-classes",
-                                            style={
-                                                "display": "flex",
-                                                "flex-wrap": "wrap",
-                                                "justify-content": "flex-start",
-                                            },
-                                        ),
-                                        dmc.Space(h=10),
                                         dmc.Center(
                                             dmc.Text(
                                                 "NOTE: Deleting a class will delete all annotations associated with that class!",
@@ -725,17 +683,10 @@ def layout():
                                             [
                                                 dmc.Button(
                                                     id="remove-annotation-class",
-                                                    children="Delete Selected Class(es)",
+                                                    children="Delete Selected Class",
                                                     variant="light",
                                                 ),
                                             ]
-                                        ),
-                                        dmc.Center(
-                                            dmc.Text(
-                                                "There must be at least one annotation class!",
-                                                color="red",
-                                                id="at-least-one",
-                                            ),
                                         ),
                                     ],
                                 ),

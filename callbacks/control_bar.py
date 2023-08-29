@@ -405,14 +405,20 @@ def open_annotation_class_modal(generate, create, opened):
 
 @callback(
     Output("delete-annotation-class-modal", "opened"),
-    Input("delete-annotation-class", "n_clicks"),
+    Input({"type": "delete-annotation-class", "index": ALL}, "n_clicks"),
     Input("remove-annotation-class", "n_clicks"),
     State("delete-annotation-class-modal", "opened"),
     prevent_initial_call=True,
 )
-def open_delete_class_modal(delete, remove, opened):
+def open_delete_class_modal(delete_button, remove, opened):
     """Opens and closes the modal that is used to select annotation classes to delete"""
-    return not opened
+    print(delete_button)
+    print(remove)
+    print(ctx.triggered_id)
+    print("----")
+    if delete_button[-1]:
+        return not opened
+    return opened
 
 
 @callback(
@@ -427,18 +433,6 @@ def open_edit_class_modal(edit_button, edit_modal, opened):
     if edit_button[-1]:
         return not opened
     return opened
-
-
-@callback(
-    Output("hide-annotation-class-modal", "opened"),
-    Input("hide-annotation-class", "n_clicks"),
-    Input("conceal-annotation-class", "n_clicks"),
-    State("hide-annotation-class-modal", "opened"),
-    prevent_initial_call=True,
-)
-def open_hide_class_modal(hide, conceal, opened):
-    """Opens and closes the modal that allows you to select which classes to hide/show"""
-    return not opened
 
 
 @callback(
@@ -500,65 +494,53 @@ def disable_class_creation(label, color, current_labels, current_colors):
 #         return False, warning_text
 
 
-@callback(
-    Output("remove-annotation-class", "disabled"),
-    Output("at-least-one", "style"),
-    Input({"type": "annotation-delete-buttons", "index": ALL}, "style"),
-    prevent_initial_call=True,
-)
-def disable_class_deletion(highlighted):
-    """Disables the delete class button when all classes would be removed or if no classes are selected to remove"""
-    num_selected = 0
-    for style in highlighted:
-        if style["border"] == "3px solid black":
-            num_selected += 1
-    if num_selected == 0:
-        return True, {"display": "none"}
-    if num_selected == len(highlighted):
-        return True, {"display": "initial"}
-    else:
-        return False, {"display": "none"}
+# @callback(
+#     Output("remove-annotation-class", "disabled"),
+#     Output("at-least-one", "style"),
+#     Input({"type": "annotation-delete-buttons", "index": ALL}, "style"),
+#     prevent_initial_call=True,
+# )
+# def disable_class_deletion(highlighted):
+#     """Disables the delete class button when all classes would be removed or if no classes are selected to remove"""
+#     num_selected = 0
+#     for style in highlighted:
+#         if style["border"] == "3px solid black":
+#             num_selected += 1
+#     if num_selected == 0:
+#         return True, {"display": "none"}
+#     if num_selected == len(highlighted):
+#         return True, {"display": "initial"}
+#     else:
+#         return False, {"display": "none"}
 
 
-@callback(
-    Output("conceal-annotation-class", "disabled"),
-    Output("at-least-one-hide", "style"),
-    Input({"type": "annotation-hide-buttons", "index": ALL}, "style"),
-    prevent_initial_call=True,
-)
-def disable_class_hiding(highlighted):
-    """Disables the class hide/show button when no classes are selected to either hide or show"""
-    num_selected = 0
-    for style in highlighted:
-        if style["border"] == "3px solid black":
-            num_selected += 1
-    if num_selected == 0:
-        return True, {"display": "initial"}
-    else:
-        return False, {"display": "none"}
+# @callback(
+#     Output("conceal-annotation-class", "disabled"),
+#     Output("at-least-one-hide", "style"),
+#     Input({"type": "annotation-hide-buttons", "index": ALL}, "style"),
+#     prevent_initial_call=True,
+# )
+# def disable_class_hiding(highlighted):
+#     """Disables the class hide/show button when no classes are selected to either hide or show"""
+#     num_selected = 0
+#     for style in highlighted:
+#         if style["border"] == "3px solid black":
+#             num_selected += 1
+#     if num_selected == 0:
+#         return True, {"display": "initial"}
+#     else:
+#         return False, {"display": "none"}
 
 
 @callback(
     Output("annotation-class-label-edit", "value"),
     Output("annotation-store", "data", allow_duplicate=True),
-    Output(
-        {
-            "type": "annotation-class-label",
-            "index": ALL,
-        },
-        "children",
-    ),
+    Output({"type": "annotation-class-label", "index": ALL}, "children"),
     Input("relabel-annotation-class", "n_clicks"),
     State("annotation-class-label-edit", "value"),
     State("annotation-store", "data"),
     State("current-class-selection", "data"),
-    State(
-        {
-            "type": "annotation-class-label",
-            "index": ALL,
-        },
-        "children",
-    ),
+    State({"type": "annotation-class-label", "index": ALL}, "children"),
     prevent_initial_call=True,
 )
 def edit_annotation_class(
@@ -573,7 +555,7 @@ def edit_annotation_class(
 
 
 @callback(
-    Output("annotation-class-container", "children"),
+    Output("annotation-class-container", "children", allow_duplicate=True),
     Output("annotation-store", "data", allow_duplicate=True),
     Input("create-annotation-class", "n_clicks"),
     State("annotation-class-container", "children"),
@@ -583,7 +565,7 @@ def edit_annotation_class(
     State("image-selection-slider", "value"),
     prevent_initial_call=True,
 )
-def add_annotaion_class(
+def add_annotation_class(
     create,
     current_classes,
     new_class_label,
@@ -606,45 +588,32 @@ def add_annotaion_class(
     return current_classes, annotation_store
 
 
-#     # elif triggered == "conceal-annotation-class":
-#     #     ann_show = annotation_store["classes_shown"]
-#     #     ann_hide = annotation_store["classes_hidden"]
-#     #     patched_figure["layout"]["shapes"]
-#     #     print(current_annotations)
-#     #     print(classes_to_hide)
-#     #     return no_update, no_update, no_update, no_update, no_update
-#     else:
-#         color_to_delete = []
-#         color_to_keep = []
-#         annotations_to_keep = {}
-#         for i in range(len(classes_to_delete)):
-#             if classes_to_delete[i]["border"] == "3px solid black":
-#                 color_to_delete.append(
-#                     classes_to_delete[i]["background-color"].replace(" ", "")
-#                 )
-#         current_stored_classes = [
-#             class_pair
-#             for class_pair in current_stored_classes
-#             if class_pair["color"] not in color_to_delete
-#         ]
-#         for key, val in current_annotations.items():
-#             val = [
-#                 shape for shape in val if shape["line"]["color"] not in color_to_delete
-#             ]
-#             if len(val):
-#                 annotations_to_keep[key] = val
-#         for color in current_classes:
-#             if color["props"]["id"]["index"] not in color_to_delete:
-#                 color_to_keep.append(color)
-#         annotation_store["label_mapping"] = current_stored_classes
-#         annotation_store["annotations"] = annotations_to_keep
-#         if image_idx in annotation_store["annotations"]:
-#             patched_figure["layout"]["shapes"] = annotation_store["annotations"][
-#                 image_idx
-#             ]
-#         else:
-#             patched_figure["layout"]["shapes"] = []
-#         return color_to_keep, "", "", annotation_store, patched_figure
+@callback(
+    Output("annotation-class-container", "children", allow_duplicate=True),
+    Output("annotation-store", "data", allow_duplicate=True),
+    Input("remove-annotation-class", "n_clicks"),
+    State("annotation-class-container", "children"),
+    State("annotation-store", "data"),
+    State("current-class-selection", "data"),
+    prevent_initial_call=True,
+)
+def delete_annotation_class(
+    delete,
+    all_classes,
+    annotation_store,
+    current_class_selection,
+):
+    if current_class_selection and len(all_classes) > 1:
+        class_to_delete = current_class_selection.split(";")[0]
+        updated_classes = [
+            c
+            for c in all_classes
+            if c["props"]["id"]["index"].split(";")[0] != class_to_delete
+        ]
+
+        return updated_classes, no_update
+    else:
+        return no_update, no_update
 
 
 # @callback(
