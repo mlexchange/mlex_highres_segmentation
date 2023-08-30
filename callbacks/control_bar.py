@@ -339,6 +339,29 @@ def open_edit_class_modal(edit_button, edit_modal, opened):
     return opened
 
 
+@callback(
+    Output("delete-annotation-class-modal", "opened"),
+    Output("current-class-selection", "data", allow_duplicate=True),
+    Input({"type": "delete-annotation-class", "index": ALL}, "n_clicks"),
+    Input("remove-annotation-class", "n_clicks"),
+    State("delete-annotation-class-modal", "opened"),
+    State("annotation-store", "data"),
+    State("current-class-selection", "data"),
+    prevent_initial_call=True,
+)
+def open_delete_class_modal(
+    remove_class, remove_class_modal, opened, annotation_store, current_class_selection
+):
+    """Opens and closes the modal that allows you to relabel an existing annotation class"""
+    if not current_class_selection:
+        default_selected_class = annotation_store["label_mapping"][0]["color"]
+        return opened, default_selected_class
+    # make the default selected class the first item on the UI
+    elif remove_class[-1]:
+        return not opened, no_update
+    return opened, no_update
+
+
 # @callback(
 #     Output("create-annotation-class", "disabled"),
 #     Output("bad-label-color", "children"),
@@ -461,7 +484,6 @@ def add_annotation_class(
     image_idx,
 ):
     current_stored_classes = annotation_store["label_mapping"]
-    print(current_stored_classes)
     image_idx = str(image_idx - 1)
     # Case 1: add a new annotation class. Add it to the UI and update the annotation_store
     last_id = int(current_stored_classes[-1]["id"])
@@ -476,40 +498,40 @@ def add_annotation_class(
     return current_classes, annotation_store
 
 
-# @callback(
-#     Output("annotation-class-container", "children", allow_duplicate=True),
-#     Output("annotation-store", "data", allow_duplicate=True),
-#     Output("delete-annotation-class-modal", "opened"),
-#     Input({"type": "delete-annotation-class", "index": ALL}, "n_clicks"),
-#     Input("remove-annotation-class", "n_clicks"),
-#     State("annotation-class-container", "children"),
-#     State("annotation-store", "data"),
-#     State("current-class-selection", "data"),
-#     State("delete-annotation-class-modal", "opened"),
-#     prevent_initial_call=True,
-# )
-# def delete_annotation_class(
-#     delete_class,
-#     remove_class_modal,
-#     all_classes,
-#     annotation_store,
-#     current_class_selection,
-#     opened,
-# ):
-#     print(ctx.triggered)
-#     if ctx.triggered_id == "delete-annotation-class":
-#         if current_class_selection and len(all_classes) > 1:
-#             print(current_class_selection)
-#             class_to_delete = current_class_selection.split(";")[0]
-#             updated_classes = [
-#                 c
-#                 for c in all_classes
-#                 if c["props"]["id"]["index"].split(";")[0] != class_to_delete
-#             ]
+@callback(
+    Output("annotation-class-container", "children", allow_duplicate=True),
+    Output("annotation-store", "data", allow_duplicate=True),
+    Output("current-class-selection", "data", allow_duplicate=True),
+    Input("remove-annotation-class", "n_clicks"),
+    State("annotation-class-container", "children"),
+    State("annotation-store", "data"),
+    State("current-class-selection", "data"),
+    prevent_initial_call=True,
+)
+def delete_annotation_class(
+    remove,
+    all_classes,
+    annotation_store,
+    current_class_selection,
+):
+    # we have more than one class
+    if len(all_classes) > 1:
+        # remove the class from the annotation store
+        class_to_delete = None
+        for label in annotation_store["label_mapping"]:
+            if label["color"] == current_class_selection:
+                class_to_delete = label
+        annotation_store["label_mapping"].remove(class_to_delete)
+        # remove the class from the UI
+        updated_classes = [
+            c
+            for c in all_classes
+            if c["props"]["id"]["index"] != current_class_selection
+        ]
 
-#             return updated_classes, no_update, not opened
-#     else:
-#         return no_update, no_update, not opened
+        return updated_classes, annotation_store, None
+    # TODO: else add error message
+    return [no_update] * 3
 
 
 # @callback(

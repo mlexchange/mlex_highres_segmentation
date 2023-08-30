@@ -65,10 +65,6 @@ def annotation_class_item(class_color, class_label):
                             "borderRadius": "3px",
                             "border": f"2px solid {border_color}",
                         },
-                        id={
-                            "type": "annotation-class-color",
-                            "index": border_color,
-                        },
                     ),
                     html.Div(
                         class_label,
