@@ -249,7 +249,7 @@ def annotation_color(
     """
     This callback is responsible for changing the color of the brush.
     """
-    print(f"FROM ANNOTATION COLOR:{ current_color}")
+    # print(f"FROM ANNOTATION COLOR:{ current_color}")
     if not current_color:
         current_color = "rgb(22,17,79)"
     if ctx.triggered_id == "keybind-event-listener":
@@ -345,17 +345,21 @@ def open_edit_class_modal(edit_button, edit_modal, opened):
 
 @callback(
     Output("delete-annotation-class-modal", "opened"),
+    Output("delete-last-class-warning", "children"),
     Input({"type": "delete-annotation-class", "index": ALL}, "n_clicks"),
     Input("remove-annotation-class", "n_clicks"),
     State("delete-annotation-class-modal", "opened"),
+    State("annotation-class-container", "children"),
     prevent_initial_call=True,
 )
-def open_delete_class_modal(remove_class, remove_class_modal, opened):
+def open_delete_class_modal(remove_class, remove_class_modal, opened, all_classes):
     """Opens and closes the modal that allows you to relabel an existing annotation class"""
+    if len(all_classes) == 1 and ctx.triggered_id == "remove-annotation-class":
+        return no_update, "ERROR: you cannot remove all classes"
     if len(ctx.triggered) == 1 and ctx.triggered[0]["value"]:
-        return not opened
+        return not opened, no_update
     else:
-        return opened
+        return opened, no_update
 
 
 # @callback(

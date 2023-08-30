@@ -607,6 +607,9 @@ def layout():
                                                 ),
                                             ]
                                         ),
+                                        dmc.Center(
+                                            dmc.Text(id="delete-last-class-warning")
+                                        ),
                                     ],
                                 ),
                                 dmc.Space(h=20),
