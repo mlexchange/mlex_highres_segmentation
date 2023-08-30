@@ -353,11 +353,13 @@ def open_delete_class_modal(
     remove_class, remove_class_modal, opened, annotation_store, current_class_selection
 ):
     """Opens and closes the modal that allows you to relabel an existing annotation class"""
+    print(current_class_selection)
+    print(ctx.triggered)
     if not current_class_selection:
         default_selected_class = annotation_store["label_mapping"][0]["color"]
         return opened, default_selected_class
     # make the default selected class the first item on the UI
-    elif remove_class[-1]:
+    elif not ctx.triggered[-1]["value"]:
         return not opened, no_update
     return opened, no_update
 
@@ -465,6 +467,7 @@ def edit_annotation_class(
 
 
 @callback(
+    Output("annotation-class-label", "value"),
     Output("annotation-class-container", "children", allow_duplicate=True),
     Output("annotation-store", "data", allow_duplicate=True),
     Input("create-annotation-class", "n_clicks"),
@@ -495,7 +498,7 @@ def add_annotation_class(
         }
     )
     current_classes.append(annotation_class_item(new_class_color, new_class_label))
-    return current_classes, annotation_store
+    return "", current_classes, annotation_store
 
 
 @callback(
