@@ -357,9 +357,9 @@ def open_delete_class_modal(remove_class, remove_class_modal, opened, all_classe
     if len(all_classes) == 1 and ctx.triggered_id == "remove-annotation-class":
         return no_update, "ERROR: you cannot remove all classes"
     if len(ctx.triggered) == 1 and ctx.triggered[0]["value"]:
-        return not opened, no_update
+        return not opened, ""
     else:
-        return opened, no_update
+        return opened, ""
 
 
 # @callback(
