@@ -318,14 +318,27 @@ def open_warning_modal(delete, cancel, delete_4_real, keybind_event_listener, op
 
 @callback(
     Output("generate-annotation-class-modal", "opened"),
+    Output("create-annotation-class", "disabled"),
+    Output("bad-label-color", "children"),
     Input("generate-annotation-class", "n_clicks"),
     Input("create-annotation-class", "n_clicks"),
+    Input("annotation-class-label", "value"),
+    Input("annotation-class-colorpicker", "value"),
     State("generate-annotation-class-modal", "opened"),
+    State("annotation-store", "data"),
     prevent_initial_call=True,
 )
-def open_annotation_class_modal(generate, create, opened):
+def open_annotation_class_modal(
+    generate, create, new_label, new_color, opened, annotation_store
+):
     """Opens and closes the modal that is used to create a new annotation class"""
-    return not opened
+    if ctx.triggered_id in ["annotation-class-label", "annotation-class-colorpicker"]:
+        current_classes = [c["label"] for c in annotation_store["label_mapping"]]
+        if new_label in current_classes:
+            return no_update, True, "Class name already in use!"
+        else:
+            return no_update, False, ""
+    return not opened, False, ""
 
 
 @callback(
