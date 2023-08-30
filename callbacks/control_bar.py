@@ -342,29 +342,19 @@ def open_edit_class_modal(edit_button, edit_modal, opened):
     return opened
 
 
-# @callback(
-#     Output("delete-annotation-class-modal", "opened"),
-#     Output("current-class-selection", "data", allow_duplicate=True),
-#     Input({"type": "delete-annotation-class", "index": ALL}, "n_clicks"),
-#     Input("remove-annotation-class", "n_clicks"),
-#     State("delete-annotation-class-modal", "opened"),
-#     State("annotation-store", "data"),
-#     State("current-class-selection", "data"),
-#     prevent_initial_call=True,
-# )
-# def open_delete_class_modal(
-#     remove_class, remove_class_modal, opened, annotation_store, current_class_selection
-# ):
-#     """Opens and closes the modal that allows you to relabel an existing annotation class"""
-#     print(current_class_selection)
-#     print(ctx.triggered)
-#     if not current_class_selection:
-#         default_selected_class = annotation_store["label_mapping"][0]["color"]
-#         return opened, default_selected_class
-#     # make the default selected class the first item on the UI
-#     elif not ctx.triggered[-1]["value"]:
-#         return not opened, no_update
-#     return opened, no_update
+@callback(
+    Output("delete-annotation-class-modal", "opened"),
+    Input({"type": "delete-annotation-class", "index": ALL}, "n_clicks"),
+    Input("remove-annotation-class", "n_clicks"),
+    State("delete-annotation-class-modal", "opened"),
+    prevent_initial_call=True,
+)
+def open_delete_class_modal(remove_class, remove_class_modal, opened):
+    """Opens and closes the modal that allows you to relabel an existing annotation class"""
+    if len(ctx.triggered) == 1 and ctx.triggered[0]["value"]:
+        return not opened
+    else:
+        return opened
 
 
 # @callback(
