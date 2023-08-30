@@ -337,9 +337,10 @@ def open_annotation_class_modal(generate, create, opened):
 )
 def open_edit_class_modal(edit_button, edit_modal, opened):
     """Opens and closes the modal that allows you to relabel an existing annotation class"""
-    if edit_button[-1]:
+    if len(ctx.triggered) == 1 and ctx.triggered[0]["value"]:
         return not opened
-    return opened
+    else:
+        return opened
 
 
 @callback(
