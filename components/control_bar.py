@@ -547,6 +547,7 @@ def layout():
                                             dmc.ColorPicker(
                                                 id="annotation-class-colorpicker",
                                                 format="rgb",
+                                                value="rgb(255, 0, 0)",
                                             ),
                                         ),
                                         dmc.Space(h=10),
