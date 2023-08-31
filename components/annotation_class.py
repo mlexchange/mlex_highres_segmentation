@@ -4,9 +4,8 @@ from dash_iconify import DashIconify
 
 
 def annotation_class_item(class_color, class_label):
-    border_color = class_color
     class_color = class_color.replace("rgb", "rgba")
-    class_color = class_color[:-1] + ",0.5)"
+    class_color_transparent = class_color[:-1] + ",0.5)"
     return html.Div(
         [
             html.Div(
@@ -15,17 +14,17 @@ def annotation_class_item(class_color, class_label):
                         style={
                             "width": "25px",
                             "height": "25px",
-                            "background-color": class_color,
+                            "background-color": class_color_transparent,
                             "margin": "5px",
                             "borderRadius": "3px",
-                            "border": f"2px solid {border_color}",
+                            "border": f"2px solid {class_color}",
                         },
                     ),
                     html.Div(
                         class_label,
                         id={
                             "type": "annotation-class-label",
-                            "index": border_color,
+                            "index": class_color,
                         },
                     ),
                 ],
@@ -41,7 +40,7 @@ def annotation_class_item(class_color, class_label):
                     dmc.ActionIcon(
                         id={
                             "type": "hide-annotation-class",
-                            "index": border_color,
+                            "index": class_color,
                         },
                         variant="subtle",
                         color="gray",
@@ -51,7 +50,7 @@ def annotation_class_item(class_color, class_label):
                     dmc.ActionIcon(
                         id={
                             "type": "edit-annotation-class",
-                            "index": border_color,
+                            "index": class_color,
                         },
                         variant="subtle",
                         color="gray",
@@ -61,7 +60,7 @@ def annotation_class_item(class_color, class_label):
                     dmc.ActionIcon(
                         id={
                             "type": "delete-annotation-class",
-                            "index": border_color,
+                            "index": class_color,
                         },
                         variant="subtle",
                         color="gray",
@@ -75,6 +74,33 @@ def annotation_class_item(class_color, class_label):
                     "align-items": "center",
                 },
             ),
+            dmc.Modal(
+                id={"type": "edit-annotation-class-modal", "index": class_color},
+                title="Edit a Custom Annotation Class",
+                children=[
+                    dmc.Center(
+                        dmc.TextInput(
+                            id={
+                                "type": "edit-annotation-class-text-input",
+                                "index": class_color,
+                            },
+                            placeholder="New Class Label",
+                        ),
+                    ),
+                    dmc.Space(h=10),
+                    dmc.Center(
+                        dmc.Button(
+                            id={
+                                "type": "relabel-annotation-class-btn",
+                                "index": class_color,
+                            },
+                            children="Edit Annotation Class",
+                            variant="light",
+                        ),
+                    ),
+                    html.Div(id={"type": "bad-edit-label", "index": class_color}),
+                ],
+            ),
         ],
         style={
             "border": "1px solid #EAECEF",
@@ -83,5 +109,5 @@ def annotation_class_item(class_color, class_label):
             "display": "flex",
             "justifyContent": "space-between",
         },
-        id={"type": "annotation-class", "index": border_color},
+        id={"type": "annotation-class", "index": class_color},
     )

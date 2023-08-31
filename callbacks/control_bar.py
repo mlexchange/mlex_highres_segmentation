@@ -82,7 +82,7 @@ def update_current_class_selection(class_selected):
     State("annotation-store", "data"),
     State("image-viewer-loading", "zIndex"),
     State("generate-annotation-class-modal", "opened"),
-    State("edit-annotation-class-modal", "opened"),
+    # State("edit-annotation-class-modal", "opened"),
     prevent_initial_call=True,
 )
 def annotation_mode(
@@ -98,13 +98,13 @@ def annotation_mode(
     annotation_store,
     figure_overlay_z_index,
     generate_modal_opened,
-    edit_annotation_modal_opened,
+    # edit_annotation_modal_opened,
 ):
     """
     This callback is responsible for changing the annotation mode and the style of the buttons.
     It also accepts keybinds to change the annotation mode.
     """
-    if generate_modal_opened or edit_annotation_modal_opened:
+    if generate_modal_opened:  # or edit_annotation_modal_opened:
         # user is going to type on this page and we don't want to trigger this callback using keys
         raise PreventUpdate
     if not annotation_store["visible"]:
@@ -237,14 +237,14 @@ def annotation_width(width_value):
     Input("current-class-selection", "data"),
     Input("keybind-event-listener", "event"),
     State("generate-annotation-class-modal", "opened"),
-    State("edit-annotation-class-modal", "opened"),
+    # State("edit-annotation-class-modal", "opened"),
     prevent_initial_call=True,
 )
 def annotation_color(
     current_color,
     keybind_event_listener,
     generate_modal_opened,
-    edit_annotation_modal_opened,
+    # edit_annotation_modal_opened,
 ):
     """
     This callback is responsible for changing the color of the brush.
@@ -253,7 +253,7 @@ def annotation_color(
     if not current_color:
         current_color = "rgb(22,17,79)"
     if ctx.triggered_id == "keybind-event-listener":
-        if generate_modal_opened or edit_annotation_modal_opened:
+        if generate_modal_opened:  # or edit_annotation_modal_opened:
             # user is going to type on this page and we don't want to trigger this callback using keys
             raise PreventUpdate
         pressed_key = (
@@ -339,18 +339,15 @@ def open_annotation_class_modal(generate, create, new_label, opened, annotation_
 
 
 @callback(
-    Output("edit-annotation-class-modal", "opened"),
-    Input({"type": "edit-annotation-class", "index": ALL}, "n_clicks"),
-    Input("relabel-annotation-class", "n_clicks"),
-    State("edit-annotation-class-modal", "opened"),
+    Output({"type": "edit-annotation-class-modal", "index": MATCH}, "opened"),
+    Input({"type": "edit-annotation-class", "index": MATCH}, "n_clicks"),
+    Input({"type": "relabel-annotation-class-btn", "index": MATCH}, "n_clicks"),
+    State({"type": "edit-annotation-class-modal", "index": MATCH}, "opened"),
     prevent_initial_call=True,
 )
 def open_edit_class_modal(edit_button, edit_modal, opened):
     """Opens and closes the modal that allows you to relabel an existing annotation class"""
-    if len(ctx.triggered) == 1 and ctx.triggered[0]["value"]:
-        return not opened
-    else:
-        return opened
+    return not opened
 
 
 @callback(
@@ -451,27 +448,27 @@ def open_delete_class_modal(remove_class, remove_class_modal, opened, all_classe
 #         return False, {"display": "none"}
 
 
-@callback(
-    # to clear the modal
-    Output("annotation-class-label-edit", "value"),
-    Output({"type": "annotation-class-label", "index": ALL}, "children"),
-    Output("annotation-store", "data", allow_duplicate=True),
-    Input("relabel-annotation-class", "n_clicks"),
-    State("annotation-class-label-edit", "value"),
-    State("current-class-selection", "data"),
-    State({"type": "annotation-class-label", "index": ALL}, "children"),
-    State("annotation-store", "data"),
-    prevent_initial_call=True,
-)
-def edit_annotation_class(
-    edit_clicked, new_label, current_class, all_classes, annotation_store
-):
-    for label in annotation_store["label_mapping"]:
-        if label["color"] == current_class:
-            old_label = label["label"]
-            label["label"] = new_label
-            updated_labels = [new_label if c == old_label else c for c in all_classes]
-    return "", updated_labels, annotation_store
+# @callback(
+#     # to clear the modal
+#     Output("annotation-class-label-edit", "value"),
+#     Output({"type": "annotation-class-label", "index": ALL}, "children"),
+#     Output("annotation-store", "data", allow_duplicate=True),
+#     Input("relabel-annotation-class", "n_clicks"),
+#     State("annotation-class-label-edit", "value"),
+#     State("current-class-selection", "data"),
+#     State({"type": "annotation-class-label", "index": ALL}, "children"),
+#     State("annotation-store", "data"),
+#     prevent_initial_call=True,
+# )
+# def edit_annotation_class(
+#     edit_clicked, new_label, current_class, all_classes, annotation_store
+# ):
+#     for label in annotation_store["label_mapping"]:
+#         if label["color"] == current_class:
+#             old_label = label["label"]
+#             label["label"] = new_label
+#             updated_labels = [new_label if c == old_label else c for c in all_classes]
+#     return "", updated_labels, annotation_store
 
 
 @callback(

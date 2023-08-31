@@ -485,27 +485,27 @@ def layout():
                                         html.Div(id="bad-label-color"),
                                     ],
                                 ),
-                                dmc.Modal(
-                                    id="edit-annotation-class-modal",
-                                    title="Edit a Custom Annotation Class",
-                                    children=[
-                                        dmc.Center(
-                                            dmc.TextInput(
-                                                id="annotation-class-label-edit",
-                                                placeholder="New Class Label",
-                                            ),
-                                        ),
-                                        dmc.Space(h=10),
-                                        dmc.Center(
-                                            dmc.Button(
-                                                id="relabel-annotation-class",
-                                                children="Edit Annotation Class",
-                                                variant="light",
-                                            ),
-                                        ),
-                                        html.Div(id="bad-label"),
-                                    ],
-                                ),
+                                # dmc.Modal(
+                                #     id="edit-annotation-class-modal",
+                                #     title="Edit a Custom Annotation Class",
+                                #     children=[
+                                #         dmc.Center(
+                                #             dmc.TextInput(
+                                #                 id="annotation-class-label-edit",
+                                #                 placeholder="New Class Label",
+                                #             ),
+                                #         ),
+                                #         dmc.Space(h=10),
+                                #         dmc.Center(
+                                #             dmc.Button(
+                                #                 id="relabel-annotation-class",
+                                #                 children="Edit Annotation Class",
+                                #                 variant="light",
+                                #             ),
+                                #         ),
+                                #         html.Div(id="bad-label"),
+                                #     ],
+                                # ),
                                 dmc.Modal(
                                     id="delete-annotation-class-modal",
                                     title="Delete Custom Annotation Class",
