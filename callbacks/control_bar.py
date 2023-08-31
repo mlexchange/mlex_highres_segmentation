@@ -492,23 +492,26 @@ def add_annotation_class(
     return "", current_classes, annotation_store, new_class_color
 
 
-# @callback(
-#     Output("annotation-class-container", "children"),
-#     Input({"type": "annotation-class-store", "index": ALL}, "data"),
-#     Output("annotation-class-container", "children"),
-#     prevent_initial_call=True,
-# )
-# def delete_annotation_class(
-#     annotation_class_store,
-#     all_classes,
-# ):
-#     for c in annotation_class_store:
-#         print(c["delete"])
-#     return no_update
+@callback(
+    Output("annotation-class-container", "children"),
+    Input({"type": "annotation-class-store", "index": ALL}, "data"),
+    State("annotation-class-container", "children"),
+    prevent_initial_call=True,
+)
+def delete_annotation_class(
+    annotation_class_store,
+    all_classes,
+):
+    updated_classes = [
+        c
+        for c in all_classes
+        if not c["props"]["children"][0]["props"]["data"]["deleted"]
+    ]
+
+    return updated_classes
 
 
 @callback(
-    Output({"type": "annotation-class", "index": MATCH}, "style"),
     Output(
         {"type": "annotation-class-store", "index": MATCH}, "data", allow_duplicate=True
     ),
@@ -520,8 +523,6 @@ def clear_annotation_class(
     remove,
     annotation_class_store,
 ):
-    # hide the class you want to delete (so we can use MATCH pattern matching)
-    style = {"display": "none"}
     # Clear the Store meta data
     annotation_class_store = {
         "annotations": {},
@@ -531,7 +532,7 @@ def clear_annotation_class(
         "class_visible": True,
         "deleted": True,
     }
-    return style, annotation_class_store
+    return annotation_class_store
 
 
 # @callback(
