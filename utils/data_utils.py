@@ -120,20 +120,40 @@ def get_data_project_names():
     return project_names
 
 
-def get_data_sequence_by_name(project_name):
+def get_client_by_name(project_name):
     """
     Data sequences may be given directly inside the main client container,
     but can also be additionally encapsulated in a folder.
     """
-    project_data = data[project_name]
+    project_client = data[project_name]
     # If the project directly points to an array
-    if isinstance(project_data, ArrayClient):
-        return project_data.read()
+    if isinstance(project_client, ArrayClient):
+        return project_client
     # If project_name points to a container
-    elif isinstance(project_data, Container):
+    elif isinstance(project_client, Container):
         # Enter the container and return first element
-        if len(list(project_data)) == 1:
-            sequence = project_data.values()[0]
-            if isinstance(sequence, ArrayClient):
-                return sequence.read()
-    return []
+        if len(list(project_client)) == 1:
+            sequence_client = project_client.values()[0]
+            if isinstance(sequence_client, ArrayClient):
+                return sequence_client
+    return None
+
+
+def get_data_sequence_by_name(project_name):
+    """
+    Retrieve data as an array
+    """
+    project_container = get_client_by_name(project_name)
+    if not project_container is None:
+        return project_container.read()
+    return None
+
+
+def get_data_shape_by_name(project_name):
+    """
+    Retrieve shape of the data
+    """
+    project_container = get_client_by_name(project_name)
+    if not project_container is None:
+        return project_container.shape
+    return None
