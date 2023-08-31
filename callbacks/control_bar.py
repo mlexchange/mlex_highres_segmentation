@@ -430,7 +430,6 @@ def delete_annotation_class(
 ):
     if len(is_deleted) == 1:
         is_deleted = is_deleted[0]
-
     updated_classes = [
         c for c in all_classes if c["props"]["id"]["index"] != is_deleted
     ]
@@ -458,7 +457,6 @@ def clear_annotation_class(
         "id": None,
         "label": None,
         "class_visible": True,
-        "deleted": True,
     }
 
     return annotation_class_store, deleted_class
