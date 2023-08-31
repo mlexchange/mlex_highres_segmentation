@@ -18,7 +18,7 @@ def annotation_class_item(class_color, class_label):
                     "color": class_color,
                     "id": None,
                     "label": class_label,
-                    "vlass_visible": True,
+                    "class_visible": True,
                 },
             ),
             html.Div(

@@ -441,27 +441,18 @@ def open_delete_class_modal(remove_class, remove_class_modal, opened):
 #         return False, {"display": "none"}
 
 
-# @callback(
-#     # to clear the modal
-#     Output("annotation-class-label-edit", "value"),
-#     Output({"type": "annotation-class-label", "index": ALL}, "children"),
-#     Output("annotation-store", "data", allow_duplicate=True),
-#     Input("relabel-annotation-class", "n_clicks"),
-#     State("annotation-class-label-edit", "value"),
-#     State("current-class-selection", "data"),
-#     State({"type": "annotation-class-label", "index": ALL}, "children"),
-#     State("annotation-store", "data"),
-#     prevent_initial_call=True,
-# )
-# def edit_annotation_class(
-#     edit_clicked, new_label, current_class, all_classes, annotation_store
-# ):
-#     for label in annotation_store["label_mapping"]:
-#         if label["color"] == current_class:
-#             old_label = label["label"]
-#             label["label"] = new_label
-#             updated_labels = [new_label if c == old_label else c for c in all_classes]
-#     return "", updated_labels, annotation_store
+@callback(
+    Output({"type": "annotation-class-label", "index": MATCH}, "children"),
+    Output({"type": "annotation-class-store", "index": MATCH}, "data"),
+    Output({"type": "edit-annotation-class-text-input", "index": MATCH}, "value"),
+    Input({"type": "relabel-annotation-class-btn", "index": MATCH}, "n_clicks"),
+    State({"type": "edit-annotation-class-text-input", "index": MATCH}, "value"),
+    State({"type": "annotation-class-store", "index": MATCH}, "data"),
+    prevent_initial_call=True,
+)
+def edit_annotation_class(edit_clicked, new_label, annotation_class_store):
+    annotation_class_store["label"] = new_label
+    return new_label, annotation_class_store, ""
 
 
 @callback(
