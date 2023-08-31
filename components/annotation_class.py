@@ -23,6 +23,18 @@ def annotation_class_item(class_color, class_label):
                     "deleted": False,
                 },
             ),
+            dcc.Store(
+                id={
+                    "type": "deleted-class-store",
+                    "index": color,
+                },
+            ),
+            dcc.Store(
+                id={
+                    "type": "hide-show-class-store",
+                    "index": color,
+                },
+            ),
             html.Div(
                 [
                     html.Div(

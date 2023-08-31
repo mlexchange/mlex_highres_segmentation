@@ -420,18 +420,19 @@ def hide_show_annotation_class(
 
 @callback(
     Output("annotation-class-container", "children"),
-    Input({"type": "annotation-class-store", "index": ALL}, "data"),
+    Input({"type": "deleted-class-store", "index": ALL}, "data"),
     State("annotation-class-container", "children"),
     prevent_initial_call=True,
 )
 def delete_annotation_class(
-    annotation_class_store,
+    is_deleted,
     all_classes,
 ):
+    if len(is_deleted) == 1:
+        is_deleted = is_deleted[0]
+
     updated_classes = [
-        c
-        for c in all_classes
-        if not c["props"]["children"][0]["props"]["data"]["deleted"]
+        c for c in all_classes if c["props"]["id"]["index"] != is_deleted
     ]
     return updated_classes
 
@@ -440,6 +441,7 @@ def delete_annotation_class(
     Output(
         {"type": "annotation-class-store", "index": MATCH}, "data", allow_duplicate=True
     ),
+    Output({"type": "deleted-class-store", "index": MATCH}, "data"),
     Input({"type": "remove-annotation-class-btn", "index": MATCH}, "n_clicks"),
     State({"type": "annotation-class-store", "index": MATCH}, "data"),
     prevent_initial_call=True,
@@ -448,6 +450,7 @@ def clear_annotation_class(
     remove,
     annotation_class_store,
 ):
+    deleted_class = annotation_class_store["color"]
     # Clear the Store meta data
     annotation_class_store = {
         "annotations": {},
@@ -457,7 +460,8 @@ def clear_annotation_class(
         "class_visible": True,
         "deleted": True,
     }
-    return annotation_class_store
+
+    return annotation_class_store, deleted_class
 
 
 # @callback(
