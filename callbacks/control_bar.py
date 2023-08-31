@@ -351,22 +351,15 @@ def open_edit_class_modal(edit_button, edit_modal, opened):
 
 
 @callback(
-    Output("delete-annotation-class-modal", "opened"),
-    Output("delete-last-class-warning", "children"),
-    Input({"type": "delete-annotation-class", "index": ALL}, "n_clicks"),
-    Input("remove-annotation-class", "n_clicks"),
-    State("delete-annotation-class-modal", "opened"),
-    State("annotation-class-container", "children"),
+    Output({"type": "delete-annotation-class-modal", "index": MATCH}, "opened"),
+    Input({"type": "delete-annotation-class", "index": MATCH}, "n_clicks"),
+    Input({"type": "remove-annotation-class-btn", "index": MATCH}, "n_clicks"),
+    State({"type": "delete-annotation-class-modal", "index": MATCH}, "opened"),
     prevent_initial_call=True,
 )
-def open_delete_class_modal(remove_class, remove_class_modal, opened, all_classes):
+def open_delete_class_modal(remove_class, remove_class_modal, opened):
     """Opens and closes the modal that allows you to relabel an existing annotation class"""
-    if len(all_classes) == 1 and ctx.triggered_id == "remove-annotation-class":
-        return no_update, "ERROR: you cannot remove all classes"
-    if len(ctx.triggered) == 1 and ctx.triggered[0]["value"]:
-        return not opened, ""
-    else:
-        return opened, ""
+    return not opened
 
 
 # @callback(
@@ -508,40 +501,40 @@ def add_annotation_class(
     return "", current_classes, annotation_store, new_class_color
 
 
-@callback(
-    Output("annotation-class-container", "children", allow_duplicate=True),
-    Output("annotation-store", "data", allow_duplicate=True),
-    Output("current-class-selection", "data", allow_duplicate=True),
-    Input("remove-annotation-class", "n_clicks"),
-    State("annotation-class-container", "children"),
-    State("annotation-store", "data"),
-    State("current-class-selection", "data"),
-    prevent_initial_call=True,
-)
-def delete_annotation_class(
-    remove,
-    all_classes,
-    annotation_store,
-    current_class_selection,
-):
-    # we have more than one class
-    if len(all_classes) > 1:
-        # remove the class from the annotation store
-        class_to_delete = None
-        for label in annotation_store["label_mapping"]:
-            if label["color"] == current_class_selection:
-                class_to_delete = label
-        annotation_store["label_mapping"].remove(class_to_delete)
-        # remove the class from the UI
-        updated_classes = [
-            c
-            for c in all_classes
-            if c["props"]["id"]["index"] != current_class_selection
-        ]
+# @callback(
+#     Output("annotation-class-container", "children", allow_duplicate=True),
+#     Output("annotation-store", "data", allow_duplicate=True),
+#     Output("current-class-selection", "data", allow_duplicate=True),
+#     Input("remove-annotation-class", "n_clicks"),
+#     State("annotation-class-container", "children"),
+#     State("annotation-store", "data"),
+#     State("current-class-selection", "data"),
+#     prevent_initial_call=True,
+# )
+# def delete_annotation_class(
+#     remove,
+#     all_classes,
+#     annotation_store,
+#     current_class_selection,
+# ):
+#     # we have more than one class
+#     if len(all_classes) > 1:
+#         # remove the class from the annotation store
+#         class_to_delete = None
+#         for label in annotation_store["label_mapping"]:
+#             if label["color"] == current_class_selection:
+#                 class_to_delete = label
+#         annotation_store["label_mapping"].remove(class_to_delete)
+#         # remove the class from the UI
+#         updated_classes = [
+#             c
+#             for c in all_classes
+#             if c["props"]["id"]["index"] != current_class_selection
+#         ]
 
-        return updated_classes, annotation_store, None
-    # TODO: else add error message
-    return [no_update] * 3
+#         return updated_classes, annotation_store, None
+#     # TODO: else add error message
+#     return [no_update] * 3
 
 
 # @callback(

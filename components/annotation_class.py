@@ -101,6 +101,38 @@ def annotation_class_item(class_color, class_label):
                     html.Div(id={"type": "bad-edit-label", "index": class_color}),
                 ],
             ),
+            dmc.Modal(
+                id={"type": "delete-annotation-class-modal", "index": class_color},
+                title="Delete Custom Annotation Class",
+                children=[
+                    dmc.Center(
+                        dmc.Text(
+                            "NOTE: Deleting a class will delete all annotations associated with that class!",
+                            color="red",
+                        )
+                    ),
+                    dmc.Center(
+                        [
+                            dmc.Button(
+                                id={
+                                    "type": "remove-annotation-class-btn",
+                                    "index": class_color,
+                                },
+                                children="Delete Selected Class",
+                                variant="light",
+                            ),
+                        ]
+                    ),
+                    dmc.Center(
+                        dmc.Text(
+                            id={
+                                "type": "delete-last-class-warning",
+                                "index": class_color,
+                            }
+                        )
+                    ),
+                ],
+            ),
         ],
         style={
             "border": "1px solid #EAECEF",
