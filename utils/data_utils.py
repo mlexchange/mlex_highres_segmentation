@@ -5,6 +5,8 @@ from urllib.parse import urlparse
 
 from tiled.client import from_uri
 from tiled.client.cache import Cache
+from tiled.client.container import Container
+from tiled.client.array import ArrayClient
 from dotenv import load_dotenv
 
 
@@ -95,13 +97,43 @@ API_KEY = os.getenv("API_KEY")
 
 if os.getenv("SERVE_LOCALLY", False):
     print("To run Tiled server locally run `tiled serve directory --public data`")
+    print("This requires to additional install the server components of Tiled")
+    print('with `pip install "tiled[server]"`')
     DEV_download_google_sample_data()
     client = from_uri("http://localhost:8000")
     data = client
 else:
     client = from_uri(TILED_URI, api_key=API_KEY)
-    data = client["data"]
+    data = client["reconstruction"]
 
 
 def get_data_project_names():
-    return list(data)
+    """
+    Get available project names from the main Tiled container,
+    filtered by types that can be processed (Container and ArrayClient)
+    """
+    project_names = [
+        project
+        for project in list(data)
+        if isinstance(data[project], (Container, ArrayClient))
+    ]
+    return project_names
+
+
+def get_data_sequence_by_name(project_name):
+    """
+    Data sequences may be given directly inside the main client container,
+    but can also be additionally encapsulated in a folder.
+    """
+    project_data = data[project_name]
+    # If the project directly points to an array
+    if isinstance(project_data, ArrayClient):
+        return project_data.read()
+    # If project_name points to a container
+    elif isinstance(project_data, Container):
+        # Enter the container and return first element
+        if len(list(project_data)) == 1:
+            sequence = project_data.values()[0]
+            if isinstance(sequence, ArrayClient):
+                return sequence.read()
+    return []

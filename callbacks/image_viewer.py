@@ -15,7 +15,7 @@ import plotly.express as px
 import numpy as np
 import random
 from dash_iconify import DashIconify
-from utils.data_utils import data
+from utils.data_utils import get_data_sequence_by_name
 from constants import KEYBINDS, ANNOT_ICONS, ANNOT_NOTIFICATION_MSGS
 from utils.plot_utils import (
     create_viewfinder,
@@ -60,7 +60,7 @@ def render_image(
 ):
     if image_idx:
         image_idx -= 1  # slider starts at 1, so subtract 1 to get the correct index
-        tf = data[project_name][image_idx]
+        tf = get_data_sequence_by_name(project_name)[image_idx]
     else:
         tf = np.zeros((500, 500))
 
@@ -309,11 +309,11 @@ def update_slider_values(project_name, annotation_store):
 
     disable_slider = project_name is None
     if not disable_slider:
-        tiff_file = data[project_name]
+        sequence = get_data_sequence_by_name(project_name)
         # TODO: Assuming that all slices have the same image shape
-        annotation_store["image_shapes"] = [(tiff_file.shape[1], tiff_file.shape[2])]
+        annotation_store["image_shapes"] = [(sequence.shape[1], sequence.shape[2])]
     min_slider_value = 0 if disable_slider else 1
-    max_slider_value = 0 if disable_slider else len(tiff_file)
+    max_slider_value = 0 if disable_slider else len(sequence)
     slider_value = 0 if disable_slider else 1
     annotation_store["annotations"] = {}
     annotation_store["view"] = {}

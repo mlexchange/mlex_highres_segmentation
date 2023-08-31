@@ -1,6 +1,6 @@
 from dash import callback, Input, Output, State, no_update
 from utils.annotations import Annotations
-from utils.data_utils import data
+from utils.data_utils import get_data_sequence_by_name
 import numpy as np
 
 
@@ -16,7 +16,6 @@ import numpy as np
 def run_job(n_clicks, annotation_store, project_name):
     # As a placeholder, pulling together the inputs we'd need if we were going to submit a job
     if n_clicks:
-
         annotations = Annotations(annotation_store)
         annotations.create_annotation_metadata()
         annotations.create_annotation_mask(
@@ -30,7 +29,7 @@ def run_job(n_clicks, annotation_store, project_name):
         # Get raw images associated with each annotated slice
         # Actually we can just pass the indices and have the job point to Tiled directly
         img_idx = list(metadata.keys())
-        img = data[project_name]
+        img = get_data_sequence_by_name(project_name)
         raw = []
         for idx in img_idx:
             ar = img[int(idx)]
