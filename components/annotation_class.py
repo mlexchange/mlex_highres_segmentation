@@ -1,5 +1,5 @@
 import dash_mantine_components as dmc
-from dash import html
+from dash import html, dcc
 from dash_iconify import DashIconify
 
 
@@ -7,7 +7,20 @@ def annotation_class_item(class_color, class_label):
     class_color = class_color.replace("rgb", "rgba")
     class_color_transparent = class_color[:-1] + ",0.5)"
     return html.Div(
-        [
+        [  # This store will contain all the meta data for an individual annotation class
+            dcc.Store(
+                id={
+                    "type": "annotation-class-store",
+                    "index": class_color,
+                },
+                data={
+                    "annotations": {},
+                    "color": class_color,
+                    "id": None,
+                    "label": class_label,
+                    "vlass_visible": True,
+                },
+            ),
             html.Div(
                 [
                     html.Div(
