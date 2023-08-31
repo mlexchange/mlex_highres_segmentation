@@ -493,39 +493,45 @@ def add_annotation_class(
 
 
 # @callback(
-#     Output("annotation-class-container", "children", allow_duplicate=True),
-#     Output("annotation-store", "data", allow_duplicate=True),
-#     Output("current-class-selection", "data", allow_duplicate=True),
-#     Input("remove-annotation-class", "n_clicks"),
-#     State("annotation-class-container", "children"),
-#     State("annotation-store", "data"),
-#     State("current-class-selection", "data"),
+#     Output("annotation-class-container", "children"),
+#     Input({"type": "annotation-class-store", "index": ALL}, "data"),
+#     Output("annotation-class-container", "children"),
 #     prevent_initial_call=True,
 # )
 # def delete_annotation_class(
-#     remove,
+#     annotation_class_store,
 #     all_classes,
-#     annotation_store,
-#     current_class_selection,
 # ):
-#     # we have more than one class
-#     if len(all_classes) > 1:
-#         # remove the class from the annotation store
-#         class_to_delete = None
-#         for label in annotation_store["label_mapping"]:
-#             if label["color"] == current_class_selection:
-#                 class_to_delete = label
-#         annotation_store["label_mapping"].remove(class_to_delete)
-#         # remove the class from the UI
-#         updated_classes = [
-#             c
-#             for c in all_classes
-#             if c["props"]["id"]["index"] != current_class_selection
-#         ]
+#     for c in annotation_class_store:
+#         print(c["delete"])
+#     return no_update
 
-#         return updated_classes, annotation_store, None
-#     # TODO: else add error message
-#     return [no_update] * 3
+
+@callback(
+    Output({"type": "annotation-class", "index": MATCH}, "style"),
+    Output(
+        {"type": "annotation-class-store", "index": MATCH}, "data", allow_duplicate=True
+    ),
+    Input({"type": "remove-annotation-class-btn", "index": MATCH}, "n_clicks"),
+    State({"type": "annotation-class-store", "index": MATCH}, "data"),
+    prevent_initial_call=True,
+)
+def clear_annotation_class(
+    remove,
+    annotation_class_store,
+):
+    # hide the class you want to delete (so we can use MATCH pattern matching)
+    style = {"display": "none"}
+    # Clear the Store meta data
+    annotation_class_store = {
+        "annotations": {},
+        "color": None,
+        "id": None,
+        "label": None,
+        "class_visible": True,
+        "deleted": True,
+    }
+    return style, annotation_class_store
 
 
 # @callback(

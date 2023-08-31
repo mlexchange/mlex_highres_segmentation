@@ -19,6 +19,7 @@ def annotation_class_item(class_color, class_label):
                     "id": None,
                     "label": class_label,
                     "class_visible": True,
+                    "deleted": False,
                 },
             ),
             html.Div(
