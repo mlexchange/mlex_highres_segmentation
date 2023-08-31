@@ -234,9 +234,11 @@ def annotation_width(width_value):
 @callback(
     Output("image-viewer", "figure", allow_duplicate=True),
     Output("notifications-container", "children", allow_duplicate=True),
+    Output("annotation-store", "data", allow_duplicate=True),
     Input("current-class-selection", "data"),
     Input("keybind-event-listener", "event"),
     State("generate-annotation-class-modal", "opened"),
+    State("annotation-store", "data"),
     # State("edit-annotation-class-modal", "opened"),
     prevent_initial_call=True,
 )
@@ -244,6 +246,7 @@ def annotation_color(
     current_color,
     keybind_event_listener,
     generate_modal_opened,
+    annotation_store,
     # edit_annotation_modal_opened,
 ):
     """
@@ -273,6 +276,7 @@ def annotation_color(
     patched_figure = Patch()
     patched_figure["layout"]["newshape"]["fillcolor"] = current_color
     patched_figure["layout"]["newshape"]["line"]["color"] = current_color
+    annotation_store["color"] = current_color
 
     label_name = current_color
     notification = dmc.Notification(
@@ -289,7 +293,7 @@ def annotation_color(
             }
         },
     )
-    return patched_figure, notification
+    return patched_figure, notification, annotation_store
 
 
 @callback(
@@ -362,85 +366,6 @@ def open_delete_class_modal(remove_class, remove_class_modal, opened):
     return not opened
 
 
-# @callback(
-#     Output("create-annotation-class", "disabled"),
-#     Output("bad-label-color", "children"),
-#     Input("annotation-class-label", "value"),
-#     Input("annotation-class-colorpicker", "value"),
-#     State({"type": "annotation-color", "index": ALL}, "children"),
-#     State({"type": "annotation-color", "index": ALL}, "style"),
-#     prevent_initial_call=True,
-# )
-# def disable_class_creation(label, color, current_labels, current_colors):
-#     """Disables the create class button when the user selects a color or label that belongs to an existing annotation class"""
-#     triggered_id = ctx.triggered_id
-#     warning_text = []
-#     if triggered_id == "annotation-class-label":
-#         if label in current_labels:
-#             warning_text.append(
-#                 dmc.Text("This annotation class label is already in use.", color="red")
-#             )
-#     if color is None:
-#         color = "rgb(255,255,255)"
-#     else:
-#         color = color.replace(" ", "")
-#     if color == "rgb(255,255,255)" or triggered_id == "annotation-class-colorpicker":
-#         current_colors = [style["background-color"] for style in current_colors]
-#         if color in current_colors:
-#             warning_text.append(
-#                 dmc.Text("This annotation class color is already in use.", color="red")
-#             )
-#     if (
-#         label is None
-#         or len(label) == 0
-#         or label in current_labels
-#         or color in current_colors
-#     ):
-#         return True, warning_text
-#     else:
-#         return False, warning_text
-
-
-# @callback(
-#     Output("relabel-annotation-class", "disabled"),
-#     Output("bad-label", "children"),
-#     Input("annotation-class-label-edit", "value"),
-#     State({"type": "annotation-color", "index": ALL}, "children"),
-#     prevent_initial_call=True,
-# )
-# def disable_class_editing(label, current_labels):
-#     """Disables the edit class button when the user tries to rename a class to the same name as an existing class"""
-#     warning_text = []
-#     if label in current_labels:
-#         warning_text.append(
-#             dmc.Text("This annotation class label is already in use.", color="red")
-#         )
-#     if label is None or len(label) == 0 or label in current_labels:
-#         return True, warning_text
-#     else:
-#         return False, warning_text
-
-
-# @callback(
-#     Output("remove-annotation-class", "disabled"),
-#     Output("at-least-one", "style"),
-#     Input({"type": "annotation-delete-buttons", "index": ALL}, "style"),
-#     prevent_initial_call=True,
-# )
-# def disable_class_deletion(highlighted):
-#     """Disables the delete class button when all classes would be removed or if no classes are selected to remove"""
-#     num_selected = 0
-#     for style in highlighted:
-#         if style["border"] == "3px solid black":
-#             num_selected += 1
-#     if num_selected == 0:
-#         return True, {"display": "none"}
-#     if num_selected == len(highlighted):
-#         return True, {"display": "initial"}
-#     else:
-#         return False, {"display": "none"}
-
-
 @callback(
     Output({"type": "annotation-class-label", "index": MATCH}, "children"),
     Output({"type": "annotation-class-store", "index": MATCH}, "data"),
@@ -476,7 +401,6 @@ def add_annotation_class(
     annotation_store,
     image_idx,
 ):
-    print(new_class_color)
     current_stored_classes = annotation_store["label_mapping"]
     image_idx = str(image_idx - 1)
     # Case 1: add a new annotation class. Add it to the UI and update the annotation_store
@@ -507,7 +431,6 @@ def delete_annotation_class(
         for c in all_classes
         if not c["props"]["children"][0]["props"]["data"]["deleted"]
     ]
-
     return updated_classes
 
 

@@ -485,30 +485,6 @@ def layout():
                                         html.Div(id="bad-label-color"),
                                     ],
                                 ),
-                                # dmc.Modal(
-                                #     id="delete-annotation-class-modal",
-                                #     title="Delete Custom Annotation Class",
-                                #     children=[
-                                #         dmc.Center(
-                                #             dmc.Text(
-                                #                 "NOTE: Deleting a class will delete all annotations associated with that class!",
-                                #                 color="red",
-                                #             )
-                                #         ),
-                                #         dmc.Center(
-                                #             [
-                                #                 dmc.Button(
-                                #                     id="remove-annotation-class",
-                                #                     children="Delete Selected Class",
-                                #                     variant="light",
-                                #                 ),
-                                #             ]
-                                #         ),
-                                #         dmc.Center(
-                                #             dmc.Text(id="delete-last-class-warning")
-                                #         ),
-                                #     ],
-                                # ),
                                 dmc.Space(h=20),
                                 dmc.Button(
                                     "Clear all annotations",
@@ -678,6 +654,7 @@ def drawer_section(children):
                 id="annotation-store",
                 data={
                     "dragmode": "drawopenpath",  # global
+                    "color": None,
                     "visible": True,  # global -> getting rid of this anyway
                     "annotations": {},  # move to individual
                     "view": {},  # global relayoutData

@@ -7,6 +7,7 @@ from dash import (
     Patch,
     clientside_callback,
     ClientsideFunction,
+    ALL,
 )
 import dash
 import dash_mantine_components as dmc
@@ -266,15 +267,25 @@ clientside_callback(
     Input("image-viewer", "relayoutData"),
     State("image-selection-slider", "value"),
     State("annotation-store", "data"),
+    State({"type": "annotation-class-store", "index": ALL}, "data"),
     prevent_initial_call=True,
 )
-def locally_store_annotations(relayout_data, img_idx, annotation_store):
+def locally_store_annotations(
+    relayout_data, img_idx, annotation_store, all_annotation_class_store
+):
     """
     Upon finishing relayout event (drawing, but it also includes panning, zooming),
     this function takes the annotation shapes, and stores it in the dcc.Store, which is then used elsewhere
     to preserve drawn annotations, or to save them.
     """
+
     if "shapes" in relayout_data:
+        for annotation_class_store in all_annotation_class_store:
+            if annotation_class_store["color"] == annotation_store["color"]:
+                annotation_class_store["annotations"][str(img_idx - 1)] = relayout_data[
+                    "shapes"
+                ]
+
         annotation_store["annotations"][str(img_idx - 1)] = relayout_data["shapes"]
     if "xaxis.range[0]" in relayout_data:
         annotation_store["view"]["xaxis_range_0"] = relayout_data["xaxis.range[0]"]
