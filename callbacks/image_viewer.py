@@ -264,6 +264,9 @@ clientside_callback(
 
 @callback(
     Output("annotation-store", "data", allow_duplicate=True),
+    Output(
+        {"type": "annotation-class-store", "index": ALL}, "data", allow_duplicate=True
+    ),
     Input("image-viewer", "relayoutData"),
     State("image-selection-slider", "value"),
     State("annotation-store", "data"),
@@ -293,7 +296,7 @@ def locally_store_annotations(
         annotation_store["view"]["yaxis_range_0"] = relayout_data["yaxis.range[0]"]
         annotation_store["view"]["yaxis_range_1"] = relayout_data["yaxis.range[1]"]
 
-    return annotation_store
+    return annotation_store, all_annotation_class_store
 
 
 @callback(
