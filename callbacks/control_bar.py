@@ -276,6 +276,7 @@ def annotation_color(
     patched_figure = Patch()
     patched_figure["layout"]["newshape"]["fillcolor"] = current_color
     patched_figure["layout"]["newshape"]["line"]["color"] = current_color
+    print("updated brush color in the dcc store ")
     annotation_store["color"] = current_color
 
     label_name = current_color
@@ -414,6 +415,26 @@ def add_annotation_class(
     )
     current_classes.append(annotation_class_item(new_class_color, new_class_label))
     return "", current_classes, annotation_store, new_class_color
+
+
+@callback(
+    Output(
+        {"type": "annotation-class-store", "index": MATCH}, "data", allow_duplicate=True
+    ),
+    Input({"type": "hide-annotation-class", "index": MATCH}, "n_clicks"),
+    State({"type": "annotation-class-store", "index": MATCH}, "data"),
+    prevent_initial_call=True,
+)
+def hide_show_annotation_class(
+    hide_show_click,
+    annotation_class_store,
+):
+    annotation_class_store["class_visible"] = not annotation_class_store[
+        "class_visible"
+    ]
+    print(annotation_class_store["class_visible"])
+
+    return annotation_class_store
 
 
 @callback(
