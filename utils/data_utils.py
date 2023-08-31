@@ -120,7 +120,7 @@ def get_data_project_names():
     return project_names
 
 
-def get_client_by_name(project_name):
+def get_data_sequence_by_name(project_name):
     """
     Data sequences may be given directly inside the main client container,
     but can also be additionally encapsulated in a folder.
@@ -139,21 +139,11 @@ def get_client_by_name(project_name):
     return None
 
 
-def get_data_sequence_by_name(project_name):
-    """
-    Retrieve data as an array
-    """
-    project_container = get_client_by_name(project_name)
-    if not project_container is None:
-        return project_container.read()
-    return None
-
-
 def get_data_shape_by_name(project_name):
     """
     Retrieve shape of the data
     """
-    project_container = get_client_by_name(project_name)
+    project_container = get_data_sequence_by_name(project_name)
     if not project_container is None:
         return project_container.shape
     return None
