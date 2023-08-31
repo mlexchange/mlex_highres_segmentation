@@ -96,9 +96,9 @@ TILED_URI = os.getenv("TILED_URI")
 API_KEY = os.getenv("API_KEY")
 
 if os.getenv("SERVE_LOCALLY", False):
-    print("To run Tiled server locally run `tiled serve directory --public data`")
-    print("This requires to additional install the server components of Tiled")
-    print('with `pip install "tiled[server]"`')
+    print("To run a Tiled server locally run `tiled serve directory --public data`.")
+    print("This requires to additionally install the server components of Tiled with:")
+    print('`pip install "tiled[server]"`')
     DEV_download_google_sample_data()
     client = from_uri("http://localhost:8000")
     data = client
