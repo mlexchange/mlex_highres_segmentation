@@ -276,7 +276,6 @@ def annotation_color(
     patched_figure = Patch()
     patched_figure["layout"]["newshape"]["fillcolor"] = current_color
     patched_figure["layout"]["newshape"]["line"]["color"] = current_color
-    print("updated brush color in the dcc store ")
     annotation_store["color"] = current_color
 
     label_name = current_color
@@ -384,14 +383,11 @@ def edit_annotation_class(edit_clicked, new_label, annotation_class_store):
 @callback(
     Output("annotation-class-label", "value"),
     Output("annotation-class-container", "children", allow_duplicate=True),
-    Output("annotation-store", "data", allow_duplicate=True),
     Output("current-class-selection", "data"),
     Input("create-annotation-class", "n_clicks"),
     State("annotation-class-container", "children"),
     State("annotation-class-label", "value"),
     State("annotation-class-colorpicker", "value"),
-    State("annotation-store", "data"),
-    State("image-selection-slider", "value"),
     prevent_initial_call=True,
 )
 def add_annotation_class(
@@ -399,22 +395,9 @@ def add_annotation_class(
     current_classes,
     new_class_label,
     new_class_color,
-    annotation_store,
-    image_idx,
 ):
-    current_stored_classes = annotation_store["label_mapping"]
-    image_idx = str(image_idx - 1)
-    # Case 1: add a new annotation class. Add it to the UI and update the annotation_store
-    last_id = int(current_stored_classes[-1]["id"])
-    annotation_store["label_mapping"].append(
-        {
-            "color": new_class_color,
-            "id": last_id + 1,
-            "label": new_class_label,
-        }
-    )
     current_classes.append(annotation_class_item(new_class_color, new_class_label))
-    return "", current_classes, annotation_store, new_class_color
+    return "", current_classes, new_class_color
 
 
 @callback(
@@ -432,8 +415,6 @@ def hide_show_annotation_class(
     annotation_class_store["class_visible"] = not annotation_class_store[
         "class_visible"
     ]
-    print(annotation_class_store["class_visible"])
-
     return annotation_class_store
 
 

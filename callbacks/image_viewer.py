@@ -42,24 +42,22 @@ clientside_callback(
     Output("annotations-controls", "children", allow_duplicate=True),
     Output("image-metadata", "data"),
     Input("image-selection-slider", "value"),
-    Input({"type": "annotation-class-store", "index": ALL}, "data"),
+    State({"type": "annotation-class-store", "index": ALL}, "data"),
     State("project-name-src", "value"),
     State("paintbrush-width", "value"),
     State("annotation-store", "data"),
     State("image-metadata", "data"),
     State("screen-size", "data"),
-    State({"type": "annotation-class-store", "index": ALL}, "data"),
     prevent_initial_call=True,
 )
 def render_image(
     image_idx,
-    hide_show,
+    all_annotation_class_store,
     project_name,
     annotation_width,
     annotation_store,
     image_metadata,
     screen_size,
-    all_annotation_class_store,
 ):
     if image_idx:
         image_idx -= 1  # slider starts at 1, so subtract 1 to get the correct index
