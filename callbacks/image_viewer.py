@@ -44,20 +44,20 @@ clientside_callback(
     Input("image-selection-slider", "value"),
     State("project-name-src", "value"),
     State("paintbrush-width", "value"),
-    # State("annotation-class-selection", "children"),
     State("annotation-store", "data"),
     State("image-metadata", "data"),
     State("screen-size", "data"),
+    State({"type": "annotation-class-store", "index": ALL}, "data"),
     prevent_initial_call=True,
 )
 def render_image(
     image_idx,
     project_name,
     annotation_width,
-    # annotation_colors,
     annotation_store,
     image_metadata,
     screen_size,
+    all_annotation_class_store,
 ):
     if image_idx:
         image_idx -= 1  # slider starts at 1, so subtract 1 to get the correct index
@@ -89,13 +89,14 @@ def render_image(
 
     if annotation_store:
         fig["layout"]["dragmode"] = annotation_store["dragmode"]
-        if not annotation_store["visible"]:
-            fig["layout"]["shapes"] = []
-        else:
-            if str(image_idx) in annotation_store["annotations"]:
-                fig["layout"]["shapes"] = annotation_store["annotations"][
-                    str(image_idx)
-                ]
+        all_annotations = []
+        for annotation_class_store in all_annotation_class_store:
+            if str(image_idx) in annotation_class_store["annotations"]:
+                all_annotations = (
+                    all_annotations
+                    + annotation_class_store["annotations"][str(image_idx)]
+                )
+            fig["layout"]["shapes"] = all_annotations
 
         view = annotation_store["view"]
         if view:
