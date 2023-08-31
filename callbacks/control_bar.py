@@ -16,7 +16,7 @@ import dash_mantine_components as dmc
 from dash_iconify import DashIconify
 import json
 from utils.annotations import Annotations
-from components.control_bar import annotation_class_item
+from components.annotation_class import annotation_class_item
 from constants import KEYBINDS, ANNOT_ICONS, ANNOT_NOTIFICATION_MSGS
 import ast
 import json

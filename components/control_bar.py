@@ -4,6 +4,7 @@ from dash_iconify import DashIconify
 from utils import data_utils
 from constants import ANNOT_ICONS, KEYBINDS
 from dash_extensions import EventListener
+from components.annotation_class import annotation_class_item
 
 
 def _tooltip(text, children):
@@ -45,90 +46,6 @@ def _accordion_item(title, icon, value, children, id):
             ),
         ],
         value=value,
-    )
-
-
-def annotation_class_item(class_color, class_label):
-    border_color = class_color
-    class_color = class_color.replace("rgb", "rgba")
-    class_color = class_color[:-1] + ",0.5)"
-    return html.Div(
-        [
-            html.Div(
-                [
-                    html.Div(
-                        style={
-                            "width": "25px",
-                            "height": "25px",
-                            "background-color": class_color,
-                            "margin": "5px",
-                            "borderRadius": "3px",
-                            "border": f"2px solid {border_color}",
-                        },
-                    ),
-                    html.Div(
-                        class_label,
-                        id={
-                            "type": "annotation-class-label",
-                            "index": border_color,
-                        },
-                    ),
-                ],
-                style={
-                    "display": "flex",
-                    "justify-content": "flex-row",
-                    "align-items": "center",
-                    "color": "#9EA4AB",
-                },
-            ),
-            html.Div(
-                [
-                    dmc.ActionIcon(
-                        id={
-                            "type": "hide-annotation-class",
-                            "index": border_color,
-                        },
-                        variant="subtle",
-                        color="gray",
-                        children=DashIconify(icon="mdi:hide"),
-                        size="lg",
-                    ),
-                    dmc.ActionIcon(
-                        id={
-                            "type": "edit-annotation-class",
-                            "index": border_color,
-                        },
-                        variant="subtle",
-                        color="gray",
-                        children=DashIconify(icon="uil:edit"),
-                        size="lg",
-                    ),
-                    dmc.ActionIcon(
-                        id={
-                            "type": "delete-annotation-class",
-                            "index": border_color,
-                        },
-                        variant="subtle",
-                        color="gray",
-                        children=DashIconify(icon="octicon:trash-24"),
-                        size="lg",
-                    ),
-                ],
-                style={
-                    "display": "flex",
-                    "justify-content": "flex-row",
-                    "align-items": "center",
-                },
-            ),
-        ],
-        style={
-            "border": "1px solid #EAECEF",
-            "borderRadius": "3px",
-            "marginBottom": "4px",
-            "display": "flex",
-            "justifyContent": "space-between",
-        },
-        id={"type": "annotation-class", "index": border_color},
     )
 
 
@@ -781,18 +698,19 @@ def drawer_section(children):
             dcc.Store(
                 id="annotation-store",
                 data={
-                    "dragmode": "drawopenpath",
-                    "visible": True,
-                    "annotations": {},
-                    "view": {},
-                    "active_img_shape": [],
+                    "dragmode": "drawopenpath",  # global
+                    "visible": True,  # global -> getting rid of this anyway
+                    "annotations": {},  # move to individual
+                    "view": {},  # global relayoutData
+                    "active_img_shape": [],  # global
                     # TODO: Hard-coding default annotation class
-                    "label_mapping": [
+                    "label_mapping": [  # move to individual
                         {"color": "rgb(22,17,79)", "id": "1", "label": "class 1"}
                     ],
-                    "classes_shown": {},
-                    "classes_hidden": {},
+                    "classes_shown": {},  # move to individual
+                    "classes_hidden": {},  # move to individual
                 },
+                # breaking up the store, adding the modals/store to the classes
             ),
             create_info_card_affix(),
             dmc.NotificationsProvider(html.Div(id="notifications-container")),
