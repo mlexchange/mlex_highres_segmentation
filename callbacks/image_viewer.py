@@ -37,11 +37,9 @@ clientside_callback(
     Output("image-viewfinder", "figure"),
     Output("annotation-store", "data", allow_duplicate=True),
     Output("image-viewer-loading", "zIndex", allow_duplicate=True),
-    Output("data-selection-controls", "children", allow_duplicate=True),
-    Output("image-transformation-controls", "children", allow_duplicate=True),
-    Output("annotations-controls", "children", allow_duplicate=True),
     Output("image-metadata", "data"),
     Input("image-selection-slider", "value"),
+    Input({"type": "hide-show-class-store", "index": ALL}, "data"),
     State({"type": "annotation-class-store", "index": ALL}, "data"),
     State("project-name-src", "value"),
     State("paintbrush-width", "value"),
@@ -52,6 +50,7 @@ clientside_callback(
 )
 def render_image(
     image_idx,
+    all_hide_show_class_store,
     all_annotation_class_store,
     project_name,
     annotation_width,
@@ -90,16 +89,14 @@ def render_image(
     if annotation_store:
         fig["layout"]["dragmode"] = annotation_store["dragmode"]
         all_annotations = []
-        for annotation_class_store in all_annotation_class_store:
-            if (
-                str(image_idx) in annotation_class_store["annotations"]
-                and annotation_class_store["class_visible"]
-            ):
+        for a_class in all_annotation_class_store:
+            # print(a_class)
+            if str(image_idx) in a_class["annotations"] and a_class["is_visible"]:
                 all_annotations = (
-                    all_annotations
-                    + annotation_class_store["annotations"][str(image_idx)]
+                    all_annotations + a_class["annotations"][str(image_idx)]
                 )
-            fig["layout"]["shapes"] = all_annotations
+
+        fig["layout"]["shapes"] = all_annotations
 
         view = annotation_store["view"]
         if view:
@@ -149,9 +146,6 @@ def render_image(
         fig_viewfinder,
         patched_annotation_store,
         fig_loading_overlay,
-        dash.no_update,
-        dash.no_update,
-        dash.no_update,
         curr_image_metadata,
     )
 

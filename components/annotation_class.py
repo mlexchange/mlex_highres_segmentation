@@ -19,11 +19,14 @@ def annotation_class_item(class_color, class_label):
                     "color": color,
                     "id": None,
                     "label": class_label,
-                    "class_visible": True,
+                    "is_visible": True,
                 },
             ),
             dcc.Store(id={"type": "deleted-class-store", "index": color}),
-            dcc.Store(id={"type": "hide-show-class-store", "index": color}),
+            dcc.Store(
+                id={"type": "hide-show-class-store", "index": color},
+                data={"is_visible": True},
+            ),
             html.Div(
                 [
                     html.Div(

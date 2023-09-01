@@ -404,18 +404,21 @@ def add_annotation_class(
     Output(
         {"type": "annotation-class-store", "index": MATCH}, "data", allow_duplicate=True
     ),
+    Output({"type": "hide-show-class-store", "index": MATCH}, "data"),
     Input({"type": "hide-annotation-class", "index": MATCH}, "n_clicks"),
     State({"type": "annotation-class-store", "index": MATCH}, "data"),
+    State({"type": "hide-show-class-store", "index": MATCH}, "data"),
     prevent_initial_call=True,
 )
 def hide_show_annotation_class(
     hide_show_click,
     annotation_class_store,
+    hide_show_class_store,
 ):
-    annotation_class_store["class_visible"] = not annotation_class_store[
-        "class_visible"
-    ]
-    return annotation_class_store
+    annotation_class_store["is_visible"] = not annotation_class_store["is_visible"]
+    hide_show_class_store["is_visible"] = not hide_show_class_store["is_visible"]
+
+    return annotation_class_store, hide_show_class_store
 
 
 @callback(
@@ -437,9 +440,6 @@ def delete_annotation_class(
 
 
 @callback(
-    Output(
-        {"type": "annotation-class-store", "index": MATCH}, "data", allow_duplicate=True
-    ),
     Output({"type": "deleted-class-store", "index": MATCH}, "data"),
     Input({"type": "remove-annotation-class-btn", "index": MATCH}, "n_clicks"),
     State({"type": "annotation-class-store", "index": MATCH}, "data"),
@@ -450,16 +450,8 @@ def clear_annotation_class(
     annotation_class_store,
 ):
     deleted_class = annotation_class_store["color"]
-    # Clear the Store meta data
-    annotation_class_store = {
-        "annotations": {},
-        "color": None,
-        "id": None,
-        "label": None,
-        "class_visible": True,
-    }
 
-    return annotation_class_store, deleted_class
+    return deleted_class
 
 
 # @callback(
