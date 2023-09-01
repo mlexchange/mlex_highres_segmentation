@@ -335,22 +335,6 @@ def layout():
                                                         size="lg",
                                                     ),
                                                 ),
-                                                dmc.Tooltip(
-                                                    dmc.ActionIcon(
-                                                        id="delete-all",
-                                                        variant="subtle",
-                                                        color="gray",
-                                                        children=DashIconify(
-                                                            icon=ANNOT_ICONS[
-                                                                "delete-all"
-                                                            ],
-                                                            width=20,
-                                                        ),
-                                                        size="lg",
-                                                    ),
-                                                    label="Clear All Annotations",
-                                                    multiline=True,
-                                                ),
                                                 _tooltip(
                                                     "Pan and zoom (A)",
                                                     dmc.ActionIcon(
@@ -764,10 +748,6 @@ def create_info_card_affix():
                                 create_keybind_row(
                                     KEYBINDS["erase"].upper(),
                                     "Erase Annotation Mode",
-                                ),
-                                create_keybind_row(
-                                    KEYBINDS["delete-all"].upper(),
-                                    "Delete all annotations",
                                 ),
                                 dmc.Divider(variant="solid", color="gray"),
                                 create_keybind_row(

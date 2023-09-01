@@ -6,7 +6,6 @@ KEYBINDS = {
     "rectangle": "t",
     "pan-and-zoom": "a",
     "erase": "s",
-    "delete-all": "d",
     "slice-right": "ArrowRight",
     "slice-left": "ArrowLeft",
     "classes": [
@@ -29,7 +28,6 @@ ANNOT_ICONS = {
     "circle": "gg:shape-circle",
     "rectangle": "gg:shape-square",
     "eraser": "ph:eraser",
-    "delete-all": "octicon:trash-24",
     "pan-and-zoom": "el:off",
     "slice-right": "line-md:arrow-right",
     "slice-left": "line-md:arrow-left",
@@ -42,7 +40,6 @@ ANNOT_NOTIFICATION_MSGS = {
     "circle": "Circle annotation mode",
     "rectangle": "Rectangle annotation mode",
     "eraser": "Eraser annotation mode",
-    "delete-all": "Delete all annotations",
     "pan-and-zoom": "Pan and zoom mode",
     "slice-right": "Next slice",
     "slice-left": "Previous slice",

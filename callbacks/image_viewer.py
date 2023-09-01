@@ -63,7 +63,7 @@ def render_image(
         tf = get_data_sequence_by_name(project_name)[image_idx]
     else:
         tf = np.zeros((500, 500))
-
+    print(image_idx)
     fig = px.imshow(tf, binary_string=True)
     fig.update_layout(
         margin=dict(l=0, r=0, t=0, b=0),
@@ -90,8 +90,8 @@ def render_image(
         fig["layout"]["dragmode"] = annotation_store["dragmode"]
         all_annotations = []
         for a_class in all_annotation_class_store:
-            # print(a_class)
             if str(image_idx) in a_class["annotations"] and a_class["is_visible"]:
+                # print(len(a_class["annotations"][str(image_idx)]))
                 all_annotations = (
                     all_annotations + a_class["annotations"][str(image_idx)]
                 )
@@ -269,10 +269,11 @@ clientside_callback(
     State("image-selection-slider", "value"),
     State("annotation-store", "data"),
     State({"type": "annotation-class-store", "index": ALL}, "data"),
+    State("current-class-selection", "data"),
     prevent_initial_call=True,
 )
 def locally_store_annotations(
-    relayout_data, img_idx, annotation_store, all_annotation_class_store
+    relayout_data, img_idx, annotation_store, all_annotation_class_store, current_color
 ):
     """
     Upon finishing relayout event (drawing, but it also includes panning, zooming),
@@ -282,7 +283,10 @@ def locally_store_annotations(
 
     if "shapes" in relayout_data:
         for annotation_class_store in all_annotation_class_store:
-            if annotation_class_store["color"] == annotation_store["color"]:
+            # print(annotation_class_store["color"])
+            # print(current_color)
+            # print("-----")
+            if annotation_class_store["color"] == current_color:
                 annotation_class_store["annotations"][str(img_idx - 1)] = relayout_data[
                     "shapes"
                 ]
