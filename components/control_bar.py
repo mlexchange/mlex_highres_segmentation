@@ -360,18 +360,6 @@ def layout():
                                                 "border-radius": "5px",
                                             },
                                         ),
-                                        dmc.Switch(
-                                            id="view-annotations",
-                                            size="xs",
-                                            radius="md",
-                                            color="gray",
-                                            label="View",
-                                            checked=True,
-                                            styles={
-                                                "trackLabel": {"cursor": "pointer"},
-                                                "margin": "auto",
-                                            },
-                                        ),
                                     ]
                                 ),
                                 dmc.Space(h=30),
