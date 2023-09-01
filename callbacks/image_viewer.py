@@ -15,7 +15,7 @@ import plotly.express as px
 import numpy as np
 import random
 from dash_iconify import DashIconify
-from utils.data_utils import data
+from utils.data_utils import get_data_shape_by_name, get_data_sequence_by_name
 from constants import KEYBINDS, ANNOT_ICONS, ANNOT_NOTIFICATION_MSGS
 from utils.plot_utils import (
     create_viewfinder,
@@ -60,7 +60,7 @@ def render_image(
 ):
     if image_idx:
         image_idx -= 1  # slider starts at 1, so subtract 1 to get the correct index
-        tf = data[project_name][image_idx]
+        tf = get_data_sequence_by_name(project_name)[image_idx]
     else:
         tf = np.zeros((500, 500))
 
@@ -306,14 +306,16 @@ def update_slider_values(project_name, annotation_store):
     ## todo - change Input("project-name-src", "data") to value when image-src will contain buckets of data and not just one image
     ## todo - eg, when a different image source is selected, update slider values which is then used to select image within that source
     """
-
-    disable_slider = project_name is None
+    # Retrieve data shape if project_name is valid and points to a 3d array
+    data_shape = (
+        get_data_shape_by_name(project_name) if not project_name is None else None
+    )
+    disable_slider = data_shape is None
     if not disable_slider:
-        tiff_file = data[project_name]
         # TODO: Assuming that all slices have the same image shape
-        annotation_store["image_shapes"] = [(tiff_file.shape[1], tiff_file.shape[2])]
+        annotation_store["image_shapes"] = [(data_shape[1], data_shape[2])]
     min_slider_value = 0 if disable_slider else 1
-    max_slider_value = 0 if disable_slider else len(tiff_file)
+    max_slider_value = 0 if disable_slider else data_shape[0]
     slider_value = 0 if disable_slider else 1
     annotation_store["annotations"] = {}
     annotation_store["view"] = {}

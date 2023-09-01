@@ -22,7 +22,7 @@ tifffile==2023.4.12
 tzdata==2023.3
 Werkzeug==2.2.3
 zipp==3.15.0
-tiled[client]==0.1.0a96
+tiled[client]==0.1.0a105
 gunicorn==20.1.0
 requests==2.26.0
 python-dotenv
