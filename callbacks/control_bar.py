@@ -396,6 +396,28 @@ def add_annotation_class(
 
 
 @callback(
+    Output("image-viewer", "figure", allow_duplicate=True),
+    Input({"type": "hide-show-class-store", "index": ALL}, "data"),
+    State({"type": "annotation-class-store", "index": ALL}, "data"),
+    State("image-selection-slider", "value"),
+    prevent_initial_call=True,
+)
+def hide_show_annotations_on_fig(
+    hide_show_click, all_annotation_class_store, image_idx
+):
+    fig = Patch()
+    image_idx = str(image_idx - 1)
+    all_annotations = []
+    for a in all_annotation_class_store:
+        if "annotations" in a and a["is_visible"]:
+            if image_idx in a["annotations"]:
+                all_annotations = all_annotations + a["annotations"][image_idx]
+
+    fig["layout"]["shapes"] = all_annotations
+    return fig
+
+
+@callback(
     Output(
         {"type": "annotation-class-store", "index": MATCH}, "data", allow_duplicate=True
     ),
@@ -446,49 +468,48 @@ def clear_annotation_class(
     annotation_class_store,
 ):
     deleted_class = annotation_class_store["color"]
-    print(f"FROM clear annot class{deleted_class}")
     return deleted_class
 
 
-@callback(
-    Output("annotation-store", "data", allow_duplicate=True),
-    Output("image-viewer", "figure", allow_duplicate=True),
-    Input("view-annotations", "checked"),
-    Input("modal-delete-button", "n_clicks"),
-    State("annotation-store", "data"),
-    State("image-viewer", "figure"),
-    State("image-selection-slider", "value"),
-    prevent_initial_call=True,
-)
-def annotation_visibility(checked, delete_all, annotation_store, figure, image_idx):
-    """
-    This callback is responsible for toggling the visibility of the annotation layer.
-    It also saves the annotation data to the store when the layer is hidden, and then loads it back in when the layer is shown again.
-    """
-    image_idx = str(image_idx - 1)
-    patched_figure = Patch()
-    if ctx.triggered_id == "modal-delete-button":
-        annotation_store["annotations"][image_idx] = []
-        patched_figure["layout"]["shapes"] = []
-    else:
-        if checked:
-            annotation_store["visible"] = True
-            patched_figure["layout"]["visible"] = True
-            if str(image_idx) in annotation_store["annotations"]:
-                patched_figure["layout"]["shapes"] = annotation_store["annotations"][
-                    image_idx
-                ]
-            patched_figure["layout"]["dragmode"] = annotation_store["dragmode"]
-        else:
-            new_annotation_data = (
-                [] if "shapes" not in figure["layout"] else figure["layout"]["shapes"]
-            )
-            annotation_store["visible"] = False
-            patched_figure["layout"]["dragmode"] = False
-            annotation_store["annotations"][image_idx] = new_annotation_data
-            patched_figure["layout"]["shapes"] = []
+# @callback(
+#     Output("annotation-store", "data", allow_duplicate=True),
+#     Output("image-viewer", "figure", allow_duplicate=True),
+#     # Input("view-annotations", "checked"),
+#     Input("modal-delete-button", "n_clicks"),
+#     State("annotation-store", "data"),
+#     State("image-viewer", "figure"),
+#     State("image-selection-slider", "value"),
+#     prevent_initial_call=True,
+# )
+# def annotation_visibility( delete_all, annotation_store, figure, image_idx):
+#     """
+#     This callback is responsible for toggling the visibility of the annotation layer.
+#     It also saves the annotation data to the store when the layer is hidden, and then loads it back in when the layer is shown again.
+#     """
+#     image_idx = str(image_idx - 1)
+#     patched_figure = Patch()
+#     if ctx.triggered_id == "modal-delete-button":
+#         annotation_store["annotations"][image_idx] = []
+#         patched_figure["layout"]["shapes"] = []
+#     else:
+#         if checked:
+#             annotation_store["visible"] = True
+#             patched_figure["layout"]["visible"] = True
+#             if str(image_idx) in annotation_store["annotations"]:
+#                 patched_figure["layout"]["shapes"] = annotation_store["annotations"][
+#                     image_idx
+#                 ]
+#             patched_figure["layout"]["dragmode"] = annotation_store["dragmode"]
+#         else:
+#             new_annotation_data = (
+#                 [] if "shapes" not in figure["layout"] else figure["layout"]["shapes"]
+#             )
+#             annotation_store["visible"] = False
+#             patched_figure["layout"]["dragmode"] = False
+#             annotation_store["annotations"][image_idx] = new_annotation_data
+#             patched_figure["layout"]["shapes"] = []
 
-    return annotation_store, patched_figure
+#     return annotation_store, patched_figure
 
 
 clientside_callback(
