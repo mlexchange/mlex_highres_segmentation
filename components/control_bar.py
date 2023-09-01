@@ -39,11 +39,7 @@ def _accordion_item(title, icon, value, children, id):
                     width=20,
                 ),
             ),
-            dmc.LoadingOverlay(
-                dmc.AccordionPanel(children=children, id=id),
-                loaderProps={"size": 0},
-                overlayOpacity=0.4,
-            ),
+            dmc.AccordionPanel(children=children, id=id),
         ],
         value=value,
     )
