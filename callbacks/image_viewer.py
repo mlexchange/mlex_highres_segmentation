@@ -85,7 +85,6 @@ def render_image(
     # )
 
     if annotation_store:
-        print("here")
         fig["layout"]["dragmode"] = annotation_store["dragmode"]
         all_annotations = []
         for a_class in all_annotation_class_store:

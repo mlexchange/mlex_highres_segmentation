@@ -319,28 +319,32 @@ def annotation_color(
     return patched_figure, notification, annotation_store
 
 
-# @callback(
-#     Output("delete-all-warning", "opened"),
-#     Input("delete-all", "n_clicks"),
-#     Input("modal-cancel-button", "n_clicks"),
-#     Input("modal-delete-button", "n_clicks"),
-#     Input("keybind-event-listener", "event"),
-#     State("delete-all-warning", "opened"),
-#     prevent_initial_call=True,
-# )
-# def open_warning_modal(delete, cancel, delete_4_real, keybind_event_listener, opened):
-#     """Opens and closes the modal that warns you when you're deleting all annotations"""
-#     if ctx.triggered_id == "keybind-event-listener":
-#         pressed_key = (
-#             keybind_event_listener.get("key", None) if keybind_event_listener else None
-#         )
-#         if not pressed_key:
-#             raise PreventUpdate
-#         if pressed_key is not KEYBINDS["delete-all"]:
-#             # if key pressed is not a valid keybind for class selection
-#             raise PreventUpdate
-#         return True
-#     return not opened
+@callback(
+    Output("delete-all-warning", "opened"),
+    Output(
+        {"type": "annotation-class-store", "index": ALL}, "data", allow_duplicate=True
+    ),
+    Input("clear-all", "n_clicks"),
+    Input("modal-cancel-delete-button", "n_clicks"),
+    Input("modal-continue-delete-button", "n_clicks"),
+    State("delete-all-warning", "opened"),
+    State({"type": "annotation-class-store", "index": ALL}, "data"),
+    prevent_initial_call=True,
+)
+def open_warning_modal(
+    delete, cancel_delete, continue_delete, opened, all_class_annotations
+):
+    """Opens and closes the modal that warns you when you're deleting all annotations"""
+    if ctx.triggered_id in ["clear-all", "modal-cancel-delete-button"]:
+        print("here!")
+        return not opened, all_class_annotations
+    if ctx.triggered_id == "modal-continue-delete-button":
+        for a in all_class_annotations:
+            # TODO: implement deletion
+            print(a)
+        return not opened, all_class_annotations
+    else:
+        return no_update, all_class_annotations
 
 
 @callback(

@@ -384,13 +384,14 @@ def layout():
                                         dmc.Group(
                                             [
                                                 dmc.Button(
-                                                    "Cancel", id="modal-cancel-button"
+                                                    "Cancel",
+                                                    id="modal-cancel-delete-button",
                                                 ),
                                                 dmc.Button(
                                                     "Continue",
                                                     color="red",
                                                     variant="outline",
-                                                    id="modal-delete-button",
+                                                    id="modal-continue-delete-button",
                                                 ),
                                             ],
                                             position="right",
