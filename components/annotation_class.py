@@ -62,7 +62,7 @@ def annotation_class_item(class_color, class_label):
                         },
                         variant="subtle",
                         color="gray",
-                        children=DashIconify(icon="mdi:hide"),
+                        children=DashIconify(icon="mdi:eye"),
                         size="lg",
                     ),
                     dmc.ActionIcon(

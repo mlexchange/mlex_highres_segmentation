@@ -455,6 +455,7 @@ def hide_show_annotations_on_fig(
         {"type": "annotation-class-store", "index": MATCH}, "data", allow_duplicate=True
     ),
     Output({"type": "hide-show-class-store", "index": MATCH}, "data"),
+    Output({"type": "hide-annotation-class", "index": MATCH}, "children"),
     Input({"type": "hide-annotation-class", "index": MATCH}, "n_clicks"),
     State({"type": "annotation-class-store", "index": MATCH}, "data"),
     State({"type": "hide-show-class-store", "index": MATCH}, "data"),
@@ -465,9 +466,14 @@ def hide_show_annotation_class(
     annotation_class_store,
     hide_show_class_store,
 ):
-    annotation_class_store["is_visible"] = not annotation_class_store["is_visible"]
-    hide_show_class_store["is_visible"] = not hide_show_class_store["is_visible"]
-    return annotation_class_store, hide_show_class_store
+    is_visible = annotation_class_store["is_visible"]
+    annotation_class_store["is_visible"] = not is_visible
+    hide_show_class_store["is_visible"] = not is_visible
+    if is_visible:
+        updated_icon = DashIconify(icon="mdi:hide")
+    else:
+        updated_icon = DashIconify(icon="mdi:eye")
+    return annotation_class_store, hide_show_class_store, updated_icon
 
 
 @callback(
