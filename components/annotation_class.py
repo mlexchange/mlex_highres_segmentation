@@ -17,7 +17,6 @@ def annotation_class_item(class_color, class_label):
                 data={
                     "annotations": {},
                     "color": color,
-                    "id": None,
                     "label": class_label,
                     "is_visible": True,
                 },

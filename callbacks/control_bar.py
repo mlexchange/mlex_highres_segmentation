@@ -58,6 +58,39 @@ def update_current_class_selection(class_selected):
 
 
 @callback(
+    Output({"type": "annotation-class", "index": ALL}, "style"),
+    Input("current-class-selection", "data"),
+    State({"type": "annotation-class", "index": ALL}, "id"),
+)
+def update_selcted_class_style(selected_class, current_ids):
+    default_style = {
+        "border": "1px solid #EAECEF",
+        "borderRadius": "3px",
+        "marginBottom": "4px",
+        "display": "flex",
+        "justifyContent": "space-between",
+    }
+    selected_style = {
+        "border": "3px solid rgb(230,230,230)",
+        "borderRadius": "3px",
+        "marginBottom": "4px",
+        "display": "flex",
+        "justifyContent": "space-between",
+        "backgroundColor": "rgb(240,240,240)",
+    }
+    ids = [c["index"] for c in current_ids]
+    if selected_class in ids:
+        index = ids.index(selected_class)
+        styles = [default_style] * len(ids)
+        styles[index] = selected_style
+        return styles
+    else:
+        styles = [default_style] * len(ids)
+        styles[-1] = selected_style
+        return styles
+
+
+@callback(
     Output("image-viewer", "figure", allow_duplicate=True),
     Output("open-freeform", "style"),
     Output("closed-freeform", "style"),

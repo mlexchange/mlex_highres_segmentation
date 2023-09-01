@@ -353,7 +353,7 @@ def layout():
                                             ],
                                             className="flex-row",
                                             style={
-                                                "width": "275px",
+                                                # "width": "275px",
                                                 "justify-content": "space-evenly",
                                                 "padding": "2.5px",
                                                 "border": "1px solid #EAECEF",
