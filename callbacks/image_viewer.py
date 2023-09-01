@@ -39,7 +39,6 @@ clientside_callback(
     Output("image-viewer-loading", "zIndex", allow_duplicate=True),
     Output("image-metadata", "data"),
     Input("image-selection-slider", "value"),
-    Input({"type": "hide-show-class-store", "index": ALL}, "data"),
     State({"type": "annotation-class-store", "index": ALL}, "data"),
     State("project-name-src", "value"),
     State("paintbrush-width", "value"),
@@ -50,7 +49,6 @@ clientside_callback(
 )
 def render_image(
     image_idx,
-    all_hide_show_class_store,
     all_annotation_class_store,
     project_name,
     annotation_width,
@@ -90,8 +88,7 @@ def render_image(
         fig["layout"]["dragmode"] = annotation_store["dragmode"]
         all_annotations = []
         for a_class in all_annotation_class_store:
-            if str(image_idx) in a_class["annotations"]:
-                # print(len(a_class["annotations"][str(image_idx)]))
+            if str(image_idx) in a_class["annotations"] and a_class["is_visible"]:
                 all_annotations = (
                     all_annotations + a_class["annotations"][str(image_idx)]
                 )
