@@ -56,7 +56,6 @@ DEMO_WORKFLOW = {
 }
 
 
-
 @callback(
     Output("output-details", "children"),
     Output("submitted-job-id", "data"),
