@@ -278,10 +278,6 @@ def annotation_color(
     """
     This callback is responsible for changing the color of the brush.
     """
-    # print(f"FROM ANNOTATION COLOR:{ current_color}")
-    # if not current_color:
-    #     current_color = "rgb(22,17,79)"
-    print(current_color)
     if ctx.triggered_id == "keybind-event-listener":
         if generate_modal_opened:  # or edit_annotation_modal_opened:
             # user is going to type on this page and we don't want to trigger this callback using keys
@@ -440,12 +436,16 @@ def hide_show_annotations_on_fig(
 ):
     fig = Patch()
     image_idx = str(image_idx - 1)
+    print(all_annotation_class_store)
+    for i in all_annotation_class_store:
+        print(i["is_visible"])
     all_annotations = []
     for a in all_annotation_class_store:
-        if "annotations" in a and a["is_visible"]:
-            if image_idx in a["annotations"]:
-                all_annotations = all_annotations + a["annotations"][image_idx]
-
+        if a["is_visible"]:
+            if "annotations" in a and a["is_visible"]:
+                if image_idx in a["annotations"]:
+                    all_annotations = all_annotations + a["annotations"][image_idx]
+    print(f"ALL ANNOTATIONS={len(all_annotations)}")
     fig["layout"]["shapes"] = all_annotations
     return fig
 

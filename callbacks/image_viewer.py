@@ -85,6 +85,7 @@ def render_image(
     # )
 
     if annotation_store:
+        print("here")
         fig["layout"]["dragmode"] = annotation_store["dragmode"]
         all_annotations = []
         for a_class in all_annotation_class_store:
@@ -258,7 +259,7 @@ clientside_callback(
 
 
 @callback(
-    Output("annotation-store", "data", allow_duplicate=True),
+    # Output("annotation-store", "data", allow_duplicate=True),
     Output(
         {"type": "annotation-class-store", "index": ALL}, "data", allow_duplicate=True
     ),
@@ -277,25 +278,24 @@ def locally_store_annotations(
     this function takes the annotation shapes, and stores it in the dcc.Store, which is then used elsewhere
     to preserve drawn annotations, or to save them.
     """
-
+    img_idx = str(img_idx - 1)
     if "shapes" in relayout_data:
+        last_shape = relayout_data["shapes"][-1]
         for annotation_class_store in all_annotation_class_store:
-            # print(annotation_class_store["color"])
-            # print(current_color)
-            # print("-----")
             if annotation_class_store["color"] == current_color:
-                annotation_class_store["annotations"][str(img_idx - 1)] = relayout_data[
-                    "shapes"
-                ]
+                if img_idx in annotation_class_store["annotations"]:
+                    annotation_class_store["annotations"][img_idx].append(last_shape)
+                else:
+                    annotation_class_store["annotations"][img_idx] = [last_shape]
 
-        annotation_store["annotations"][str(img_idx - 1)] = relayout_data["shapes"]
+        # annotation_store["annotations"][img_idx] = relayout_data["shapes"]
     if "xaxis.range[0]" in relayout_data:
         annotation_store["view"]["xaxis_range_0"] = relayout_data["xaxis.range[0]"]
         annotation_store["view"]["xaxis_range_1"] = relayout_data["xaxis.range[1]"]
         annotation_store["view"]["yaxis_range_0"] = relayout_data["yaxis.range[0]"]
         annotation_store["view"]["yaxis_range_1"] = relayout_data["yaxis.range[1]"]
 
-    return annotation_store, all_annotation_class_store
+    return all_annotation_class_store
 
 
 @callback(
