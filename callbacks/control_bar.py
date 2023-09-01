@@ -62,7 +62,7 @@ def update_current_class_selection(class_selected):
     Input("current-class-selection", "data"),
     State({"type": "annotation-class", "index": ALL}, "id"),
 )
-def update_selcted_class_style(selected_class, current_ids):
+def update_selected_class_style(selected_class, current_ids):
     default_style = {
         "border": "1px solid #EAECEF",
         "borderRadius": "3px",
@@ -264,7 +264,6 @@ def annotation_width(width_value):
     Input("keybind-event-listener", "event"),
     State("generate-annotation-class-modal", "opened"),
     State("annotation-store", "data"),
-    # State("edit-annotation-class-modal", "opened"),
     prevent_initial_call=True,
 )
 def annotation_color(
@@ -273,7 +272,6 @@ def annotation_color(
     keybind_event_listener,
     generate_modal_opened,
     annotation_store,
-    # edit_annotation_modal_opened,
 ):
     """
     This callback is responsible for changing the color of the brush.
@@ -299,7 +297,6 @@ def annotation_color(
     patched_figure = Patch()
     patched_figure["layout"]["newshape"]["fillcolor"] = current_color
     patched_figure["layout"]["newshape"]["line"]["color"] = current_color
-    annotation_store["color"] = current_color
 
     label_name = current_color
     notification = dmc.Notification(
@@ -361,7 +358,7 @@ def open_warning_modal(
 def open_annotation_class_modal(generate, create, new_label, opened, annotation_store):
     """Opens and closes the modal that is used to create a new annotation class"""
     if ctx.triggered_id in "annotation-class-label":
-        # TODO: update so this uses individual class store
+        # TODO: update so this uses individual class store. label mapping is not deprecated
         current_classes = [c["label"] for c in annotation_store["label_mapping"]]
         if new_label in current_classes:
             return no_update, True, "Class name already in use!"
@@ -440,16 +437,12 @@ def hide_show_annotations_on_fig(
 ):
     fig = Patch()
     image_idx = str(image_idx - 1)
-    print(all_annotation_class_store)
-    for i in all_annotation_class_store:
-        print(i["is_visible"])
     all_annotations = []
     for a in all_annotation_class_store:
         if a["is_visible"]:
             if "annotations" in a and a["is_visible"]:
                 if image_idx in a["annotations"]:
                     all_annotations = all_annotations + a["annotations"][image_idx]
-    print(f"ALL ANNOTATIONS={len(all_annotations)}")
     fig["layout"]["shapes"] = all_annotations
     return fig
 
