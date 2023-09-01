@@ -253,8 +253,9 @@ def annotation_color(
     This callback is responsible for changing the color of the brush.
     """
     # print(f"FROM ANNOTATION COLOR:{ current_color}")
-    if not current_color:
-        current_color = "rgb(22,17,79)"
+    # if not current_color:
+    #     current_color = "rgb(22,17,79)"
+    print(current_color)
     if ctx.triggered_id == "keybind-event-listener":
         if generate_modal_opened:  # or edit_annotation_modal_opened:
             # user is going to type on this page and we don't want to trigger this callback using keys
@@ -417,7 +418,6 @@ def hide_show_annotation_class(
 ):
     annotation_class_store["is_visible"] = not annotation_class_store["is_visible"]
     hide_show_class_store["is_visible"] = not hide_show_class_store["is_visible"]
-
     return annotation_class_store, hide_show_class_store
 
 
@@ -431,12 +431,15 @@ def delete_annotation_class(
     is_deleted,
     all_classes,
 ):
-    if len(is_deleted) == 1:
+    is_deleted = [x for x in is_deleted if x is not None]
+    if is_deleted:
         is_deleted = is_deleted[0]
-    updated_classes = [
-        c for c in all_classes if c["props"]["id"]["index"] != is_deleted
-    ]
-    return updated_classes
+        updated_classes = [
+            c for c in all_classes if c["props"]["id"]["index"] != is_deleted
+        ]
+        print(f"FROM delete annot class{is_deleted}")
+        return updated_classes
+    return no_update
 
 
 @callback(
@@ -450,7 +453,7 @@ def clear_annotation_class(
     annotation_class_store,
 ):
     deleted_class = annotation_class_store["color"]
-
+    print(f"FROM clear annot class{deleted_class}")
     return deleted_class
 
 
