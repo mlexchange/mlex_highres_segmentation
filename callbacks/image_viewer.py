@@ -45,6 +45,7 @@ clientside_callback(
     State("annotation-store", "data"),
     State("image-metadata", "data"),
     State("screen-size", "data"),
+    State("current-class-selection", "data"),
     prevent_initial_call=True,
 )
 def render_image(
@@ -55,6 +56,7 @@ def render_image(
     annotation_store,
     image_metadata,
     screen_size,
+    current_color,
 ):
     if image_idx:
         image_idx -= 1  # slider starts at 1, so subtract 1 to get the correct index
@@ -72,6 +74,8 @@ def render_image(
         plot_bgcolor="rgba(0,0,0,0)",
     )
     fig.update_traces(hovertemplate=None, hoverinfo="skip")
+    fig["layout"]["newshape"]["fillcolor"] = current_color
+    fig["layout"]["newshape"]["line"]["color"] = current_color
     view = None
     if annotation_store:
         fig["layout"]["dragmode"] = annotation_store["dragmode"]
@@ -116,7 +120,6 @@ def render_image(
         curr_image_metadata = {"size": tf.shape, "name": project_name}
     else:
         curr_image_metadata = dash.no_update
-
     return (
         fig,
         fig_viewfinder,

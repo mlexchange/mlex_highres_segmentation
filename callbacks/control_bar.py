@@ -288,10 +288,13 @@ def annotation_color(
         # if selected_color_idx >= len(current_style):
         #     # if the key pressed corresponds to a class that doesn't exist
         #     raise PreventUpdate
-
+    print(current_color)
     patched_figure = Patch()
     patched_figure["layout"]["newshape"]["fillcolor"] = current_color
     patched_figure["layout"]["newshape"]["line"]["color"] = current_color
+    print("here")
+    print(ctx.triggered_id)
+    print("----")
 
     return patched_figure, annotation_store
 
