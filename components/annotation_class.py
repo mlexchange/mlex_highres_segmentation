@@ -3,6 +3,8 @@ from dash import html, dcc
 from dash_iconify import DashIconify
 
 
+# This function generates a class component with all its buttons (hide/show, edit, delete)
+# The class color is used as an ID to identify a class (as all class colors are unique and cannot be modified)
 def annotation_class_item(class_color, class_label):
     color = class_color
     class_color = color.replace("rgb", "rgba")
@@ -21,6 +23,7 @@ def annotation_class_item(class_color, class_label):
                     "is_visible": True,
                 },
             ),
+            # These stores are solely responsible for triggereing a callback when a class is deleted or shown/hidden
             dcc.Store(id={"type": "deleted-class-store", "index": color}),
             dcc.Store(
                 id={"type": "hide-show-class-store", "index": color},

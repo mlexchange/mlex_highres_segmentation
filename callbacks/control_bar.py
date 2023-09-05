@@ -1,3 +1,5 @@
+import os
+import time
 from dash import (
     Input,
     Output,
@@ -18,15 +20,12 @@ import json
 from utils.annotations import Annotations
 from components.annotation_class import annotation_class_item
 from constants import KEYBINDS, ANNOT_ICONS, ANNOT_NOTIFICATION_MSGS
-import ast
 import json
 from utils.data_utils import (
     DEV_load_exported_json_data,
     DEV_filter_json_data_by_timestamp,
 )
 
-import os
-import time
 
 # TODO - temporary local file path and user for annotation saving and exporting
 EXPORT_FILE_PATH = "data/exported_annotation_data.json"
@@ -63,6 +62,8 @@ def update_current_class_selection(class_selected):
     State({"type": "annotation-class", "index": ALL}, "id"),
 )
 def update_selected_class_style(selected_class, current_ids):
+    """This callback is responsible for updating the style of the selected annot class to makw it appear
+    like it has been "selected" """
     default_style = {
         "border": "1px solid #EAECEF",
         "borderRadius": "3px",
@@ -113,7 +114,6 @@ def update_selected_class_style(selected_class, current_ids):
     State("annotation-store", "data"),
     State("image-viewer-loading", "zIndex"),
     State("generate-annotation-class-modal", "opened"),
-    # State("edit-annotation-class-modal", "opened"),
     prevent_initial_call=True,
 )
 def annotation_mode(
@@ -128,16 +128,13 @@ def annotation_mode(
     annotation_store,
     figure_overlay_z_index,
     generate_modal_opened,
-    # edit_annotation_modal_opened,
 ):
     """
     This callback is responsible for changing the annotation mode and the style of the buttons.
     It also accepts keybinds to change the annotation mode.
     """
-    if generate_modal_opened:  # or edit_annotation_modal_opened:
+    if generate_modal_opened:
         # user is going to type on this page and we don't want to trigger this callback using keys
-        raise PreventUpdate
-    if not annotation_store["visible"]:
         raise PreventUpdate
     # if the image is loading stop the callback when keybinds are pressed
     if figure_overlay_z_index != -1:
@@ -211,7 +208,6 @@ def annotation_mode(
             patched_figure["layout"]["dragmode"] = "eraseshape"
             annotation_store["dragmode"] = "eraseshape"
             styles[triggered] = active
-
         elif triggered == "pan-and-zoom" and pan_and_zoom > 0:
             patched_figure["layout"]["dragmode"] = "pan"
             annotation_store["dragmode"] = "pan"
@@ -385,6 +381,7 @@ def open_delete_class_modal(remove_class, remove_class_modal, opened):
     prevent_initial_call=True,
 )
 def edit_annotation_class(edit_clicked, new_label, annotation_class_store):
+    """edit the name of an annotation class"""
     annotation_class_store["label"] = new_label
     return new_label, annotation_class_store, ""
 
@@ -405,6 +402,7 @@ def add_annotation_class(
     new_class_label,
     new_class_color,
 ):
+    """adds a new annotation class with the same chosen color and label"""
     current_classes.append(annotation_class_item(new_class_color, new_class_label))
     return "", current_classes, new_class_color
 
@@ -419,12 +417,13 @@ def add_annotation_class(
 def hide_show_annotations_on_fig(
     hide_show_click, all_annotation_class_store, image_idx
 ):
+    """hides or shows all annotations for a given class by Patching the figure"""
     fig = Patch()
     image_idx = str(image_idx - 1)
     all_annotations = []
     for a in all_annotation_class_store:
         if a["is_visible"]:
-            if "annotations" in a and a["is_visible"]:
+            if "annotations" in a:
                 if image_idx in a["annotations"]:
                     all_annotations = all_annotations + a["annotations"][image_idx]
     fig["layout"]["shapes"] = all_annotations
@@ -447,6 +446,9 @@ def hide_show_annotation_class(
     annotation_class_store,
     hide_show_class_store,
 ):
+    """Updates both the annotation-class-store (which contains the annotation info) and the hide-show-class-store
+    which is only used to trigger the callback that will actually patch the figure. Also update the hide/show icon accordingly
+    """
     is_visible = annotation_class_store["is_visible"]
     annotation_class_store["is_visible"] = not is_visible
     hide_show_class_store["is_visible"] = not is_visible
@@ -467,6 +469,7 @@ def delete_annotation_class(
     is_deleted,
     all_classes,
 ):
+    """delete the class from memory using the color from the deleted-class-store"""
     is_deleted = [x for x in is_deleted if x is not None]
     if is_deleted:
         is_deleted = is_deleted[0]
@@ -487,6 +490,7 @@ def clear_annotation_class(
     remove,
     annotation_class_store,
 ):
+    """update the deleted-class-store with the color of the class to delete"""
     deleted_class = annotation_class_store["color"]
     return deleted_class
 
