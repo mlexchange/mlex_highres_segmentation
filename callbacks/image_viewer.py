@@ -71,19 +71,8 @@ def render_image(
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
     )
-
     fig.update_traces(hovertemplate=None, hoverinfo="skip")
-    # set the default annotation style
-    # for color_opt in annotation_colors:
-    #     if color_opt["props"]["style"]["border"] != "1px solid":
-    #         color = color_opt["props"]["style"]["background-color"]
-    # fig.update_layout(
-    #     newshape=dict(
-    #         line=dict(color=color, width=annotation_width),
-    #         fillcolor=color,
-    #     )
-    # )
-
+    view = None
     if annotation_store:
         fig["layout"]["dragmode"] = annotation_store["dragmode"]
         all_annotations = []
@@ -94,29 +83,20 @@ def render_image(
                 )
 
         fig["layout"]["shapes"] = all_annotations
-
         view = annotation_store["view"]
+
+    if screen_size:
         if view:
-            if "xaxis_range_0" in view and annotation_store["active_img_shape"] == list(
-                tf.shape
-            ):
+            if "xaxis_range_0" in view:
                 fig.update_layout(
                     xaxis=dict(range=[view["xaxis_range_0"], view["xaxis_range_1"]]),
                     yaxis=dict(range=[view["yaxis_range_0"], view["yaxis_range_1"]]),
                 )
 
-    if (
-        project_name != image_metadata["name"]
-        or image_metadata["name"] is None
-        and screen_size
-    ):
-        curr_image_metadata = {"size": tf.shape, "name": project_name}
-        fig = resize_canvas(
-            tf.shape[0], tf.shape[1], screen_size["H"], screen_size["W"], fig
-        )
-        view = None
-    else:
-        view = annotation_store["view"]
+        else:
+            fig = resize_canvas(
+                tf.shape[0], tf.shape[1], screen_size["H"], screen_size["W"], fig
+            )
 
     patched_annotation_store = Patch()
     patched_annotation_store["active_img_shape"] = list(tf.shape)
@@ -262,6 +242,7 @@ clientside_callback(
     Output(
         {"type": "annotation-class-store", "index": ALL}, "data", allow_duplicate=True
     ),
+    Output("annotation-store", "data", allow_duplicate=True),
     Input("image-viewer", "relayoutData"),
     State("image-selection-slider", "value"),
     State("annotation-store", "data"),
@@ -294,7 +275,7 @@ def locally_store_annotations(
         annotation_store["view"]["yaxis_range_0"] = relayout_data["yaxis.range[0]"]
         annotation_store["view"]["yaxis_range_1"] = relayout_data["yaxis.range[1]"]
 
-    return all_annotation_class_store
+    return all_annotation_class_store, annotation_store
 
 
 @callback(
