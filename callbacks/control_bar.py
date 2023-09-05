@@ -440,10 +440,8 @@ def hide_show_annotations_on_fig(
     image_idx = str(image_idx - 1)
     all_annotations = []
     for a in all_annotation_class_store:
-        if a["is_visible"]:
-            if "annotations" in a:
-                if image_idx in a["annotations"]:
-                    all_annotations = all_annotations + a["annotations"][image_idx]
+        if a["is_visible"] and "annotations" in a and image_idx in a["annotations"]:
+            all_annotations += a["annotations"][image_idx]
     fig["layout"]["shapes"] = all_annotations
     return fig
 
