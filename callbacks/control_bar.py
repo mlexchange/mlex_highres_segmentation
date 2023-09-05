@@ -253,7 +253,6 @@ def annotation_width(width_value):
 
 @callback(
     Output("image-viewer", "figure", allow_duplicate=True),
-    Output("annotation-store", "data", allow_duplicate=True),
     Input("current-class-selection", "data"),
     Input("image-selection-slider", "value"),
     Input("keybind-event-listener", "event"),
