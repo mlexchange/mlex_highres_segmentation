@@ -276,6 +276,21 @@ def locally_store_annotations(
 
 
 @callback(
+    Output(
+        {"type": "annotation-class-store", "index": ALL}, "data", allow_duplicate=True
+    ),
+    Input("project-name-src", "value"),
+    State({"type": "annotation-class-store", "index": ALL}, "data"),
+    prevent_initial_call=True,
+)
+def clear_annotations_on_dataset_cahnge(change_project, all_annotation_class_store):
+    """this callback is responsible for removing the annotations from every store when the dataset is changed"""
+    for a in all_annotation_class_store:
+        a["annotations"] = {}
+    return all_annotation_class_store
+
+
+@callback(
     Output("image-selection-slider", "min"),
     Output("image-selection-slider", "max"),
     Output("image-selection-slider", "value"),
