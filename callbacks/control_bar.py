@@ -339,7 +339,7 @@ def open_annotation_class_modal(generate, create, new_label, opened, annotation_
     """Opens and closes the modal that is used to create a new annotation class"""
     if ctx.triggered_id in "annotation-class-label":
         # TODO: update so this uses individual class store. label mapping is not deprecated
-        current_classes = [c["label"] for c in annotation_store["label_mapping"]]
+        current_classes = []
         if new_label in current_classes:
             return no_update, True, "Class name already in use!"
         else:

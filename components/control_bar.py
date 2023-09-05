@@ -622,20 +622,12 @@ def drawer_section(children):
             dcc.Store(
                 id="annotation-store",
                 data={
-                    "dragmode": "drawopenpath",  # global
-                    "color": None,
-                    "visible": True,  # global -> getting rid of this anyway
-                    "annotations": {},  # move to individual
-                    "view": {},  # global relayoutData
-                    "active_img_shape": [],  # global
-                    # TODO: Hard-coding default annotation class
-                    "label_mapping": [  # move to individual
-                        {"color": "rgb(22,17,79)", "id": "1", "label": "class 1"}
-                    ],
-                    "classes_shown": {},  # move to individual
-                    "classes_hidden": {},  # move to individual
+                    "dragmode": "drawopenpath",
+                    "visible": True,
+                    "annotations": {},  # TODO remove this when saving funcionality is updated
+                    "view": {},
+                    "active_img_shape": [],
                 },
-                # breaking up the store, adding the modals/store to the classes
             ),
             create_info_card_affix(),
             dmc.NotificationsProvider(html.Div(id="notifications-container")),

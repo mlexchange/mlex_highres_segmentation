@@ -267,8 +267,6 @@ def locally_store_annotations(
                     annotation_class_store["annotations"][img_idx].append(last_shape)
                 else:
                     annotation_class_store["annotations"][img_idx] = [last_shape]
-
-        # annotation_store["annotations"][img_idx] = relayout_data["shapes"]
     if "xaxis.range[0]" in relayout_data:
         annotation_store["view"]["xaxis_range_0"] = relayout_data["xaxis.range[0]"]
         annotation_store["view"]["xaxis_range_1"] = relayout_data["xaxis.range[1]"]
@@ -353,7 +351,6 @@ def update_selection_and_image(
         new_slider_value += 1
     for a_class in all_annotations_class_store:
         a_class["annotations"] = {}
-    print(all_annotations_class_store)
     fig = Patch()
     fig["layout"]["shapes"] = []
     disable_previous_image = new_slider_value == slider_min
