@@ -144,14 +144,6 @@ def annotation_class_item(class_color, class_label):
                             ),
                         ]
                     ),
-                    dmc.Center(
-                        dmc.Text(
-                            id={
-                                "type": "delete-last-class-warning",
-                                "index": color,
-                            }
-                        )
-                    ),
                 ],
             ),
         ],

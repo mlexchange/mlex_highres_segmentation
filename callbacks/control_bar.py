@@ -81,11 +81,13 @@ def update_selected_class_style(selected_class, current_ids):
     }
     ids = [c["index"] for c in current_ids]
     if selected_class in ids:
+        # find index of selected class and change its style
         index = ids.index(selected_class)
         styles = [default_style] * len(ids)
         styles[index] = selected_style
         return styles
     else:
+        # set last class to selected style
         styles = [default_style] * len(ids)
         styles[-1] = selected_style
         return styles
@@ -333,7 +335,7 @@ def open_warning_modal(
 def open_annotation_class_modal(
     generate, create, new_label, new_color, opened, all_annotation_class_store
 ):
-    """Opens and closes the modal that is used to create a new annotation class"""
+    """Opens and closes the modal that is used to create a new annotation class and checks if color and class name are available"""
     if ctx.triggered_id in ["annotation-class-label", "annotation-class-colorpicker"]:
         current_classes = [a["label"] for a in all_annotation_class_store]
         current_colors = [a["color"] for a in all_annotation_class_store]
@@ -351,14 +353,28 @@ def open_annotation_class_modal(
 
 @callback(
     Output({"type": "edit-annotation-class-modal", "index": MATCH}, "opened"),
+    Output({"type": "relabel-annotation-class-btn", "index": MATCH}, "disabled"),
+    Output({"type": "bad-edit-label", "index": MATCH}, "children"),
     Input({"type": "edit-annotation-class", "index": MATCH}, "n_clicks"),
     Input({"type": "relabel-annotation-class-btn", "index": MATCH}, "n_clicks"),
+    Input({"type": "edit-annotation-class-text-input", "index": MATCH}, "value"),
     State({"type": "edit-annotation-class-modal", "index": MATCH}, "opened"),
+    State({"type": "annotation-class-store", "index": ALL}, "data"),
     prevent_initial_call=True,
 )
-def open_edit_class_modal(edit_button, edit_modal, opened):
+def open_edit_class_modal(
+    edit_button, edit_modal, new_label, opened, all_annotation_class_store
+):
     """Opens and closes the modal that allows you to relabel an existing annotation class"""
-    return not opened
+    if ctx.triggered_id["type"] == "edit-annotation-class-text-input":
+        current_classes = [a["label"] for a in all_annotation_class_store]
+        edit_disabled = False
+        error_msg = ""
+        if new_label in current_classes:
+            error_msg = "Label Already in Use!"
+            edit_disabled = True
+        return no_update, edit_disabled, error_msg
+    return not opened, False, no_update
 
 
 @callback(
