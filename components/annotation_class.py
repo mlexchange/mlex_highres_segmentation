@@ -154,5 +154,6 @@ def annotation_class_item(class_color, class_label):
             "display": "flex",
             "justifyContent": "space-between",
         },
+        className="annotation-class",
         id={"type": "annotation-class", "index": color},
     )

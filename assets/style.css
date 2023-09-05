@@ -103,3 +103,9 @@ body {
     color: #9EA4AB !important;
     border-color: #EAECEF !important;
 }
+
+.add-class-btn:hover,
+.annotation-class:hover {
+    background-color: rgba(1, 59, 71, 0.05) !important;
+    cursor: pointer;
+}

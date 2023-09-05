@@ -72,12 +72,12 @@ def update_selected_class_style(selected_class, current_ids):
         "justifyContent": "space-between",
     }
     selected_style = {
-        "border": "3px solid rgb(230,230,230)",
+        "border": "2px solid rgba(1,59,71,0.5)",
         "borderRadius": "3px",
         "marginBottom": "4px",
         "display": "flex",
         "justifyContent": "space-between",
-        "backgroundColor": "rgb(240,240,240)",
+        "backgroundColor": "rgba(1,59,71,0.05)",
     }
     ids = [c["index"] for c in current_ids]
     if selected_class in ids:
