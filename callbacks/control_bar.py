@@ -288,14 +288,9 @@ def annotation_color(
         # if selected_color_idx >= len(current_style):
         #     # if the key pressed corresponds to a class that doesn't exist
         #     raise PreventUpdate
-    print(current_color)
     patched_figure = Patch()
     patched_figure["layout"]["newshape"]["fillcolor"] = current_color
     patched_figure["layout"]["newshape"]["line"]["color"] = current_color
-    print("here")
-    print(ctx.triggered_id)
-    print("----")
-
     return patched_figure, annotation_store
 
 
@@ -316,7 +311,6 @@ def open_warning_modal(
 ):
     """Opens and closes the modal that warns you when you're deleting all annotations"""
     if ctx.triggered_id in ["clear-all", "modal-cancel-delete-button"]:
-        print("here!")
         return not opened, all_class_annotations
     if ctx.triggered_id == "modal-continue-delete-button":
         for a in all_class_annotations:
