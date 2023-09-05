@@ -283,9 +283,6 @@ def locally_store_annotations(
     Output("image-selection-slider", "value"),
     Output("image-selection-slider", "disabled"),
     Output("annotation-store", "data"),
-    Output("data-selection-controls", "children"),
-    Output("image-transformation-controls", "children"),
-    Output("annotations-controls", "children"),
     Input("project-name-src", "value"),
     State("annotation-store", "data"),
 )
@@ -318,11 +315,6 @@ def update_slider_values(project_name, annotation_store):
         slider_value,
         disable_slider,
         annotation_store,
-        # No update is needed for the 'children' of the control components
-        # since we just want to trigger the loading overlay with this callback
-        dash.no_update,
-        dash.no_update,
-        dash.no_update,
     )
 
 
