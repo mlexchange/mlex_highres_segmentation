@@ -325,20 +325,27 @@ def open_warning_modal(
     Input("generate-annotation-class", "n_clicks"),
     Input("create-annotation-class", "n_clicks"),
     Input("annotation-class-label", "value"),
+    Input("annotation-class-colorpicker", "value"),
     State("generate-annotation-class-modal", "opened"),
     State({"type": "annotation-class-store", "index": ALL}, "data"),
     prevent_initial_call=True,
 )
 def open_annotation_class_modal(
-    generate, create, new_label, opened, all_annotation_store
+    generate, create, new_label, new_color, opened, all_annotation_class_store
 ):
     """Opens and closes the modal that is used to create a new annotation class"""
-    if ctx.triggered_id in "annotation-class-label":
-        current_classes = [a["label"] for a in all_annotation_store]
+    if ctx.triggered_id in ["annotation-class-label", "annotation-class-colorpicker"]:
+        current_classes = [a["label"] for a in all_annotation_class_store]
+        current_colors = [a["color"] for a in all_annotation_class_store]
+        disable_class_creation = False
+        error_msg = ""
         if new_label in current_classes:
-            return no_update, True, "Class name already in use!"
-        else:
-            return no_update, False, ""
+            disable_class_creation = True
+            error_msg += "Label Already in Use!"
+        if new_color in current_colors:
+            disable_class_creation = True
+            error_msg += "\nColor Already in use!"
+        return no_update, disable_class_creation, error_msg
     return not opened, False, ""
 
 
