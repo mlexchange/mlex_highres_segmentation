@@ -49,7 +49,7 @@ def update_current_class_selection(class_selected):
     if ctx.triggered_id:
         if len(ctx.triggered) == 1:
             current_selection = ctx.triggered_id["index"]
-        # if more than one items in the trigger -> means the trigger comes from adding a new class.
+        # More than one item in the trigger means the trigger comes from adding a new class.
         # we dont want to reset the current selection in this case
         else:
             current_selection = no_update
@@ -116,6 +116,7 @@ def update_selected_class_style(selected_class, current_ids):
     State("annotation-store", "data"),
     State("image-viewer-loading", "zIndex"),
     State("generate-annotation-class-modal", "opened"),
+    State({"type": "edit-annotation-class-modal", "index": ALL}, "opened"),
     prevent_initial_call=True,
 )
 def annotation_mode(
@@ -130,12 +131,13 @@ def annotation_mode(
     annotation_store,
     figure_overlay_z_index,
     generate_modal_opened,
+    edit_modal_opened,
 ):
     """
     This callback is responsible for changing the annotation mode and the style of the buttons.
     It also accepts keybinds to change the annotation mode.
     """
-    if generate_modal_opened:
+    if generate_modal_opened or any(edit_modal_opened):
         # user is going to type on this page and we don't want to trigger this callback using keys
         raise PreventUpdate
     # if the image is loading stop the callback when keybinds are pressed
