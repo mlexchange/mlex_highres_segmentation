@@ -258,7 +258,6 @@ def annotation_width(width_value):
     Input("image-selection-slider", "value"),
     Input("keybind-event-listener", "event"),
     State("generate-annotation-class-modal", "opened"),
-    State("annotation-store", "data"),
     prevent_initial_call=True,
 )
 def annotation_color(
@@ -266,7 +265,6 @@ def annotation_color(
     slider,
     keybind_event_listener,
     generate_modal_opened,
-    annotation_store,
 ):
     """
     This callback is responsible for changing the color of the brush.
@@ -291,7 +289,7 @@ def annotation_color(
     patched_figure = Patch()
     patched_figure["layout"]["newshape"]["fillcolor"] = current_color
     patched_figure["layout"]["newshape"]["line"]["color"] = current_color
-    return patched_figure, annotation_store
+    return patched_figure
 
 
 @callback(
