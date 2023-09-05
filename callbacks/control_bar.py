@@ -326,14 +326,15 @@ def open_warning_modal(
     Input("create-annotation-class", "n_clicks"),
     Input("annotation-class-label", "value"),
     State("generate-annotation-class-modal", "opened"),
-    State("annotation-store", "data"),
+    State({"type": "annotation-class-store", "index": ALL}, "data"),
     prevent_initial_call=True,
 )
-def open_annotation_class_modal(generate, create, new_label, opened, annotation_store):
+def open_annotation_class_modal(
+    generate, create, new_label, opened, all_annotation_store
+):
     """Opens and closes the modal that is used to create a new annotation class"""
     if ctx.triggered_id in "annotation-class-label":
-        # TODO: update so this uses individual class store. label mapping is not deprecated
-        current_classes = []
+        current_classes = [a["label"] for a in all_annotation_store]
         if new_label in current_classes:
             return no_update, True, "Class name already in use!"
         else:
