@@ -55,10 +55,10 @@ class Annotations:
         for image_idx, slice_data in self.annotation_store["annotations"].items():
             annotation_slice = []
             for annotation_idx, shape in enumerate(slice_data):
-                self.set_annotation_type(shape)
-                self.set_annotation_class(shape)
-                self.set_annotation_line_width(shape)
-                self.set_annotation_image_shape(image_idx)
+                self._set_annotation_type(shape)
+                self._set_annotation_class(shape)
+                self._set_annotation_line_width(shape)
+                self._set_annotation_image_shape(image_idx)
                 annotation = {
                     "image-id": image_idx,
                     "id": annotation_idx,
@@ -81,10 +81,10 @@ class Annotations:
             image_width, image_height = self.annotation_store["image_shapes"][0]
             slice_mask = np.zeros([image_width, image_height], dtype=np.uint8)
             for shape in slice_data:
-                self.set_annotation_class(shape)
-                self.set_annotation_type(shape)
-                self.set_annotation_line_width(shape)
-                self.set_annotation_image_shape(image_idx)
+                self._set_annotation_class(shape)
+                self._set_annotation_type(shape)
+                self._set_annotation_line_width(shape)
+                self._set_annotation_image_shape(image_idx)
                 if self.annotation_type == "Closed Freeform":
                     shape_mask = ShapeConversion.closed_path_to_array(
                         shape, self.annotation_image_shape, self.annotation_class
@@ -121,7 +121,7 @@ class Annotations:
                 annotation_mask[idx] = sp.csr_array(mask)
         self.annotation_mask = annotation_mask
 
-    def set_annotation_type(self, annotation):
+    def _set_annotation_type(self, annotation):
         """
         This function returns readable annotation type name.
         """
@@ -142,13 +142,13 @@ class Annotations:
 
         self.annotation_type = annot
 
-    def set_annotation_line_width(self, annotation):
+    def _set_annotation_line_width(self, annotation):
         """
         This function sets the line width of the annotation.
         """
         self.annotation_line_width = annotation["line"]["width"]
 
-    def set_annotation_class(self, annotation):
+    def _set_annotation_class(self, annotation):
         """
         This function sets the class of the annotation.
         """
@@ -157,7 +157,7 @@ class Annotations:
             if item["color"] == annotation["line"]["color"]:
                 self.annotation_class = item["id"]
 
-    def set_annotation_image_shape(self, image_idx):
+    def _set_annotation_image_shape(self, image_idx):
         """
         This function sets the the size of the image slice
         """
