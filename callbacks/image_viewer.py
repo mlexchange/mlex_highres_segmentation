@@ -56,7 +56,6 @@ def render_image(
     image_metadata,
     screen_size,
 ):
-    print("render_image")
     if image_idx:
         image_idx -= 1  # slider starts at 1, so subtract 1 to get the correct index
         tf = get_data_sequence_by_name(project_name)[image_idx]
@@ -321,16 +320,11 @@ def update_slider_values(project_name, annotation_store):
     Output("image-selection-previous", "disabled"),
     Output("image-selection-next", "disabled"),
     Output("image-selection-text", "children"),
-    Output(
-        {"type": "annotation-class-store", "index": ALL}, "data", allow_duplicate=True
-    ),
-    Output("image-viewer", "figure", allow_duplicate=True),
     Input("image-selection-previous", "n_clicks"),
     Input("image-selection-next", "n_clicks"),
     Input("image-selection-slider", "value"),
     State("image-selection-slider", "min"),
     State("image-selection-slider", "max"),
-    State({"type": "annotation-class-store", "index": ALL}, "data"),
     prevent_initial_call=True,
 )
 def update_selection_and_image(
@@ -339,7 +333,6 @@ def update_selection_and_image(
     slider_value,
     slider_min,
     slider_max,
-    all_annotations_class_store,
 ):
     """
     This callback will update the slider value and the image when the user clicks on the previous or next image buttons
@@ -349,10 +342,6 @@ def update_selection_and_image(
         new_slider_value -= 1
     elif ctx.triggered[0]["prop_id"] == "image-selection-next.n_clicks":
         new_slider_value += 1
-    for a_class in all_annotations_class_store:
-        a_class["annotations"] = {}
-    fig = Patch()
-    fig["layout"]["shapes"] = []
     disable_previous_image = new_slider_value == slider_min
     disable_next_image = new_slider_value == slider_max
     if new_slider_value == slider_value:
@@ -361,14 +350,10 @@ def update_selection_and_image(
             disable_previous_image,
             disable_next_image,
             f"Slice {new_slider_value}",
-            all_annotations_class_store,
-            fig,
         )
     return (
         new_slider_value,
         disable_previous_image,
         disable_next_image,
         f"Slice {new_slider_value}",
-        all_annotations_class_store,
-        fig,
     )
