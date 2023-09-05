@@ -92,7 +92,6 @@ def render_image(
                     xaxis=dict(range=[view["xaxis_range_0"], view["xaxis_range_1"]]),
                     yaxis=dict(range=[view["yaxis_range_0"], view["yaxis_range_1"]]),
                 )
-
         else:
             fig = resize_canvas(
                 tf.shape[0], tf.shape[1], screen_size["H"], screen_size["W"], fig
