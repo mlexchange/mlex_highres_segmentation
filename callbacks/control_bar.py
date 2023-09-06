@@ -103,7 +103,6 @@ def update_selected_class_style(selected_class, current_ids):
     Output("eraser", "style"),
     Output("pan-and-zoom", "style"),
     Output("annotation-store", "data", allow_duplicate=True),
-    Output("current-ann-mode", "data", allow_duplicate=True),
     Output("notifications-container", "children", allow_duplicate=True),
     Input("open-freeform", "n_clicks"),
     Input("closed-freeform", "n_clicks"),
@@ -236,7 +235,6 @@ def annotation_mode(
         styles["eraser"],
         styles["pan-and-zoom"],
         annotation_store,
-        triggered,
         notification,
     )
 
