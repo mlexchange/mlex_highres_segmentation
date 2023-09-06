@@ -19,7 +19,7 @@ from dash_iconify import DashIconify
 import json
 from utils.annotations import Annotations
 from components.annotation_class import annotation_class_item
-from constants import KEYBINDS, ANNOT_ICONS, ANNOT_NOTIFICATION_MSGS
+from constants import KEYBINDS, ANNOT_ICONS, ANNOT_NOTIFICATION_MSGS, KEY_MODES
 import json
 from utils.data_utils import (
     DEV_load_exported_json_data,
@@ -137,34 +137,23 @@ def annotation_mode(
     It also accepts keybinds to change the annotation mode.
     """
     if generate_modal_opened or any(edit_modal_opened):
-        # user is going to type on this page and we don't want to trigger this callback using keys
+        # user is going to type on this page (on a modal) and we don't want to trigger this callback using keys
         raise PreventUpdate
     # if the image is loading stop the callback when keybinds are pressed
     if figure_overlay_z_index != -1:
         raise PreventUpdate
 
-    key_modes = {
-        KEYBINDS["open-freeform"]: ("drawopenpath", "open-freeform"),
-        KEYBINDS["closed-freeform"]: ("drawclosedpath", "closed-freeform"),
-        KEYBINDS["circle"]: ("drawcircle", "circle"),
-        KEYBINDS["rectangle"]: ("drawrect", "rectangle"),
-        KEYBINDS["line"]: ("drawline", "line"),
-        KEYBINDS["pan-and-zoom"]: ("pan", "pan-and-zoom"),
-        KEYBINDS["erase"]: ("eraseshape", "eraser"),
-    }
-
-    triggered = ctx.triggered_id
+    trigger = ctx.triggered_id
     pressed_key = (
         keybind_event_listener.get("key", None) if keybind_event_listener else None
     )
-
-    if pressed_key in key_modes and triggered == "keybind-event-listener":
-        mode, triggered = key_modes[pressed_key]
-    else:
-        # if the callback was triggered by pressing a key that is not in the `key_modes`, stop the callback
-        if triggered == "keybind-event-listener":
+    mode = None
+    if trigger == "keybind-event-listener":
+        if pressed_key in KEY_MODES:
+            mode, trigger = KEY_MODES[pressed_key]
+        else:
+            # if the callback was triggered by pressing a key that is not in the `KEY_MODES`, stop the callback
             raise PreventUpdate
-        mode = None
 
     active = {"backgroundColor": "#EAECEF"}
     inactive = {"border": "1px solid white"}
@@ -185,44 +174,44 @@ def annotation_mode(
     if mode:
         patched_figure["layout"]["dragmode"] = mode
         annotation_store["dragmode"] = mode
-        styles[triggered] = active
+        styles[trigger] = active
     else:
-        if triggered == "open-freeform" and open > 0:
+        if trigger == "open-freeform" and open > 0:
             patched_figure["layout"]["dragmode"] = "drawopenpath"
             annotation_store["dragmode"] = "drawopenpath"
-            styles[triggered] = active
-        elif triggered == "closed-freeform" and closed > 0:
+            styles[trigger] = active
+        elif trigger == "closed-freeform" and closed > 0:
             patched_figure["layout"]["dragmode"] = "drawclosedpath"
             annotation_store["dragmode"] = "drawclosedpath"
-            styles[triggered] = active
-        elif triggered == "line" and line > 0:
+            styles[trigger] = active
+        elif trigger == "line" and line > 0:
             patched_figure["layout"]["dragmode"] = "drawline"
             annotation_store["dragmode"] = "drawline"
-            styles[triggered] = active
-        elif triggered == "circle" and circle > 0:
+            styles[trigger] = active
+        elif trigger == "circle" and circle > 0:
             patched_figure["layout"]["dragmode"] = "drawcircle"
             annotation_store["dragmode"] = "drawcircle"
-            styles[triggered] = active
-        elif triggered == "rectangle" and rect > 0:
+            styles[trigger] = active
+        elif trigger == "rectangle" and rect > 0:
             patched_figure["layout"]["dragmode"] = "drawrect"
             annotation_store["dragmode"] = "drawrect"
-            styles[triggered] = active
-        elif triggered == "eraser" and erase_annotation > 0:
+            styles[trigger] = active
+        elif trigger == "eraser" and erase_annotation > 0:
             patched_figure["layout"]["dragmode"] = "eraseshape"
             annotation_store["dragmode"] = "eraseshape"
-            styles[triggered] = active
-        elif triggered == "pan-and-zoom" and pan_and_zoom > 0:
+            styles[trigger] = active
+        elif trigger == "pan-and-zoom" and pan_and_zoom > 0:
             patched_figure["layout"]["dragmode"] = "pan"
             annotation_store["dragmode"] = "pan"
-            styles[triggered] = active
+            styles[trigger] = active
 
     notification = dmc.Notification(
-        title=ANNOT_NOTIFICATION_MSGS[triggered],
+        title=ANNOT_NOTIFICATION_MSGS[trigger],
         message="",
         color="indigo",
         id=f"notification-{random.randint(0, 10000)}",
         action="show",
-        icon=DashIconify(icon=ANNOT_ICONS[triggered], width=40),
+        icon=DashIconify(icon=ANNOT_ICONS[trigger], width=40),
         styles={"icon": {"height": "50px", "width": "50px"}},
     )
     return (

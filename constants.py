@@ -44,3 +44,13 @@ ANNOT_NOTIFICATION_MSGS = {
     "slice-right": "Next slice",
     "slice-left": "Previous slice",
 }
+
+KEY_MODES = {
+    KEYBINDS["open-freeform"]: ("drawopenpath", "open-freeform"),
+    KEYBINDS["closed-freeform"]: ("drawclosedpath", "closed-freeform"),
+    KEYBINDS["circle"]: ("drawcircle", "circle"),
+    KEYBINDS["rectangle"]: ("drawrect", "rectangle"),
+    KEYBINDS["line"]: ("drawline", "line"),
+    KEYBINDS["pan-and-zoom"]: ("pan", "pan-and-zoom"),
+    KEYBINDS["erase"]: ("eraseshape", "eraser"),
+}
