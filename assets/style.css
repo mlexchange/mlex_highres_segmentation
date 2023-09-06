@@ -109,3 +109,13 @@ body {
     background-color: rgba(1, 59, 71, 0.05) !important;
     cursor: pointer;
 }
+
+.mantine-UnstyledButton-root.mantine-Button-root.mantine-8nr514 {
+    color: white !important;
+    background-color: #007681 !important;
+}
+
+.mantine-UnstyledButton-root.mantine-Button-root.mantine-8nr514:disabled {
+    background-color: rgb(233, 236, 239) !important;
+    color: rgb(173, 181, 189) !important;
+}

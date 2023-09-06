@@ -427,31 +427,47 @@ def layout():
                                 ),
                                 dmc.Modal(
                                     id="generate-annotation-class-modal",
-                                    title="Generate a Custom Annotation Class",
+                                    title="Create a new annotation class",
                                     children=[
-                                        dmc.Center(
-                                            dmc.ColorPicker(
-                                                id="annotation-class-colorpicker",
-                                                format="rgb",
-                                                value="rgb(255, 0, 0)",
-                                            ),
+                                        html.Div(
+                                            [
+                                                dmc.ColorPicker(
+                                                    id="annotation-class-colorpicker",
+                                                    format="rgb",
+                                                    value="rgb(255, 0, 0)",
+                                                ),
+                                                dmc.Space(w=25),
+                                                html.Div(
+                                                    [
+                                                        dmc.TextInput(
+                                                            id="annotation-class-label",
+                                                            placeholder="Class label...",
+                                                        ),
+                                                        html.Div(
+                                                            id="bad-label-color",
+                                                            style={"color": "red"},
+                                                        ),
+                                                    ]
+                                                ),
+                                            ],
+                                            style={
+                                                "display": "flex",
+                                                "justify-content": "flex-row",
+                                                "align-items": "center",
+                                            },
                                         ),
-                                        dmc.Space(h=10),
-                                        dmc.Center(
-                                            dmc.TextInput(
-                                                id="annotation-class-label",
-                                                placeholder="Annotation Class Label",
-                                            ),
+                                        html.Div(
+                                            [
+                                                dmc.Button(
+                                                    id="create-annotation-class",
+                                                    children="Save",
+                                                ),
+                                            ],
+                                            style={
+                                                "display": "flex",
+                                                "justify-content": "flex-end",
+                                            },
                                         ),
-                                        dmc.Space(h=10),
-                                        dmc.Center(
-                                            dmc.Button(
-                                                id="create-annotation-class",
-                                                children="Create Annotation Class",
-                                                variant="light",
-                                            ),
-                                        ),
-                                        html.Div(id="bad-label-color"),
                                     ],
                                 ),
                                 dmc.Space(h=20),
