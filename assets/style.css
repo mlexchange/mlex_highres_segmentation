@@ -110,7 +110,8 @@ body {
     cursor: pointer;
 }
 
-.mantine-UnstyledButton-root.mantine-Button-root.mantine-8nr514 {
+.mantine-UnstyledButton-root.mantine-Button-root.mantine-8nr514,
+.mantine-UnstyledButton-root.mantine-Button-root.mantine-q631dw {
     color: white !important;
     background-color: #007681 !important;
 }
@@ -118,4 +119,9 @@ body {
 .mantine-UnstyledButton-root.mantine-Button-root.mantine-8nr514:disabled {
     background-color: rgb(233, 236, 239) !important;
     color: rgb(173, 181, 189) !important;
+}
+
+.mantine-Text-root.mantine-Modal-title {
+    font-weight: 700 !important;
+
 }

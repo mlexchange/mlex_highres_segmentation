@@ -124,25 +124,38 @@ def annotation_class_item(class_color, class_label):
             ),
             dmc.Modal(
                 id={"type": "delete-annotation-class-modal", "index": color},
-                title="Delete Custom Annotation Class",
                 children=[
                     dmc.Center(
                         dmc.Text(
-                            "NOTE: Deleting a class will delete all annotations associated with that class!",
-                            color="red",
+                            "This action will permanently clear all annotations from this class. Are you sure you want to proceed?",
                         )
                     ),
-                    dmc.Center(
+                    dmc.Space(h=20),
+                    html.Div(
                         [
                             dmc.Button(
                                 id={
-                                    "type": "remove-annotation-class-btn",
+                                    "type": "modal-cancel-delete-class-btn",
                                     "index": color,
                                 },
-                                children="Delete Selected Class",
+                                children="Cancel",
                                 variant="light",
                             ),
-                        ]
+                            dmc.Space(w=10),
+                            dmc.Button(
+                                id={
+                                    "type": "modal-continue-delete-class-btn",
+                                    "index": color,
+                                },
+                                children="Confirm",
+                                variant="outline",
+                                color="red",
+                            ),
+                        ],
+                        style={
+                            "display": "flex",
+                            "justify-content": "flex-end",
+                        },
                     ),
                 ],
             ),

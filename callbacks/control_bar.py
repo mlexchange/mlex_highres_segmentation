@@ -381,14 +381,24 @@ def open_edit_class_modal(
 
 @callback(
     Output({"type": "delete-annotation-class-modal", "index": MATCH}, "opened"),
+    Output({"type": "delete-annotation-class-modal", "index": MATCH}, "title"),
     Input({"type": "delete-annotation-class", "index": MATCH}, "n_clicks"),
-    Input({"type": "remove-annotation-class-btn", "index": MATCH}, "n_clicks"),
+    Input({"type": "modal-continue-delete-class-btn", "index": MATCH}, "n_clicks"),
+    Input({"type": "modal-cancel-delete-class-btn", "index": MATCH}, "n_clicks"),
     State({"type": "delete-annotation-class-modal", "index": MATCH}, "opened"),
+    State({"type": "annotation-class-store", "index": MATCH}, "data"),
     prevent_initial_call=True,
 )
-def open_delete_class_modal(remove_class, remove_class_modal, opened):
+def open_delete_class_modal(
+    remove_class,
+    continue_remove_class_modal,
+    cancel_remove_class_modal,
+    opened,
+    class_to_delete,
+):
     """Opens and closes the modal that allows you to relabel an existing annotation class"""
-    return not opened
+    modal_title = f"Delete class: {class_to_delete['label']}"
+    return not opened, modal_title
 
 
 @callback(
@@ -500,7 +510,7 @@ def delete_annotation_class(
 
 @callback(
     Output({"type": "deleted-class-store", "index": MATCH}, "data"),
-    Input({"type": "remove-annotation-class-btn", "index": MATCH}, "n_clicks"),
+    Input({"type": "modal-continue-delete-class-btn", "index": MATCH}, "n_clicks"),
     State({"type": "annotation-class-store", "index": MATCH}, "data"),
     prevent_initial_call=True,
 )
