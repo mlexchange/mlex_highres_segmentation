@@ -99,27 +99,32 @@ def annotation_class_item(class_color, class_label):
                 id={"type": "edit-annotation-class-modal", "index": color},
                 title="Edit a Custom Annotation Class",
                 children=[
-                    dmc.Center(
-                        dmc.TextInput(
-                            id={
-                                "type": "edit-annotation-class-text-input",
-                                "index": color,
-                            },
-                            placeholder="New Class Label",
-                        ),
+                    dmc.TextInput(
+                        id={
+                            "type": "edit-annotation-class-text-input",
+                            "index": color,
+                        },
+                        placeholder="New class name...",
+                        style={"width": "70%"},
                     ),
-                    dmc.Space(h=10),
-                    dmc.Center(
+                    html.Div(
+                        id={"type": "bad-edit-label", "index": color},
+                        style={"color": "red"},
+                    ),
+                    dmc.Space(h=25),
+                    html.Div(
                         dmc.Button(
                             id={
                                 "type": "relabel-annotation-class-btn",
                                 "index": color,
                             },
-                            children="Edit Annotation Class",
-                            variant="light",
+                            children="Save",
                         ),
+                        style={
+                            "display": "flex",
+                            "justify-content": "flex-end",
+                        },
                     ),
-                    html.Div(id={"type": "bad-edit-label", "index": color}),
                 ],
             ),
             dmc.Modal(
@@ -130,7 +135,7 @@ def annotation_class_item(class_color, class_label):
                             "This action will permanently clear all annotations from this class. Are you sure you want to proceed?",
                         )
                     ),
-                    dmc.Space(h=20),
+                    dmc.Space(h=10),
                     html.Div(
                         [
                             dmc.Button(

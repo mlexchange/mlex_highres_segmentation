@@ -357,17 +357,25 @@ def open_annotation_class_modal(
     Output({"type": "edit-annotation-class-modal", "index": MATCH}, "opened"),
     Output({"type": "relabel-annotation-class-btn", "index": MATCH}, "disabled"),
     Output({"type": "bad-edit-label", "index": MATCH}, "children"),
+    Output({"type": "edit-annotation-class-modal", "index": MATCH}, "title"),
     Input({"type": "edit-annotation-class", "index": MATCH}, "n_clicks"),
     Input({"type": "relabel-annotation-class-btn", "index": MATCH}, "n_clicks"),
     Input({"type": "edit-annotation-class-text-input", "index": MATCH}, "value"),
     State({"type": "edit-annotation-class-modal", "index": MATCH}, "opened"),
+    State({"type": "annotation-class-store", "index": MATCH}, "data"),
     State({"type": "annotation-class-store", "index": ALL}, "data"),
     prevent_initial_call=True,
 )
 def open_edit_class_modal(
-    edit_button, edit_modal, new_label, opened, all_annotation_class_store
+    edit_button,
+    edit_modal,
+    new_label,
+    opened,
+    class_to_edit,
+    all_annotation_class_store,
 ):
     """Opens and closes the modal that allows you to relabel an existing annotation class"""
+    modal_title = f"Edit class: {class_to_edit['label']}"
     if ctx.triggered_id["type"] == "edit-annotation-class-text-input":
         current_classes = [a["label"] for a in all_annotation_class_store]
         edit_disabled = False
@@ -375,8 +383,8 @@ def open_edit_class_modal(
         if new_label in current_classes:
             error_msg = "Label Already in Use!"
             edit_disabled = True
-        return no_update, edit_disabled, error_msg
-    return not opened, False, no_update
+        return no_update, edit_disabled, error_msg, modal_title
+    return not opened, False, no_update, modal_title
 
 
 @callback(
