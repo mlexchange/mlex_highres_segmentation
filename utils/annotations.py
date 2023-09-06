@@ -10,8 +10,30 @@ import zipfile
 
 
 class Annotations:
-    def __init__(self, annotation_store):
-        self.annotation_store = annotation_store
+    def __init__(self, annotation_store, global_store):
+        if annotation_store:
+            slices = []
+            for annotation_class in annotation_store:
+                slices.extend(list(annotation_class["annotations"].keys()))
+            slices = set(slices)
+            annotations = {key: [] for key in slices}
+
+            for image_idx, slice_data in annotation_class["annotations"].items():
+                for shape in slice_data:
+                    annotation = {
+                        "id": annotation_class["color"],
+                        "class": annotation_class["label"],
+                        "path": shape["path"],
+                        "width": shape["line"]["width"],
+                        # TODO: This is the same across all images in a dataset
+                        "image_shape": global_store["image_shapes"][0],
+                    }
+
+                    annotations[image_idx].append(annotation)
+        else:
+            annotations = []
+
+        self.annotations = annotations
 
     def get_annotations(self):
         return self.annotations
@@ -47,30 +69,50 @@ class Annotations:
 
         return buffer.getvalue()
 
+    def has_annotations(self):
+        if self.annotations:
+            return True
+        return False
+
     def create_annotation_metadata(self):
         """
         This function is responsible for converting the annotation data from the dcc.Store into a format that is compatible with napari annotations.
         """
-        annotations = {}
-        for image_idx, slice_data in self.annotation_store["annotations"].items():
-            annotation_slice = []
-            for annotation_idx, shape in enumerate(slice_data):
-                self._set_annotation_type(shape)
-                self._set_annotation_class(shape)
-                self._set_annotation_line_width(shape)
-                self._set_annotation_image_shape(image_idx)
+        slices = []
+        for annotation_class in self.annotation_store:
+            slices.extend(list(annotation_class["annotations"].keys()))
+        slices = set(slices)
+        annotations = {key: [] for key in slices}
+
+        # Transform to slice-wise collection of annotations?
+        for annotation_class in self.annotation_store:
+            for image_idx, slice_data in annotation_class["annotations"].items():
                 annotation = {
-                    "image-id": image_idx,
-                    "id": annotation_idx,
-                    "type": self.annotation_type,
-                    "class": self.annotation_class,
-                    "img_shape": self.annotation_image_shape,
-                    "line_width": self.annotation_line_width,
-                    "brightness": "",
-                    "contrast": "",
+                    "id": annotation_class["color"],
+                    "class": annotation_class["label"],
                 }
-                annotation_slice.append(annotation)
-            annotations[image_idx] = annotation_slice
+
+                annotations[image_idx].append(annotation)
+        # annotations = {}
+        # for image_idx, slice_data in self.annotation_store["annotations"].items():
+        #     annotation_slice = []
+        #     for annotation_idx, shape in enumerate(slice_data):
+        #         self._set_annotation_type(shape)
+        #         self._set_annotation_class(shape)
+        #         self._set_annotation_line_width(shape)
+        #         self._set_annotation_image_shape(image_idx)
+        #         annotation = {
+        #             "image-id": image_idx,
+        #             "id": annotation_idx,
+        #             "type": self.annotation_type,
+        #             "class": self.annotation_class,
+        #             "img_shape": self.annotation_image_shape,
+        #             "line_width": self.annotation_line_width,
+        #             "brightness": "",
+        #             "contrast": "",
+        #         }
+        #         annotation_slice.append(annotation)
+        #     annotations[image_idx] = annotation_slice
 
         self.annotations = annotations
 

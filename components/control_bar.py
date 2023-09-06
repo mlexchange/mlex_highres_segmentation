@@ -624,7 +624,6 @@ def drawer_section(children):
                 data={
                     "dragmode": "drawopenpath",
                     "visible": True,
-                    "annotations": {},  # TODO remove this when saving funcionality is updated
                     "view": {},
                     "active_img_shape": [],
                 },
