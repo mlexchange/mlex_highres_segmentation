@@ -11,6 +11,7 @@ import zipfile
 
 class Annotations:
     def __init__(self, annotation_store, global_store):
+
         if annotation_store:
             slices = []
             for annotation_class in annotation_store:
@@ -18,18 +19,19 @@ class Annotations:
             slices = set(slices)
             annotations = {key: [] for key in slices}
 
-            for image_idx, slice_data in annotation_class["annotations"].items():
-                for shape in slice_data:
-                    annotation = {
-                        "id": annotation_class["color"],
-                        "class": annotation_class["label"],
-                        "path": shape["path"],
-                        "width": shape["line"]["width"],
-                        # TODO: This is the same across all images in a dataset
-                        "image_shape": global_store["image_shapes"][0],
-                    }
-
-                    annotations[image_idx].append(annotation)
+            for annotation_class in annotation_store:
+                for image_idx, slice_data in annotation_class["annotations"].items():
+                    for shape in slice_data:
+                        self._set_annotation_type(shape)
+                        annotation = {
+                            "id": annotation_class["color"],
+                            "type": self.annotation_type,
+                            "class": annotation_class["label"],
+                            "line_width": shape["line"]["width"],
+                            # TODO: This is the same across all images in a dataset
+                            "image_shape": global_store["image_shapes"][0],
+                        }
+                        annotations[image_idx].append(annotation)
         else:
             annotations = []
 
