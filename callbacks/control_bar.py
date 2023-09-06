@@ -246,36 +246,15 @@ def annotation_width(width_value):
     Output("image-viewer", "figure", allow_duplicate=True),
     Input("current-class-selection", "data"),
     Input("image-selection-slider", "value"),
-    Input("keybind-event-listener", "event"),
-    State("generate-annotation-class-modal", "opened"),
     prevent_initial_call=True,
 )
 def annotation_color(
     current_color,
     slider,
-    keybind_event_listener,
-    generate_modal_opened,
 ):
     """
     This callback is responsible for changing the color of the brush.
     """
-    if ctx.triggered_id == "keybind-event-listener":
-        if generate_modal_opened:  # or edit_annotation_modal_opened:
-            # user is going to type on this page and we don't want to trigger this callback using keys
-            raise PreventUpdate
-        pressed_key = (
-            keybind_event_listener.get("key", None) if keybind_event_listener else None
-        )
-        if not pressed_key:
-            raise PreventUpdate
-        if pressed_key not in KEYBINDS["classes"]:
-            # if key pressed is not a valid keybind for class selection
-            raise PreventUpdate
-        selected_color_idx = KEYBINDS["classes"].index(pressed_key)
-
-        # if selected_color_idx >= len(current_style):
-        #     # if the key pressed corresponds to a class that doesn't exist
-        #     raise PreventUpdate
     patched_figure = Patch()
     patched_figure["layout"]["newshape"]["fillcolor"] = current_color
     patched_figure["layout"]["newshape"]["line"]["color"] = current_color
