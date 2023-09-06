@@ -303,7 +303,8 @@ def open_warning_modal(
 def open_annotation_class_modal(
     generate, create, new_label, new_color, opened, all_annotation_class_store
 ):
-    """Opens and closes the modal that is used to create a new annotation class and checks if color and class name are available"""
+    """Opens and closes the modal that is used to create a new annotation class and checks
+    if color and class name are available"""
     if ctx.triggered_id in ["annotation-class-label", "annotation-class-colorpicker"]:
         current_classes = [a["label"] for a in all_annotation_class_store]
         current_colors = [a["color"] for a in all_annotation_class_store]
@@ -340,7 +341,8 @@ def open_edit_class_modal(
     class_to_edit,
     all_annotation_class_store,
 ):
-    """Opens and closes the modal that allows you to relabel an existing annotation class"""
+    """Opens and closes the modal that allows you to relabel an existing annotation class
+    and checks if the new class name is available"""
     modal_title = f"Edit class: {class_to_edit['label']}"
     if ctx.triggered_id["type"] == "edit-annotation-class-text-input":
         current_classes = [a["label"] for a in all_annotation_class_store]
@@ -370,7 +372,8 @@ def open_delete_class_modal(
     opened,
     class_to_delete,
 ):
-    """Opens and closes the modal that allows you to relabel an existing annotation class"""
+    """Opens and closes the modal that allows you to relabel an existing annotation class
+    and triggers the delete_annotation_class() callback"""
     modal_title = f"Delete class: {class_to_delete['label']}"
     return not opened, modal_title
 
@@ -448,8 +451,9 @@ def hide_show_annotation_class(
     annotation_class_store,
     hide_show_class_store,
 ):
-    """Updates both the annotation-class-store (which contains the annotation info) and the hide-show-class-store
-    which is only used to trigger the callback that will actually patch the figure. Also update the hide/show icon accordingly
+    """This callback updates both the annotation-class-store (which contains the annotation info) and the hide-show-class-store
+    which is only used to trigger the callback that will actually patch the figure: hide_show_annotations_on_fig().
+    Also update the hide/show icon accordingly
     """
     is_visible = annotation_class_store["is_visible"]
     annotation_class_store["is_visible"] = not is_visible
@@ -471,7 +475,7 @@ def delete_annotation_class(
     is_deleted,
     all_classes,
 ):
-    """delete the class from memory using the color from the deleted-class-store"""
+    """Delete the class from memory using the color from the deleted-class-store"""
     is_deleted = [x for x in is_deleted if x is not None]
     if is_deleted:
         is_deleted = is_deleted[0]
