@@ -712,18 +712,15 @@ def load_and_apply_selected_annotations(selected_annotation, image_src, img_idx)
 
 @callback(
     Output("drawer-controls", "opened"),
-    Input("drawer-controls-open-button", "n_clicks"),
-)
-def open_controls_drawer(n_clicks):
-    return True
-
-
-@callback(
     Output("drawer-controls-open-button", "style"),
+    Input("drawer-controls-open-button", "n_clicks"),
     Input("drawer-controls", "opened"),
-    prevent_initial_call=True,
 )
-def open_controls_drawer(is_opened):
-    if is_opened:
-        return {"display": "none"}
-    return {}
+def open_controls_drawer(n_clicks, is_opened):
+    if ctx.triggered_id == "drawer-controls-open-button":
+        return True, no_update
+    if ctx.triggered_id == "drawer-controls":
+        if is_opened:
+            return no_update, {"display": "none"}
+        return no_update, {}
+    return no_update, no_update
