@@ -246,7 +246,7 @@ def layout():
                                     align="right",
                                     color="#9EA4AB",
                                 ),
-                                dmc.Space(h=10),
+                                dmc.Space(h=15),
                                 dmc.Grid(
                                     [
                                         dmc.Space(w=5),
