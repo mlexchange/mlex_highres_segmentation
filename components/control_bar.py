@@ -391,7 +391,7 @@ def layout():
                                         size="sm",
                                     ),
                                 ),
-                                dmc.Space(h=20),
+                                dmc.Space(h=10),
                                 dmc.Modal(
                                     title="Warning",
                                     id="delete-all-warning",
@@ -420,7 +420,7 @@ def layout():
                                 html.Div(
                                     [
                                         dmc.Text(
-                                            "Manage classes",
+                                            "Manage Classes",
                                             size="sm",
                                             align="right",
                                             color="#9EA4AB",
@@ -438,7 +438,9 @@ def layout():
                                             "+ Add new class... ",
                                             id="generate-annotation-class",
                                             variant="outline",
-                                            style={"width": "100%"},
+                                            style={
+                                                "width": "100%",
+                                            },
                                             className="add-class-btn",
                                         ),
                                         dmc.Space(h=20),
@@ -774,24 +776,3 @@ def create_info_card_affix():
             ],
         ),
     )
-
-
-# def class_action_icon(class_color, class_label, label_color):
-#     """
-#     This component creates an action icon for the given annotation class.
-#     """
-#     style = {
-#         "background-color": class_color,
-#         "width": "fit-content",
-#         "backgroundColor": "#EAECEF",
-#         "color": label_color,
-#         "padding": "5px",
-#         "margin-right": "10px",
-#     }
-#     return dmc.ActionIcon(
-#         id={"type": "annotation-color", "index": class_color},
-#         w=30,
-#         variant="filled",
-#         style=style,
-#         children=class_label,
-#     )
