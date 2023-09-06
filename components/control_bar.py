@@ -240,9 +240,43 @@ def layout():
                             "annotations",
                             id="annotations-controls",
                             children=[
-                                dmc.Space(h=5),
+                                dmc.Text(
+                                    "Drawing Toolbar",
+                                    size="sm",
+                                    align="right",
+                                    color="#9EA4AB",
+                                ),
+                                dmc.Space(h=10),
                                 dmc.Grid(
                                     [
+                                        dmc.Space(w=5),
+                                        html.Div(
+                                            children=[
+                                                _tooltip(
+                                                    "Pan and zoom (A)",
+                                                    dmc.ActionIcon(
+                                                        id="pan-and-zoom",
+                                                        variant="subtle",
+                                                        color="gray",
+                                                        children=DashIconify(
+                                                            icon=ANNOT_ICONS[
+                                                                "pan-and-zoom"
+                                                            ],
+                                                            width=20,
+                                                        ),
+                                                        size="lg",
+                                                    ),
+                                                ),
+                                            ],
+                                            className="flex-row",
+                                            style={
+                                                "justify-content": "space-evenly",
+                                                "padding": "2.5px",
+                                                "border": "1px solid #EAECEF",
+                                                "border-radius": "5px",
+                                            },
+                                        ),
+                                        dmc.Space(w=10),
                                         html.Div(
                                             children=[
                                                 _tooltip(
@@ -331,25 +365,10 @@ def layout():
                                                         size="lg",
                                                     ),
                                                 ),
-                                                _tooltip(
-                                                    "Pan and zoom (A)",
-                                                    dmc.ActionIcon(
-                                                        id="pan-and-zoom",
-                                                        variant="subtle",
-                                                        color="gray",
-                                                        children=DashIconify(
-                                                            icon=ANNOT_ICONS[
-                                                                "pan-and-zoom"
-                                                            ],
-                                                            width=20,
-                                                        ),
-                                                        size="lg",
-                                                    ),
-                                                ),
                                             ],
                                             className="flex-row",
                                             style={
-                                                "width": "275px",
+                                                "width": "295px",
                                                 "justify-content": "space-evenly",
                                                 "padding": "2.5px",
                                                 "border": "1px solid #EAECEF",

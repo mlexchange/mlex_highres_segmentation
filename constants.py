@@ -23,12 +23,12 @@ KEYBINDS = {
 
 ANNOT_ICONS = {
     "open-freeform": "mdi:draw",
-    "closed-freeform": "fluent:draw-shape-20-regular",
+    "closed-freeform": "fluent:draw-shape-20-filled",
     "line": "pepicons-pop:line-y",
     "circle": "gg:shape-circle",
     "rectangle": "gg:shape-square",
     "eraser": "ph:eraser",
-    "pan-and-zoom": "el:off",
+    "pan-and-zoom": "material-symbols:drag-pan-rounded",
     "slice-right": "line-md:arrow-right",
     "slice-left": "line-md:arrow-left",
 }
