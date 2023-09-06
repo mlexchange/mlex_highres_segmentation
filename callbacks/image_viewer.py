@@ -41,7 +41,6 @@ clientside_callback(
     Input("image-selection-slider", "value"),
     State({"type": "annotation-class-store", "index": ALL}, "data"),
     State("project-name-src", "value"),
-    State("paintbrush-width", "value"),
     State("annotation-store", "data"),
     State("image-metadata", "data"),
     State("screen-size", "data"),
@@ -52,7 +51,6 @@ def render_image(
     image_idx,
     all_annotation_class_store,
     project_name,
-    annotation_width,
     annotation_store,
     image_metadata,
     screen_size,
@@ -82,21 +80,21 @@ def render_image(
         all_annotations = []
         for a_class in all_annotation_class_store:
             if str(image_idx) in a_class["annotations"] and a_class["is_visible"]:
-                all_annotations = (
-                    all_annotations + a_class["annotations"][str(image_idx)]
-                )
+                all_annotations += a_class["annotations"][str(image_idx)]
 
         fig["layout"]["shapes"] = all_annotations
         view = annotation_store["view"]
 
     if screen_size:
         if view:
+            # we have a zoom + window size to take into account
             if "xaxis_range_0" in view:
                 fig.update_layout(
                     xaxis=dict(range=[view["xaxis_range_0"], view["xaxis_range_1"]]),
                     yaxis=dict(range=[view["yaxis_range_0"], view["yaxis_range_1"]]),
                 )
         else:
+            # no zoom level to take into account, window size only
             fig = resize_canvas(
                 tf.shape[0], tf.shape[1], screen_size["H"], screen_size["W"], fig
             )
