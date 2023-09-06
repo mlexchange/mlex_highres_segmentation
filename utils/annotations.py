@@ -23,6 +23,7 @@ class Annotations:
                 for image_idx, slice_data in annotation_class["annotations"].items():
                     for shape in slice_data:
                         self._set_annotation_type(shape)
+                        self._set_annotation_svg(shape)
                         annotation = {
                             "id": annotation_class["color"],
                             "type": self.annotation_type,
@@ -30,6 +31,7 @@ class Annotations:
                             "line_width": shape["line"]["width"],
                             # TODO: This is the same across all images in a dataset
                             "image_shape": global_store["image_shapes"][0],
+                            "svg_data": self.svg_data
                         }
                         annotations[image_idx].append(annotation)
         else:
@@ -76,89 +78,135 @@ class Annotations:
             return True
         return False
 
-    def create_annotation_metadata(self):
-        """
-        This function is responsible for converting the annotation data from the dcc.Store into a format that is compatible with napari annotations.
-        """
-        slices = []
-        for annotation_class in self.annotation_store:
-            slices.extend(list(annotation_class["annotations"].keys()))
-        slices = set(slices)
-        annotations = {key: [] for key in slices}
+    # def create_annotation_metadata(self):
+    #     """
+    #     This function is responsible for converting the annotation data from the dcc.Store into a format that is compatible with napari annotations.
+    #     """
+    #     slices = []
+    #     for annotation_class in self.annotation_store:
+    #         slices.extend(list(annotation_class["annotations"].keys()))
+    #     slices = set(slices)
+    #     annotations = {key: [] for key in slices}
 
-        # Transform to slice-wise collection of annotations?
-        for annotation_class in self.annotation_store:
-            for image_idx, slice_data in annotation_class["annotations"].items():
-                annotation = {
-                    "id": annotation_class["color"],
-                    "class": annotation_class["label"],
-                }
+    #     # Transform to slice-wise collection of annotations?
+    #     for annotation_class in self.annotation_store:
+    #         for image_idx, slice_data in annotation_class["annotations"].items():
+    #             annotation = {
+    #                 "id": annotation_class["color"],
+    #                 "class": annotation_class["label"],
+    #             }
 
-                annotations[image_idx].append(annotation)
-        # annotations = {}
-        # for image_idx, slice_data in self.annotation_store["annotations"].items():
-        #     annotation_slice = []
-        #     for annotation_idx, shape in enumerate(slice_data):
-        #         self._set_annotation_type(shape)
-        #         self._set_annotation_class(shape)
-        #         self._set_annotation_line_width(shape)
-        #         self._set_annotation_image_shape(image_idx)
-        #         annotation = {
-        #             "image-id": image_idx,
-        #             "id": annotation_idx,
-        #             "type": self.annotation_type,
-        #             "class": self.annotation_class,
-        #             "img_shape": self.annotation_image_shape,
-        #             "line_width": self.annotation_line_width,
-        #             "brightness": "",
-        #             "contrast": "",
-        #         }
-        #         annotation_slice.append(annotation)
-        #     annotations[image_idx] = annotation_slice
+    #             annotations[image_idx].append(annotation)
+    #     # annotations = {}
+    #     # for image_idx, slice_data in self.annotation_store["annotations"].items():
+    #     #     annotation_slice = []
+    #     #     for annotation_idx, shape in enumerate(slice_data):
+    #     #         self._set_annotation_type(shape)
+    #     #         self._set_annotation_class(shape)
+    #     #         self._set_annotation_line_width(shape)
+    #     #         self._set_annotation_image_shape(image_idx)
+    #     #         annotation = {
+    #     #             "image-id": image_idx,
+    #     #             "id": annotation_idx,
+    #     #             "type": self.annotation_type,
+    #     #             "class": self.annotation_class,
+    #     #             "img_shape": self.annotation_image_shape,
+    #     #             "line_width": self.annotation_line_width,
+    #     #             "brightness": "",
+    #     #             "contrast": "",
+    #     #         }
+    #     #         annotation_slice.append(annotation)
+    #     #     annotations[image_idx] = annotation_slice
 
-        self.annotations = annotations
+    #     self.annotations = annotations
 
     def create_annotation_mask(self, sparse=False):
         self.sparse = sparse
         annotation_mask = []
-        for image_idx, slice_data in self.annotation_store["annotations"].items():
-            image_width, image_height = self.annotation_store["image_shapes"][0]
+
+        print(self.annotations)
+
+        for slice_idx, slice_data in self.annotations.items():
+            print("-----")
+            print(slice_data)
+            image_width = slice_data[0]["image_shape"][0]
+            image_height = slice_data[0]["image_shape"][1]
             slice_mask = np.zeros([image_width, image_height], dtype=np.uint8)
             for shape in slice_data:
-                self._set_annotation_class(shape)
-                self._set_annotation_type(shape)
-                self._set_annotation_line_width(shape)
-                self._set_annotation_image_shape(image_idx)
-                if self.annotation_type == "Closed Freeform":
+                if shape["type"] == "Closed Freeform":
                     shape_mask = ShapeConversion.closed_path_to_array(
-                        shape, self.annotation_image_shape, self.annotation_class
+                        shape["svg_data"], shape["image_shape"], shape["class"]
                     )
-                elif self.annotation_type == "Freeform":
+                elif shape["type"] == "Freeform":
                     shape_mask = ShapeConversion.opened_path_to_array(
-                        shape,
-                        self.annotation_image_shape,
-                        self.annotation_class,
-                        self.annotation_line_width,
+                        shape["svg_data"],
+                        shape["image_shape"],
+                        shape["class"],
+                        shape["line_width"]
                     )
-                elif self.annotation_type == "Rectangle":
+                elif shape["type"] == "Rectangle":
                     shape_mask = ShapeConversion.rectangle_to_array(
-                        shape, self.annotation_image_shape, self.annotation_class
+                        shape["svg_data"], shape["image_shape"], shape["class"]
                     )
-                elif self.annotation_type == "Ellipse":
+                elif shape["type"] == "Ellipse":
                     shape_mask = ShapeConversion.ellipse_to_array(
-                        shape, self.annotation_image_shape, self.annotation_class
+                        shape["svg_data"], shape["image_shape"], shape["class"]
                     )
-                elif self.annotation_type == "Line":
+                elif shape["type"] == "Line":
                     shape_mask = ShapeConversion.line_to_array(
-                        shape,
-                        self.annotation_image_shape,
-                        self.annotation_class,
-                        self.annotation_line_width,
+                        shape["svg_data"],
+                        shape["image_shape"],
+                        shape["class"],
+                        shape["line_width"]
                     )
                 else:
                     continue
                 slice_mask[shape_mask > 0] = shape_mask[shape_mask > 0]
-            annotation_mask.append(slice_mask)
+
+        if sparse:
+            for idx, mask in enumerate(annotation_mask):
+                annotation_mask[idx] = sp.csr_array(mask)
+        self.annotation_mask = annotation_mask
+
+
+        # for image_idx, slice_data in self.annotation_store["annotations"].items():
+        #     image_width, image_height = self.annotation_store["image_shapes"][0]
+        #     slice_mask = np.zeros([image_width, image_height], dtype=np.uint8)
+        #     for shape in slice_data:
+        #         self._set_annotation_class(shape)
+        #         self._set_annotation_type(shape)
+        #         self._set_annotation_line_width(shape)
+        #         self._set_annotation_image_shape(image_idx)
+        #         if self.annotation_type == "Closed Freeform":
+        #             shape_mask = ShapeConversion.closed_path_to_array(
+        #                 shape, self.annotation_image_shape, self.annotation_class
+        #             )
+        #         elif self.annotation_type == "Freeform":
+        #             shape_mask = ShapeConversion.opened_path_to_array(
+        #                 shape,
+        #                 self.annotation_image_shape,
+        #                 self.annotation_class,
+        #                 self.annotation_line_width,
+        #             )
+        #         elif self.annotation_type == "Rectangle":
+        #             shape_mask = ShapeConversion.rectangle_to_array(
+        #                 shape, self.annotation_image_shape, self.annotation_class
+        #             )
+        #         elif self.annotation_type == "Ellipse":
+        #             shape_mask = ShapeConversion.ellipse_to_array(
+        #                 shape, self.annotation_image_shape, self.annotation_class
+        #             )
+        #         elif self.annotation_type == "Line":
+        #             shape_mask = ShapeConversion.line_to_array(
+        #                 shape,
+        #                 self.annotation_image_shape,
+        #                 self.annotation_class,
+        #                 self.annotation_line_width,
+        #             )
+        #         else:
+        #             continue
+        #         slice_mask[shape_mask > 0] = shape_mask[shape_mask > 0]
+        #     annotation_mask.append(slice_mask)
 
         if sparse:
             for idx, mask in enumerate(annotation_mask):
@@ -185,6 +233,23 @@ class Annotations:
             annot = "Unknown"
 
         self.annotation_type = annot
+
+    def _set_annotation_svg(self, annotation):
+        """
+        This function returns a dictionary of the svg data 
+        associated with a given annotation
+        """
+        if "path" in annotation.keys():
+            self.svg_data = {"path": annotation["path"]}
+        else:
+            self.svg_data = {
+                "x0": annotation['x0'],
+                "x1": annotation["x1"],
+                "y0": annotation["y0"],
+                "y1": annotation["y1"]
+            }
+
+
 
     def _set_annotation_line_width(self, annotation):
         """
@@ -345,6 +410,6 @@ class ShapeConversion:
                 x, y = curve.point(t).real, curve.point(t).imag
                 x = max(min(int(x), image_width - 1), 0)
                 y = max(min(int(y), image_height - 1), 0)
-                mask[y, x] = mask_class
+                #mask[y, x] = mask_class
         # mask = morphology.dilation(mask, morphology.disk(radius=line_width))
         return mask
