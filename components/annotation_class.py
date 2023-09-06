@@ -3,6 +3,20 @@ from dash import html, dcc
 from dash_iconify import DashIconify
 
 
+# This fucntion creates the action icons needed for an annoation class: specifically hide/show, edit and delete actions
+def get_action_icon(id, color, icon):
+    return dmc.ActionIcon(
+        id={
+            "type": id,
+            "index": color,
+        },
+        variant="subtle",
+        color="gray",
+        children=DashIconify(icon=icon),
+        size="lg",
+    )
+
+
 # This function generates a class component with all its buttons (hide/show, edit, delete)
 # The class color is used as an ID to identify a class (as all class colors are unique and cannot be modified)
 def annotation_class_item(class_color, class_label):
@@ -31,6 +45,7 @@ def annotation_class_item(class_color, class_label):
             ),
             html.Div(
                 [
+                    # colored box to represent the color of an annotation class
                     html.Div(
                         style={
                             "width": "25px",
@@ -58,35 +73,10 @@ def annotation_class_item(class_color, class_label):
             ),
             html.Div(
                 [
-                    dmc.ActionIcon(
-                        id={
-                            "type": "hide-annotation-class",
-                            "index": color,
-                        },
-                        variant="subtle",
-                        color="gray",
-                        children=DashIconify(icon="mdi:eye"),
-                        size="lg",
-                    ),
-                    dmc.ActionIcon(
-                        id={
-                            "type": "edit-annotation-class",
-                            "index": color,
-                        },
-                        variant="subtle",
-                        color="gray",
-                        children=DashIconify(icon="uil:edit"),
-                        size="lg",
-                    ),
-                    dmc.ActionIcon(
-                        id={
-                            "type": "delete-annotation-class",
-                            "index": color,
-                        },
-                        variant="subtle",
-                        color="gray",
-                        children=DashIconify(icon="octicon:trash-24"),
-                        size="lg",
+                    get_action_icon("hide-annotation-class", color, "mdi:eye"),
+                    get_action_icon("edit-annotation-class", color, "uil:edit"),
+                    get_action_icon(
+                        "delete-annotation-class", color, "octicon:trash-24"
                     ),
                 ],
                 style={
@@ -144,7 +134,6 @@ def annotation_class_item(class_color, class_label):
                                     "index": color,
                                 },
                                 children="Cancel",
-                                variant="light",
                             ),
                             dmc.Space(w=10),
                             dmc.Button(
