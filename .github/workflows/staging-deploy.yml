@@ -27,6 +27,9 @@ jobs:
       - name: Test formatting with black
         run: |
           black . --check
+      - name: Run pytest
+        run: |
+          pytest
   staging-deploy:
     needs: test-and-lint
     uses: ./.github/workflows/deploy.yml
