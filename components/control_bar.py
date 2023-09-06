@@ -240,9 +240,43 @@ def layout():
                             "annotations",
                             id="annotations-controls",
                             children=[
-                                dmc.Space(h=5),
+                                dmc.Text(
+                                    "Drawing Toolbar",
+                                    size="sm",
+                                    align="right",
+                                    color="#9EA4AB",
+                                ),
+                                dmc.Space(h=15),
                                 dmc.Grid(
                                     [
+                                        dmc.Space(w=5),
+                                        html.Div(
+                                            children=[
+                                                _tooltip(
+                                                    "Pan and zoom (A)",
+                                                    dmc.ActionIcon(
+                                                        id="pan-and-zoom",
+                                                        variant="subtle",
+                                                        color="gray",
+                                                        children=DashIconify(
+                                                            icon=ANNOT_ICONS[
+                                                                "pan-and-zoom"
+                                                            ],
+                                                            width=20,
+                                                        ),
+                                                        size="lg",
+                                                    ),
+                                                ),
+                                            ],
+                                            className="flex-row",
+                                            style={
+                                                "justify-content": "space-evenly",
+                                                "padding": "2.5px",
+                                                "border": "1px solid #EAECEF",
+                                                "border-radius": "5px",
+                                            },
+                                        ),
+                                        dmc.Space(w=10),
                                         html.Div(
                                             children=[
                                                 _tooltip(
@@ -331,25 +365,10 @@ def layout():
                                                         size="lg",
                                                     ),
                                                 ),
-                                                _tooltip(
-                                                    "Pan and zoom (A)",
-                                                    dmc.ActionIcon(
-                                                        id="pan-and-zoom",
-                                                        variant="subtle",
-                                                        color="gray",
-                                                        children=DashIconify(
-                                                            icon=ANNOT_ICONS[
-                                                                "pan-and-zoom"
-                                                            ],
-                                                            width=20,
-                                                        ),
-                                                        size="lg",
-                                                    ),
-                                                ),
                                             ],
                                             className="flex-row",
                                             style={
-                                                "width": "275px",
+                                                "width": "295px",
                                                 "justify-content": "space-evenly",
                                                 "padding": "2.5px",
                                                 "border": "1px solid #EAECEF",
@@ -372,7 +391,7 @@ def layout():
                                         size="sm",
                                     ),
                                 ),
-                                dmc.Space(h=20),
+                                dmc.Space(h=10),
                                 dmc.Modal(
                                     title="Warning",
                                     id="delete-all-warning",
@@ -401,7 +420,7 @@ def layout():
                                 html.Div(
                                     [
                                         dmc.Text(
-                                            "Manage classes",
+                                            "Manage Classes",
                                             size="sm",
                                             align="right",
                                             color="#9EA4AB",
@@ -419,7 +438,9 @@ def layout():
                                             "+ Add new class... ",
                                             id="generate-annotation-class",
                                             variant="outline",
-                                            style={"width": "100%"},
+                                            style={
+                                                "width": "100%",
+                                            },
                                             className="add-class-btn",
                                         ),
                                         dmc.Space(h=20),
@@ -427,31 +448,47 @@ def layout():
                                 ),
                                 dmc.Modal(
                                     id="generate-annotation-class-modal",
-                                    title="Generate a Custom Annotation Class",
+                                    title="Create a new annotation class",
                                     children=[
-                                        dmc.Center(
-                                            dmc.ColorPicker(
-                                                id="annotation-class-colorpicker",
-                                                format="rgb",
-                                                value="rgb(255, 0, 0)",
-                                            ),
+                                        html.Div(
+                                            [
+                                                dmc.ColorPicker(
+                                                    id="annotation-class-colorpicker",
+                                                    format="rgb",
+                                                    value="rgb(255, 0, 0)",
+                                                ),
+                                                dmc.Space(w=25),
+                                                html.Div(
+                                                    [
+                                                        dmc.TextInput(
+                                                            id="annotation-class-label",
+                                                            placeholder="Class label...",
+                                                        ),
+                                                        html.Div(
+                                                            id="bad-label-color",
+                                                            style={"color": "red"},
+                                                        ),
+                                                    ]
+                                                ),
+                                            ],
+                                            style={
+                                                "display": "flex",
+                                                "justify-content": "flex-row",
+                                                "align-items": "center",
+                                            },
                                         ),
-                                        dmc.Space(h=10),
-                                        dmc.Center(
-                                            dmc.TextInput(
-                                                id="annotation-class-label",
-                                                placeholder="Annotation Class Label",
-                                            ),
+                                        html.Div(
+                                            [
+                                                dmc.Button(
+                                                    id="create-annotation-class",
+                                                    children="Save",
+                                                ),
+                                            ],
+                                            style={
+                                                "display": "flex",
+                                                "justify-content": "flex-end",
+                                            },
                                         ),
-                                        dmc.Space(h=10),
-                                        dmc.Center(
-                                            dmc.Button(
-                                                id="create-annotation-class",
-                                                children="Create Annotation Class",
-                                                variant="light",
-                                            ),
-                                        ),
-                                        html.Div(id="bad-label-color"),
                                     ],
                                 ),
                                 dmc.Space(h=20),
@@ -738,24 +775,3 @@ def create_info_card_affix():
             ],
         ),
     )
-
-
-# def class_action_icon(class_color, class_label, label_color):
-#     """
-#     This component creates an action icon for the given annotation class.
-#     """
-#     style = {
-#         "background-color": class_color,
-#         "width": "fit-content",
-#         "backgroundColor": "#EAECEF",
-#         "color": label_color,
-#         "padding": "5px",
-#         "margin-right": "10px",
-#     }
-#     return dmc.ActionIcon(
-#         id={"type": "annotation-color", "index": class_color},
-#         w=30,
-#         variant="filled",
-#         style=style,
-#         children=class_label,
-#     )

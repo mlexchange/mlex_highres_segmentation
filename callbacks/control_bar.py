@@ -19,7 +19,7 @@ from dash_iconify import DashIconify
 import json
 from utils.annotations import Annotations
 from components.annotation_class import annotation_class_item
-from constants import KEYBINDS, ANNOT_ICONS, ANNOT_NOTIFICATION_MSGS
+from constants import KEYBINDS, ANNOT_ICONS, ANNOT_NOTIFICATION_MSGS, KEY_MODES
 import json
 from utils.data_utils import (
     DEV_load_exported_json_data,
@@ -72,12 +72,12 @@ def update_selected_class_style(selected_class, current_ids):
         "justifyContent": "space-between",
     }
     selected_style = {
-        "border": "2px solid rgba(1,59,71,0.5)",
+        "border": "1px solid #EAECEF",
         "borderRadius": "3px",
         "marginBottom": "4px",
         "display": "flex",
         "justifyContent": "space-between",
-        "backgroundColor": "rgba(1,59,71,0.05)",
+        "backgroundColor": "#EAECEF",
     }
     ids = [c["index"] for c in current_ids]
     if selected_class in ids:
@@ -103,7 +103,6 @@ def update_selected_class_style(selected_class, current_ids):
     Output("eraser", "style"),
     Output("pan-and-zoom", "style"),
     Output("annotation-store", "data", allow_duplicate=True),
-    Output("current-ann-mode", "data", allow_duplicate=True),
     Output("notifications-container", "children", allow_duplicate=True),
     Input("open-freeform", "n_clicks"),
     Input("closed-freeform", "n_clicks"),
@@ -138,34 +137,23 @@ def annotation_mode(
     It also accepts keybinds to change the annotation mode.
     """
     if generate_modal_opened or any(edit_modal_opened):
-        # user is going to type on this page and we don't want to trigger this callback using keys
+        # user is going to type on this page (on a modal) and we don't want to trigger this callback using keys
         raise PreventUpdate
     # if the image is loading stop the callback when keybinds are pressed
     if figure_overlay_z_index != -1:
         raise PreventUpdate
 
-    key_modes = {
-        KEYBINDS["open-freeform"]: ("drawopenpath", "open-freeform"),
-        KEYBINDS["closed-freeform"]: ("drawclosedpath", "closed-freeform"),
-        KEYBINDS["circle"]: ("drawcircle", "circle"),
-        KEYBINDS["rectangle"]: ("drawrect", "rectangle"),
-        KEYBINDS["line"]: ("drawline", "line"),
-        KEYBINDS["pan-and-zoom"]: ("pan", "pan-and-zoom"),
-        KEYBINDS["erase"]: ("eraseshape", "eraser"),
-    }
-
-    triggered = ctx.triggered_id
+    trigger = ctx.triggered_id
     pressed_key = (
         keybind_event_listener.get("key", None) if keybind_event_listener else None
     )
-
-    if pressed_key in key_modes and triggered == "keybind-event-listener":
-        mode, triggered = key_modes[pressed_key]
-    else:
-        # if the callback was triggered by pressing a key that is not in the `key_modes`, stop the callback
-        if triggered == "keybind-event-listener":
+    mode = None
+    if trigger == "keybind-event-listener":
+        if pressed_key in KEY_MODES:
+            mode, trigger = KEY_MODES[pressed_key]
+        else:
+            # if the callback was triggered by pressing a key that is not in the `KEY_MODES`, stop the callback
             raise PreventUpdate
-        mode = None
 
     active = {"backgroundColor": "#EAECEF"}
     inactive = {"border": "1px solid white"}
@@ -186,44 +174,44 @@ def annotation_mode(
     if mode:
         patched_figure["layout"]["dragmode"] = mode
         annotation_store["dragmode"] = mode
-        styles[triggered] = active
+        styles[trigger] = active
     else:
-        if triggered == "open-freeform" and open > 0:
+        if trigger == "open-freeform" and open > 0:
             patched_figure["layout"]["dragmode"] = "drawopenpath"
             annotation_store["dragmode"] = "drawopenpath"
-            styles[triggered] = active
-        elif triggered == "closed-freeform" and closed > 0:
+            styles[trigger] = active
+        elif trigger == "closed-freeform" and closed > 0:
             patched_figure["layout"]["dragmode"] = "drawclosedpath"
             annotation_store["dragmode"] = "drawclosedpath"
-            styles[triggered] = active
-        elif triggered == "line" and line > 0:
+            styles[trigger] = active
+        elif trigger == "line" and line > 0:
             patched_figure["layout"]["dragmode"] = "drawline"
             annotation_store["dragmode"] = "drawline"
-            styles[triggered] = active
-        elif triggered == "circle" and circle > 0:
+            styles[trigger] = active
+        elif trigger == "circle" and circle > 0:
             patched_figure["layout"]["dragmode"] = "drawcircle"
             annotation_store["dragmode"] = "drawcircle"
-            styles[triggered] = active
-        elif triggered == "rectangle" and rect > 0:
+            styles[trigger] = active
+        elif trigger == "rectangle" and rect > 0:
             patched_figure["layout"]["dragmode"] = "drawrect"
             annotation_store["dragmode"] = "drawrect"
-            styles[triggered] = active
-        elif triggered == "eraser" and erase_annotation > 0:
+            styles[trigger] = active
+        elif trigger == "eraser" and erase_annotation > 0:
             patched_figure["layout"]["dragmode"] = "eraseshape"
             annotation_store["dragmode"] = "eraseshape"
-            styles[triggered] = active
-        elif triggered == "pan-and-zoom" and pan_and_zoom > 0:
+            styles[trigger] = active
+        elif trigger == "pan-and-zoom" and pan_and_zoom > 0:
             patched_figure["layout"]["dragmode"] = "pan"
             annotation_store["dragmode"] = "pan"
-            styles[triggered] = active
+            styles[trigger] = active
 
     notification = dmc.Notification(
-        title=ANNOT_NOTIFICATION_MSGS[triggered],
+        title=ANNOT_NOTIFICATION_MSGS[trigger],
         message="",
         color="indigo",
         id=f"notification-{random.randint(0, 10000)}",
         action="show",
-        icon=DashIconify(icon=ANNOT_ICONS[triggered], width=40),
+        icon=DashIconify(icon=ANNOT_ICONS[trigger], width=40),
         styles={"icon": {"height": "50px", "width": "50px"}},
     )
     return (
@@ -236,7 +224,6 @@ def annotation_mode(
         styles["eraser"],
         styles["pan-and-zoom"],
         annotation_store,
-        triggered,
         notification,
     )
 
@@ -259,36 +246,15 @@ def annotation_width(width_value):
     Output("image-viewer", "figure", allow_duplicate=True),
     Input("current-class-selection", "data"),
     Input("image-selection-slider", "value"),
-    Input("keybind-event-listener", "event"),
-    State("generate-annotation-class-modal", "opened"),
     prevent_initial_call=True,
 )
 def annotation_color(
     current_color,
     slider,
-    keybind_event_listener,
-    generate_modal_opened,
 ):
     """
     This callback is responsible for changing the color of the brush.
     """
-    if ctx.triggered_id == "keybind-event-listener":
-        if generate_modal_opened:  # or edit_annotation_modal_opened:
-            # user is going to type on this page and we don't want to trigger this callback using keys
-            raise PreventUpdate
-        pressed_key = (
-            keybind_event_listener.get("key", None) if keybind_event_listener else None
-        )
-        if not pressed_key:
-            raise PreventUpdate
-        if pressed_key not in KEYBINDS["classes"]:
-            # if key pressed is not a valid keybind for class selection
-            raise PreventUpdate
-        selected_color_idx = KEYBINDS["classes"].index(pressed_key)
-
-        # if selected_color_idx >= len(current_style):
-        #     # if the key pressed corresponds to a class that doesn't exist
-        #     raise PreventUpdate
     patched_figure = Patch()
     patched_figure["layout"]["newshape"]["fillcolor"] = current_color
     patched_figure["layout"]["newshape"]["line"]["color"] = current_color
@@ -337,7 +303,8 @@ def open_warning_modal(
 def open_annotation_class_modal(
     generate, create, new_label, new_color, opened, all_annotation_class_store
 ):
-    """Opens and closes the modal that is used to create a new annotation class and checks if color and class name are available"""
+    """Opens and closes the modal that is used to create a new annotation class and checks
+    if color and class name are available"""
     if ctx.triggered_id in ["annotation-class-label", "annotation-class-colorpicker"]:
         current_classes = [a["label"] for a in all_annotation_class_store]
         current_colors = [a["color"] for a in all_annotation_class_store]
@@ -357,17 +324,26 @@ def open_annotation_class_modal(
     Output({"type": "edit-annotation-class-modal", "index": MATCH}, "opened"),
     Output({"type": "relabel-annotation-class-btn", "index": MATCH}, "disabled"),
     Output({"type": "bad-edit-label", "index": MATCH}, "children"),
+    Output({"type": "edit-annotation-class-modal", "index": MATCH}, "title"),
     Input({"type": "edit-annotation-class", "index": MATCH}, "n_clicks"),
     Input({"type": "relabel-annotation-class-btn", "index": MATCH}, "n_clicks"),
     Input({"type": "edit-annotation-class-text-input", "index": MATCH}, "value"),
     State({"type": "edit-annotation-class-modal", "index": MATCH}, "opened"),
+    State({"type": "annotation-class-store", "index": MATCH}, "data"),
     State({"type": "annotation-class-store", "index": ALL}, "data"),
     prevent_initial_call=True,
 )
 def open_edit_class_modal(
-    edit_button, edit_modal, new_label, opened, all_annotation_class_store
+    edit_button,
+    edit_modal,
+    new_label,
+    opened,
+    class_to_edit,
+    all_annotation_class_store,
 ):
-    """Opens and closes the modal that allows you to relabel an existing annotation class"""
+    """Opens and closes the modal that allows you to relabel an existing annotation class
+    and checks if the new class name is available"""
+    modal_title = f"Edit class: {class_to_edit['label']}"
     if ctx.triggered_id["type"] == "edit-annotation-class-text-input":
         current_classes = [a["label"] for a in all_annotation_class_store]
         edit_disabled = False
@@ -375,20 +351,31 @@ def open_edit_class_modal(
         if new_label in current_classes:
             error_msg = "Label Already in Use!"
             edit_disabled = True
-        return no_update, edit_disabled, error_msg
-    return not opened, False, no_update
+        return no_update, edit_disabled, error_msg, modal_title
+    return not opened, False, no_update, modal_title
 
 
 @callback(
     Output({"type": "delete-annotation-class-modal", "index": MATCH}, "opened"),
+    Output({"type": "delete-annotation-class-modal", "index": MATCH}, "title"),
     Input({"type": "delete-annotation-class", "index": MATCH}, "n_clicks"),
-    Input({"type": "remove-annotation-class-btn", "index": MATCH}, "n_clicks"),
+    Input({"type": "modal-continue-delete-class-btn", "index": MATCH}, "n_clicks"),
+    Input({"type": "modal-cancel-delete-class-btn", "index": MATCH}, "n_clicks"),
     State({"type": "delete-annotation-class-modal", "index": MATCH}, "opened"),
+    State({"type": "annotation-class-store", "index": MATCH}, "data"),
     prevent_initial_call=True,
 )
-def open_delete_class_modal(remove_class, remove_class_modal, opened):
-    """Opens and closes the modal that allows you to relabel an existing annotation class"""
-    return not opened
+def open_delete_class_modal(
+    remove_class,
+    continue_remove_class_modal,
+    cancel_remove_class_modal,
+    opened,
+    class_to_delete,
+):
+    """Opens and closes the modal that allows you to relabel an existing annotation class
+    and triggers the delete_annotation_class() callback"""
+    modal_title = f"Delete class: {class_to_delete['label']}"
+    return not opened, modal_title
 
 
 @callback(
@@ -464,8 +451,9 @@ def hide_show_annotation_class(
     annotation_class_store,
     hide_show_class_store,
 ):
-    """Updates both the annotation-class-store (which contains the annotation info) and the hide-show-class-store
-    which is only used to trigger the callback that will actually patch the figure. Also update the hide/show icon accordingly
+    """This callback updates both the annotation-class-store (which contains the annotation info) and the hide-show-class-store
+    which is only used to trigger the callback that will actually patch the figure: hide_show_annotations_on_fig().
+    Also update the hide/show icon accordingly
     """
     is_visible = annotation_class_store["is_visible"]
     annotation_class_store["is_visible"] = not is_visible
@@ -487,7 +475,7 @@ def delete_annotation_class(
     is_deleted,
     all_classes,
 ):
-    """delete the class from memory using the color from the deleted-class-store"""
+    """Delete the class from memory using the color from the deleted-class-store"""
     is_deleted = [x for x in is_deleted if x is not None]
     if is_deleted:
         is_deleted = is_deleted[0]
@@ -500,7 +488,7 @@ def delete_annotation_class(
 
 @callback(
     Output({"type": "deleted-class-store", "index": MATCH}, "data"),
-    Input({"type": "remove-annotation-class-btn", "index": MATCH}, "n_clicks"),
+    Input({"type": "modal-continue-delete-class-btn", "index": MATCH}, "n_clicks"),
     State({"type": "annotation-class-store", "index": MATCH}, "data"),
     prevent_initial_call=True,
 )
@@ -724,18 +712,15 @@ def load_and_apply_selected_annotations(selected_annotation, image_src, img_idx)
 
 @callback(
     Output("drawer-controls", "opened"),
-    Input("drawer-controls-open-button", "n_clicks"),
-)
-def open_controls_drawer(n_clicks):
-    return True
-
-
-@callback(
     Output("drawer-controls-open-button", "style"),
+    Input("drawer-controls-open-button", "n_clicks"),
     Input("drawer-controls", "opened"),
-    prevent_initial_call=True,
 )
-def open_controls_drawer(is_opened):
-    if is_opened:
-        return {"display": "none"}
-    return {}
+def open_controls_drawer(n_clicks, is_opened):
+    if ctx.triggered_id == "drawer-controls-open-button":
+        return True, no_update
+    if ctx.triggered_id == "drawer-controls":
+        if is_opened:
+            return no_update, {"display": "none"}
+        return no_update, {}
+    return no_update, no_update

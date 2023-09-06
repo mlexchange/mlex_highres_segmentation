@@ -106,6 +106,22 @@ body {
 
 .add-class-btn:hover,
 .annotation-class:hover {
-    background-color: rgba(1, 59, 71, 0.05) !important;
+    background-color: #EAECEF !important;
     cursor: pointer;
+}
+
+.mantine-UnstyledButton-root.mantine-Button-root.mantine-8nr514,
+.mantine-UnstyledButton-root.mantine-Button-root.mantine-q631dw {
+    color: white !important;
+    background-color: #007681 !important;
+}
+
+.mantine-UnstyledButton-root.mantine-Button-root.mantine-8nr514:disabled {
+    background-color: rgb(233, 236, 239) !important;
+    color: rgb(173, 181, 189) !important;
+}
+
+.mantine-Text-root.mantine-Modal-title {
+    font-weight: 700 !important;
+
 }

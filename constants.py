@@ -8,27 +8,16 @@ KEYBINDS = {
     "erase": "s",
     "slice-right": "ArrowRight",
     "slice-left": "ArrowLeft",
-    "classes": [
-        "1",
-        "2",
-        "3",
-        "4",
-        "5",
-        "6",
-        "7",
-        "8",
-        "9",
-    ],
 }
 
 ANNOT_ICONS = {
     "open-freeform": "mdi:draw",
-    "closed-freeform": "fluent:draw-shape-20-regular",
+    "closed-freeform": "fluent:draw-shape-20-filled",
     "line": "pepicons-pop:line-y",
     "circle": "gg:shape-circle",
     "rectangle": "gg:shape-square",
     "eraser": "ph:eraser",
-    "pan-and-zoom": "el:off",
+    "pan-and-zoom": "material-symbols:drag-pan-rounded",
     "slice-right": "line-md:arrow-right",
     "slice-left": "line-md:arrow-left",
 }
@@ -43,4 +32,14 @@ ANNOT_NOTIFICATION_MSGS = {
     "pan-and-zoom": "Pan and zoom mode",
     "slice-right": "Next slice",
     "slice-left": "Previous slice",
+}
+
+KEY_MODES = {
+    KEYBINDS["open-freeform"]: ("drawopenpath", "open-freeform"),
+    KEYBINDS["closed-freeform"]: ("drawclosedpath", "closed-freeform"),
+    KEYBINDS["circle"]: ("drawcircle", "circle"),
+    KEYBINDS["rectangle"]: ("drawrect", "rectangle"),
+    KEYBINDS["line"]: ("drawline", "line"),
+    KEYBINDS["pan-and-zoom"]: ("pan", "pan-and-zoom"),
+    KEYBINDS["erase"]: ("eraseshape", "eraser"),
 }

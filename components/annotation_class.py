@@ -3,6 +3,20 @@ from dash import html, dcc
 from dash_iconify import DashIconify
 
 
+# This fucntion creates the action icons needed for an annoation class: specifically hide/show, edit and delete actions
+def get_action_icon(id, color, icon):
+    return dmc.ActionIcon(
+        id={
+            "type": id,
+            "index": color,
+        },
+        variant="subtle",
+        color="gray",
+        children=DashIconify(icon=icon),
+        size="lg",
+    )
+
+
 # This function generates a class component with all its buttons (hide/show, edit, delete)
 # The class color is used as an ID to identify a class (as all class colors are unique and cannot be modified)
 def annotation_class_item(class_color, class_label):
@@ -31,6 +45,7 @@ def annotation_class_item(class_color, class_label):
             ),
             html.Div(
                 [
+                    # colored box to represent the color of an annotation class
                     html.Div(
                         style={
                             "width": "25px",
@@ -58,35 +73,10 @@ def annotation_class_item(class_color, class_label):
             ),
             html.Div(
                 [
-                    dmc.ActionIcon(
-                        id={
-                            "type": "hide-annotation-class",
-                            "index": color,
-                        },
-                        variant="subtle",
-                        color="gray",
-                        children=DashIconify(icon="mdi:eye"),
-                        size="lg",
-                    ),
-                    dmc.ActionIcon(
-                        id={
-                            "type": "edit-annotation-class",
-                            "index": color,
-                        },
-                        variant="subtle",
-                        color="gray",
-                        children=DashIconify(icon="uil:edit"),
-                        size="lg",
-                    ),
-                    dmc.ActionIcon(
-                        id={
-                            "type": "delete-annotation-class",
-                            "index": color,
-                        },
-                        variant="subtle",
-                        color="gray",
-                        children=DashIconify(icon="octicon:trash-24"),
-                        size="lg",
+                    get_action_icon("hide-annotation-class", color, "mdi:eye"),
+                    get_action_icon("edit-annotation-class", color, "uil:edit"),
+                    get_action_icon(
+                        "delete-annotation-class", color, "octicon:trash-24"
                     ),
                 ],
                 style={
@@ -99,50 +89,67 @@ def annotation_class_item(class_color, class_label):
                 id={"type": "edit-annotation-class-modal", "index": color},
                 title="Edit a Custom Annotation Class",
                 children=[
-                    dmc.Center(
-                        dmc.TextInput(
-                            id={
-                                "type": "edit-annotation-class-text-input",
-                                "index": color,
-                            },
-                            placeholder="New Class Label",
-                        ),
+                    dmc.TextInput(
+                        id={
+                            "type": "edit-annotation-class-text-input",
+                            "index": color,
+                        },
+                        placeholder="New class name...",
+                        style={"width": "70%"},
                     ),
-                    dmc.Space(h=10),
-                    dmc.Center(
+                    html.Div(
+                        id={"type": "bad-edit-label", "index": color},
+                        style={"color": "red"},
+                    ),
+                    dmc.Space(h=25),
+                    html.Div(
                         dmc.Button(
                             id={
                                 "type": "relabel-annotation-class-btn",
                                 "index": color,
                             },
-                            children="Edit Annotation Class",
-                            variant="light",
+                            children="Save",
                         ),
+                        style={
+                            "display": "flex",
+                            "justify-content": "flex-end",
+                        },
                     ),
-                    html.Div(id={"type": "bad-edit-label", "index": color}),
                 ],
             ),
             dmc.Modal(
                 id={"type": "delete-annotation-class-modal", "index": color},
-                title="Delete Custom Annotation Class",
                 children=[
                     dmc.Center(
                         dmc.Text(
-                            "NOTE: Deleting a class will delete all annotations associated with that class!",
-                            color="red",
+                            "This action will permanently clear all annotations from this class. Are you sure you want to proceed?",
                         )
                     ),
-                    dmc.Center(
+                    dmc.Space(h=10),
+                    html.Div(
                         [
                             dmc.Button(
                                 id={
-                                    "type": "remove-annotation-class-btn",
+                                    "type": "modal-cancel-delete-class-btn",
                                     "index": color,
                                 },
-                                children="Delete Selected Class",
-                                variant="light",
+                                children="Cancel",
                             ),
-                        ]
+                            dmc.Space(w=10),
+                            dmc.Button(
+                                id={
+                                    "type": "modal-continue-delete-class-btn",
+                                    "index": color,
+                                },
+                                children="Confirm",
+                                variant="outline",
+                                color="red",
+                            ),
+                        ],
+                        style={
+                            "display": "flex",
+                            "justify-content": "flex-end",
+                        },
                     ),
                 ],
             ),
