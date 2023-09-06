@@ -106,7 +106,7 @@ body {
 
 .add-class-btn:hover,
 .annotation-class:hover {
-    background-color: rgba(1, 59, 71, 0.05) !important;
+    background-color: #EAECEF !important;
     cursor: pointer;
 }
 
