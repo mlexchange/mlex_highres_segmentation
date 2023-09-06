@@ -193,11 +193,11 @@ def update_viewfinder(relayout_data, annotation_store):
     """
     When relayoutData is triggered, update the viewfinder box to match the new view position of the image (inlude zooming).
     The viewfinder box is downsampled to match the size of the viewfinder.
-    The viewfinder box is containen within the figure layout, so that if the user zooms out/pans away, they will still be able to see the viewfinder box.
+    The viewfinder box is contained within the figure layout, so that if the user zooms out/pans away, they will still be able to see the viewfinder box.
     """
     # Callback is triggered when the image is first loaded, but the annotation_store is not yet populated so we need to prevent the update
     if not annotation_store["active_img_shape"]:
-        raise dash.exceptions.PreventUpdate
+        raise PreventUpdate
     patched_fig = Patch()
 
     DOWNSCALED_img_max_height, DOWNSCALED_img_max_width = get_view_finder_max_min(
@@ -205,7 +205,7 @@ def update_viewfinder(relayout_data, annotation_store):
     )
 
     if "xaxis.range[0]" not in relayout_data:
-        raise dash.exceptions.PreventUpdate
+        raise PreventUpdate
     else:
         x0, y0, x1, y1 = downscale_view(
             relayout_data["xaxis.range[0]"],
@@ -238,7 +238,6 @@ clientside_callback(
 
 
 @callback(
-    # Output("annotation-store", "data", allow_duplicate=True),
     Output(
         {"type": "annotation-class-store", "index": ALL}, "data", allow_duplicate=True
     ),
@@ -254,19 +253,19 @@ def locally_store_annotations(
     relayout_data, img_idx, annotation_store, all_annotation_class_store, current_color
 ):
     """
-    Upon finishing relayout event (drawing, but it also includes panning, zooming),
-    this function takes the annotation shapes, and stores it in the dcc.Store, which is then used elsewhere
-    to preserve drawn annotations, or to save them.
+    Upon finishing a relayout event (drawing, panning or zooming), this function takes the
+    currently drawn shapes or zoom/pan data, and stores the lastest added shape to the appropriate class-annotation-store,
+    or the image pan/zzom position to the anntations-store.
     """
     img_idx = str(img_idx - 1)
     if "shapes" in relayout_data:
         last_shape = relayout_data["shapes"][-1]
-        for annotation_class_store in all_annotation_class_store:
-            if annotation_class_store["color"] == current_color:
-                if img_idx in annotation_class_store["annotations"]:
-                    annotation_class_store["annotations"][img_idx].append(last_shape)
+        for a_class in all_annotation_class_store:
+            if a_class["color"] == current_color:
+                if img_idx in a_class["annotations"]:
+                    a_class["annotations"][img_idx].append(last_shape)
                 else:
-                    annotation_class_store["annotations"][img_idx] = [last_shape]
+                    a_class["annotations"][img_idx] = [last_shape]
     if "xaxis.range[0]" in relayout_data:
         annotation_store["view"]["xaxis_range_0"] = relayout_data["xaxis.range[0]"]
         annotation_store["view"]["xaxis_range_1"] = relayout_data["xaxis.range[1]"]
@@ -285,7 +284,10 @@ def locally_store_annotations(
     prevent_initial_call=True,
 )
 def clear_annotations_on_dataset_cahnge(change_project, all_annotation_class_store):
-    """this callback is responsible for removing the annotations from every store when the dataset is changed"""
+    """
+    This callback is responsible for removing the annotations from every store annotation-class-store
+    when the dataset is changed
+    """
     for a in all_annotation_class_store:
         a["annotations"] = {}
     return all_annotation_class_store
