@@ -191,7 +191,7 @@ def keybind_image_slider(n_events, keybind_event_listener, current_slice, max_sl
 )
 def update_viewfinder(relayout_data, annotation_store):
     """
-    When relayoutData is triggered, update the viewfinder box to match the new view position of the image (inlude zooming).
+    When relayoutData is triggered, update the viewfinder box to match the new view position of the image (including zooming).
     The viewfinder box is downsampled to match the size of the viewfinder.
     The viewfinder box is contained within the figure layout, so that if the user zooms out/pans away, they will still be able to see the viewfinder box.
     """
@@ -255,7 +255,7 @@ def locally_store_annotations(
     """
     Upon finishing a relayout event (drawing, panning or zooming), this function takes the
     currently drawn shapes or zoom/pan data, and stores the lastest added shape to the appropriate class-annotation-store,
-    or the image pan/zzom position to the anntations-store.
+    or the image pan/zoom position to the anntations-store.
     """
     img_idx = str(img_idx - 1)
     if "shapes" in relayout_data:
@@ -283,10 +283,10 @@ def locally_store_annotations(
     State({"type": "annotation-class-store", "index": ALL}, "data"),
     prevent_initial_call=True,
 )
-def clear_annotations_on_dataset_cahnge(change_project, all_annotation_class_store):
+def clear_annotations_on_dataset_change(change_project, all_annotation_class_store):
     """
-    This callback is responsible for removing the annotations from every store annotation-class-store
-    when the dataset is changed
+    This callback is responsible for removing the annotations from every annotation-class-store
+    when the dataset is changed (when a new image is selected)
     """
     for a in all_annotation_class_store:
         a["annotations"] = {}
@@ -305,11 +305,9 @@ def clear_annotations_on_dataset_cahnge(change_project, all_annotation_class_sto
 def update_slider_values(project_name, annotation_store):
     """
     When the data source is loaded, this callback will set the slider values and chain call
-        "update_selection_and_image" callback which will update image and slider selection component
-    It also resets "annotation-store" data to {} so that existing annotations don't carry over to the new project.
-
-    ## todo - change Input("project-name-src", "data") to value when image-src will contain buckets of data and not just one image
-    ## todo - eg, when a different image source is selected, update slider values which is then used to select image within that source
+    "update_selection_and_image" callback which will update image and slider selection component.
+    ## TODO - change Input("project-name-src", "data") to value when image-src will contain buckets of data and not just one image
+    ## TODO - eg, when a different image source is selected, update slider values which is then used to select image within that source
     """
     # Retrieve data shape if project_name is valid and points to a 3d array
     data_shape = (
