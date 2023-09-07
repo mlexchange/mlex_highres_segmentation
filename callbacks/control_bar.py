@@ -264,26 +264,36 @@ def annotation_color(
     Output(
         {"type": "annotation-class-store", "index": ALL}, "data", allow_duplicate=True
     ),
+    Output("image-viewer", "figure", allow_duplicate=True),
     Input("clear-all", "n_clicks"),
     Input("modal-cancel-delete-button", "n_clicks"),
     Input("modal-continue-delete-button", "n_clicks"),
     State("delete-all-warning", "opened"),
     State({"type": "annotation-class-store", "index": ALL}, "data"),
+    State("image-selection-slider", "value"),
     prevent_initial_call=True,
 )
 def open_warning_modal(
-    delete, cancel_delete, continue_delete, opened, all_class_annotations
+    delete, cancel_delete, continue_delete, opened, all_class_annotations, image_idx
 ):
-    """This callback opens and closes the modal that warns you when you're deleting all annotations"""
+    """
+    This callback opens and closes the modal that warns you when you're deleting all annotations,
+    and deletes all annotations on the current slice if the user confirms deletion.
+    """
     if ctx.triggered_id in ["clear-all", "modal-cancel-delete-button"]:
-        return not opened, all_class_annotations
+        return not opened, all_class_annotations, no_update
     if ctx.triggered_id == "modal-continue-delete-button":
+        image_idx = str(image_idx - 1)
         for a in all_class_annotations:
-            # TODO: implement deletion
-            print(a)
-        return not opened, all_class_annotations
+            # delete annotations from memory
+            if image_idx in a["annotations"]:
+                del a["annotations"][image_idx]
+        # Update fig with patch so it looks like there are no more annotations without re-rerendering the image
+        fig = Patch()
+        fig["layout"]["shapes"] = []
+        return not opened, all_class_annotations, fig
     else:
-        return no_update, all_class_annotations
+        return no_update, all_class_annotations, no_update
 
 
 @callback(
