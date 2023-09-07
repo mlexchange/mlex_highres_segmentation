@@ -249,7 +249,7 @@ def layout():
                                 dmc.Space(h=15),
                                 dmc.Grid(
                                     [
-                                        dmc.Space(w=5),
+                                        dmc.Space(w=8),
                                         html.Div(
                                             children=[
                                                 _tooltip(
@@ -368,7 +368,7 @@ def layout():
                                             ],
                                             className="flex-row",
                                             style={
-                                                "width": "295px",
+                                                "width": "301px",
                                                 "justify-content": "space-evenly",
                                                 "padding": "2.5px",
                                                 "border": "1px solid #EAECEF",
@@ -389,6 +389,7 @@ def layout():
                                         step=1,
                                         color="gray",
                                         size="sm",
+                                        style={"width": "257px"},
                                     ),
                                 ),
                                 dmc.Space(h=10),
