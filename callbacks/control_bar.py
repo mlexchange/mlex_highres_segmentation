@@ -320,13 +320,14 @@ def open_annotation_class_modal(
         current_classes = [a["label"] for a in all_annotation_class_store]
         current_colors = [a["color"] for a in all_annotation_class_store]
         disable_class_creation = False
-        error_msg = ""
+        error_msg = []
         if new_label in current_classes:
             disable_class_creation = True
-            error_msg += "Label Already in Use!"
+            error_msg.append("Label Already in Use!")
+            error_msg.append(html.Br())
         if new_color in current_colors:
             disable_class_creation = True
-            error_msg += "Color Already in use!"
+            error_msg.append("Color Already in use!")
         return no_update, disable_class_creation, error_msg
     return not opened, False, ""
 
