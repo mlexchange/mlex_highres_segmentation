@@ -83,6 +83,7 @@ def annotation_class_item(class_color, class_label):
                     "display": "flex",
                     "justify-content": "flex-row",
                     "align-items": "center",
+                    "padding": "3px",
                 },
             ),
             dmc.Modal(
