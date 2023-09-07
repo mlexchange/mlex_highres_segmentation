@@ -467,7 +467,11 @@ def layout():
                                                         ),
                                                         html.Div(
                                                             id="bad-label-color",
-                                                            style={"color": "red"},
+                                                            style={
+                                                                "color": "red",
+                                                                "fontSize": "12px",
+                                                                "padding": "3px",
+                                                            },
                                                         ),
                                                     ]
                                                 ),

@@ -100,7 +100,7 @@ def annotation_class_item(class_color, class_label):
                     ),
                     html.Div(
                         id={"type": "bad-edit-label", "index": color},
-                        style={"color": "red"},
+                        style={"color": "red", "fontSize": "12px", "padding": "3px"},
                     ),
                     dmc.Space(h=25),
                     html.Div(

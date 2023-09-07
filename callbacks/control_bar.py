@@ -12,6 +12,7 @@ from dash import (
     ctx,
     clientside_callback,
     no_update,
+    html,
 )
 from dash.exceptions import PreventUpdate
 import dash_mantine_components as dmc
@@ -325,7 +326,7 @@ def open_annotation_class_modal(
             error_msg += "Label Already in Use!"
         if new_color in current_colors:
             disable_class_creation = True
-            error_msg += "\nColor Already in use!"
+            error_msg += "Color Already in use!"
         return no_update, disable_class_creation, error_msg
     return not opened, False, ""
 
