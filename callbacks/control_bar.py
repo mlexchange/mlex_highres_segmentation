@@ -50,7 +50,7 @@ def update_current_class_selection(class_selected):
         if len(ctx.triggered) == 1:
             current_selection = ctx.triggered_id["index"]
         # More than one item in the trigger means the trigger comes from adding a new class.
-        # we dont want to reset the current selection in this case
+        # We dont want to reset the current selection in this case
         else:
             current_selection = no_update
     return current_selection
@@ -62,8 +62,10 @@ def update_current_class_selection(class_selected):
     State({"type": "annotation-class", "index": ALL}, "id"),
 )
 def update_selected_class_style(selected_class, current_ids):
-    """This callback is responsible for updating the style of the selected annot class to makw it appear
-    like it has been "selected" """
+    """
+    This callback is responsible for updating the style of the selected annotation class to make it appear
+    like it has been "selected"
+    """
     default_style = {
         "border": "1px solid #EAECEF",
         "borderRadius": "3px",
@@ -234,9 +236,7 @@ def annotation_mode(
     prevent_initial_call=True,
 )
 def annotation_width(width_value):
-    """
-    This callback is responsible for changing the brush width.
-    """
+    """This callback is responsible for changing the brush width"""
     patched_figure = Patch()
     patched_figure["layout"]["newshape"]["line"]["width"] = width_value
     return patched_figure
@@ -252,9 +252,7 @@ def annotation_color(
     current_color,
     slider,
 ):
-    """
-    This callback is responsible for changing the color of the brush.
-    """
+    """This callback is responsible for changing the color of the brush"""
     patched_figure = Patch()
     patched_figure["layout"]["newshape"]["fillcolor"] = current_color
     patched_figure["layout"]["newshape"]["line"]["color"] = current_color
@@ -276,7 +274,7 @@ def annotation_color(
 def open_warning_modal(
     delete, cancel_delete, continue_delete, opened, all_class_annotations
 ):
-    """Opens and closes the modal that warns you when you're deleting all annotations"""
+    """This callback opens and closes the modal that warns you when you're deleting all annotations"""
     if ctx.triggered_id in ["clear-all", "modal-cancel-delete-button"]:
         return not opened, all_class_annotations
     if ctx.triggered_id == "modal-continue-delete-button":
@@ -303,8 +301,10 @@ def open_warning_modal(
 def open_annotation_class_modal(
     generate, create, new_label, new_color, opened, all_annotation_class_store
 ):
-    """Opens and closes the modal that is used to create a new annotation class and checks
-    if color and class name are available"""
+    """
+    This callback opens and closes the modal that is used to create a new annotation class and checks
+    if color and class name chosen are available
+    """
     if ctx.triggered_id in ["annotation-class-label", "annotation-class-colorpicker"]:
         current_classes = [a["label"] for a in all_annotation_class_store]
         current_colors = [a["color"] for a in all_annotation_class_store]
@@ -341,8 +341,10 @@ def open_edit_class_modal(
     class_to_edit,
     all_annotation_class_store,
 ):
-    """Opens and closes the modal that allows you to relabel an existing annotation class
-    and checks if the new class name is available"""
+    """
+    This callback opens and closes the modal that allows you to relabel an existing annotation class
+    and checks if the new class name is available.
+    """
     modal_title = f"Edit class: {class_to_edit['label']}"
     if ctx.triggered_id["type"] == "edit-annotation-class-text-input":
         current_classes = [a["label"] for a in all_annotation_class_store]
@@ -372,8 +374,10 @@ def open_delete_class_modal(
     opened,
     class_to_delete,
 ):
-    """Opens and closes the modal that allows you to relabel an existing annotation class
-    and triggers the delete_annotation_class() callback"""
+    """
+    This callback opens and closes the modal that allows you to relabel an existing annotation class
+    and triggers the delete_annotation_class() callback.
+    """
     modal_title = f"Delete class: {class_to_delete['label']}"
     return not opened, modal_title
 
@@ -388,7 +392,7 @@ def open_delete_class_modal(
     prevent_initial_call=True,
 )
 def edit_annotation_class(edit_clicked, new_label, annotation_class_store):
-    """edit the name of an annotation class"""
+    """This callback edits the name of an annotation class"""
     annotation_class_store["label"] = new_label
     return new_label, annotation_class_store, ""
 
@@ -409,7 +413,7 @@ def add_annotation_class(
     new_class_label,
     new_class_color,
 ):
-    """adds a new annotation class with the same chosen color and label"""
+    """This callback adds a new annotation class with the same chosen color and label"""
     current_classes.append(annotation_class_item(new_class_color, new_class_label))
     return "", current_classes, new_class_color
 
@@ -424,7 +428,7 @@ def add_annotation_class(
 def hide_show_annotations_on_fig(
     hide_show_click, all_annotation_class_store, image_idx
 ):
-    """hides or shows all annotations for a given class by Patching the figure"""
+    """This callback hides or shows all annotations for a given class by Patching the figure accordingly"""
     fig = Patch()
     image_idx = str(image_idx - 1)
     all_annotations = []
@@ -451,9 +455,10 @@ def hide_show_annotation_class(
     annotation_class_store,
     hide_show_class_store,
 ):
-    """This callback updates both the annotation-class-store (which contains the annotation info) and the hide-show-class-store
+    """
+    This callback updates both the annotation-class-store (which contains the annotation data) and the hide-show-class-store
     which is only used to trigger the callback that will actually patch the figure: hide_show_annotations_on_fig().
-    Also update the hide/show icon accordingly
+    Also updates the hide/show icon accordingly.
     """
     is_visible = annotation_class_store["is_visible"]
     annotation_class_store["is_visible"] = not is_visible
@@ -475,7 +480,7 @@ def delete_annotation_class(
     is_deleted,
     all_classes,
 ):
-    """Delete the class from memory using the color from the deleted-class-store"""
+    """This callback deletes the class from memory using the color from the deleted-class-store"""
     is_deleted = [x for x in is_deleted if x is not None]
     if is_deleted:
         is_deleted = is_deleted[0]
@@ -496,7 +501,7 @@ def clear_annotation_class(
     remove,
     annotation_class_store,
 ):
-    """update the deleted-class-store with the color of the class to delete"""
+    """This callback updates the deleted-class-store with the color of the class to delete"""
     deleted_class = annotation_class_store["color"]
     return deleted_class
 
@@ -594,9 +599,7 @@ def export_annotation(n_clicks, all_annotations, global_store):
     prevent_initial_call=True,
 )
 def save_data(n_clicks, annotation_store, image_src):
-    """
-    This callback is responsible for saving the annotation data to the store.
-    """
+    """This callback is responsible for saving the annotation data to the store"""
     if not n_clicks:
         raise PreventUpdate
     if annotation_store["annotations"] == {}:
