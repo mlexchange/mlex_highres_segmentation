@@ -1,3 +1,5 @@
 black==22.10.0
 flake8==6.0.0
 tiled[all]
+pytest
+pytest-mock
