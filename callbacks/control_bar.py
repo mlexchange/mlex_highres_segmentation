@@ -47,7 +47,6 @@ import random
     prevent_initial_call=True,
 )
 def update_current_class_selection(class_selected, all_annotation_classes):
-    print(all_annotation_classes)
     current_selection = None
     if ctx.triggered_id:
         if len(ctx.triggered) == 1:
@@ -338,12 +337,13 @@ def open_annotation_class_modal(
 
 @callback(
     Output({"type": "edit-annotation-class-modal", "index": MATCH}, "opened"),
-    Output({"type": "relabel-annotation-class-btn", "index": MATCH}, "disabled"),
+    Output({"type": "save-edited-annotation-class-btn", "index": MATCH}, "disabled"),
     Output({"type": "bad-edit-label", "index": MATCH}, "children"),
     Output({"type": "edit-annotation-class-modal", "index": MATCH}, "title"),
     Input({"type": "edit-annotation-class", "index": MATCH}, "n_clicks"),
-    Input({"type": "relabel-annotation-class-btn", "index": MATCH}, "n_clicks"),
+    Input({"type": "save-edited-annotation-class-btn", "index": MATCH}, "n_clicks"),
     Input({"type": "edit-annotation-class-text-input", "index": MATCH}, "value"),
+    Input({"type": "edit-annotation-class-colorpicker", "index": MATCH}, "value"),
     State({"type": "edit-annotation-class-modal", "index": MATCH}, "opened"),
     State({"type": "annotation-class-store", "index": MATCH}, "data"),
     State({"type": "annotation-class-store", "index": ALL}, "data"),
@@ -353,6 +353,7 @@ def open_edit_class_modal(
     edit_button,
     edit_modal,
     new_label,
+    new_color,
     opened,
     class_to_edit,
     all_annotation_class_store,
@@ -362,13 +363,21 @@ def open_edit_class_modal(
     and checks if the new class name is available.
     """
     modal_title = f"Edit class: {class_to_edit['label']}"
-    if ctx.triggered_id["type"] == "edit-annotation-class-text-input":
+    if ctx.triggered_id["type"] in [
+        "edit-annotation-class-text-input",
+        "edit-annotation-class-colorpicker",
+    ]:
         current_classes = [a["label"] for a in all_annotation_class_store]
+        current_colors = [a["color"] for a in all_annotation_class_store]
         edit_disabled = False
-        error_msg = ""
+        error_msg = []
         if new_label in current_classes:
-            error_msg = "Label Already in Use!"
+            error_msg.append("Label Already in Use!")
+            error_msg.append(html.Br())
             edit_disabled = True
+        if new_color in current_colors:
+            edit_disabled = True
+            error_msg.append("Color Already in use!")
         return no_update, edit_disabled, error_msg, modal_title
     return not opened, False, no_update, modal_title
 
@@ -400,17 +409,29 @@ def open_delete_class_modal(
 
 @callback(
     Output({"type": "annotation-class-label", "index": MATCH}, "children"),
+    Output({"type": "annotation-class-color", "index": MATCH}, "style"),
     Output({"type": "annotation-class-store", "index": MATCH}, "data"),
     Output({"type": "edit-annotation-class-text-input", "index": MATCH}, "value"),
-    Input({"type": "relabel-annotation-class-btn", "index": MATCH}, "n_clicks"),
+    Input({"type": "save-edited-annotation-class-btn", "index": MATCH}, "n_clicks"),
     State({"type": "edit-annotation-class-text-input", "index": MATCH}, "value"),
+    State({"type": "edit-annotation-class-colorpicker", "index": MATCH}, "value"),
     State({"type": "annotation-class-store", "index": MATCH}, "data"),
     prevent_initial_call=True,
 )
-def edit_annotation_class(edit_clicked, new_label, annotation_class_store):
+def edit_annotation_class(edit_clicked, new_label, new_color, annotation_class_store):
     """This callback edits the name of an annotation class"""
     annotation_class_store["label"] = new_label
-    return new_label, annotation_class_store, ""
+    annotation_class_store["color"] = new_color
+    class_color_transparent = new_color.replace("rgb", "rgba")[:-1] + ",0.5)"
+    class_color_identifier = {
+        "width": "25px",
+        "height": "25px",
+        "background-color": class_color_transparent,
+        "margin": "5px",
+        "borderRadius": "3px",
+        "border": f"2px solid {new_color}",
+    }
+    return new_label, class_color_identifier, annotation_class_store, ""
 
 
 @callback(
