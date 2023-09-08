@@ -23,9 +23,7 @@ def get_action_icon(type, class_id, icon):
 # This function generates a class component with all its buttons (hide/show, edit, delete)
 # The class color is used as an ID to identify a class (as all class colors are unique and cannot be modified)
 def annotation_class_item(class_color, class_label):
-    color = class_color
-    class_color = color.replace("rgb", "rgba")
-    class_color_transparent = class_color[:-1] + ",0.5)"
+    class_color_transparent = class_color + "50"
     class_id = str(uuid.uuid4())
     return html.Div(
         [  # This store will contain all the meta data for an individual annotation class
@@ -36,7 +34,7 @@ def annotation_class_item(class_color, class_label):
                 },
                 data={
                     "annotations": {},
-                    "color": color,
+                    "color": class_color,
                     "label": class_label,
                     "is_visible": True,
                     "class_id": class_id,
@@ -58,7 +56,7 @@ def annotation_class_item(class_color, class_label):
                             "background-color": class_color_transparent,
                             "margin": "5px",
                             "borderRadius": "3px",
-                            "border": f"2px solid {color}",
+                            "border": f"2px solid {class_color}",
                         },
                         id={
                             "type": "annotation-class-color",
