@@ -154,38 +154,6 @@ def annotation_class_item(class_color, class_label):
                     ),
                 ],
             ),
-            # dmc.Modal(
-            #     id={"type": "edit-annotation-class-modal", "index": class_id},
-            #     title="Edit a Custom Annotation Class",
-            #     children=[
-            #         dmc.TextInput(
-            #             id={
-            #                 "type": "edit-annotation-class-text-input",
-            #                 "index": class_id,
-            #             },
-            #             placeholder="New class name...",
-            #             style={"width": "70%"},
-            #         ),
-            #         html.Div(
-            #             id={"type": "bad-edit-label", "index": class_id},
-            #             style={"color": "red", "fontSize": "12px", "padding": "3px"},
-            #         ),
-            #         dmc.Space(h=25),
-            #         html.Div(
-            #             dmc.Button(
-            #                 id={
-            #                     "type": "relabel-annotation-class-btn",
-            #                     "index": class_id,
-            #                 },
-            #                 children="Save",
-            #             ),
-            #             style={
-            #                 "display": "flex",
-            #                 "justify-content": "flex-end",
-            #             },
-            #         ),
-            #     ],
-            # ),
             dmc.Modal(
                 id={"type": "delete-annotation-class-modal", "index": class_id},
                 children=[
