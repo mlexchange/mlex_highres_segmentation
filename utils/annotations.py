@@ -1,5 +1,5 @@
 import numpy as np
-from skimage import draw, morphology
+from skimage import draw
 import math
 from svgpathtools import parse_path
 from matplotlib.path import Path
@@ -20,7 +20,7 @@ class Annotations:
             annotations = {key: [] for key in slices}
 
             for annotation_class in annotation_store:
-                
+
                 for image_idx, slice_data in annotation_class["annotations"].items():
                     for shape in slice_data:
                         self._set_annotation_type(shape)
@@ -62,7 +62,7 @@ class Annotations:
         # Step 1: Save each numpy array to a separate .npy file in buffer
         npy_files = []
         for i, arr in enumerate(self.annotation_mask):
-            item = self.annotation_store["annotations"].items()
+            item = self.annotations.items()
             idx = list(item)[i][0]
             npy_buffer = io.BytesIO()
             np.save(npy_buffer, arr)
@@ -132,11 +132,6 @@ class Annotations:
                 annotation_mask[idx] = sp.csr_array(mask)
         self.annotation_mask = annotation_mask
 
-        if sparse:
-            for idx, mask in enumerate(annotation_mask):
-                annotation_mask[idx] = sp.csr_array(mask)
-        self.annotation_mask = annotation_mask
-
     def _set_annotation_type(self, annotation):
         """
         This function returns readable annotation type name.
@@ -173,12 +168,14 @@ class Annotations:
                 "y1": annotation["y1"],
             }
 
+    # TODO: Outdated?
     def _set_annotation_line_width(self, annotation):
         """
         This function sets the line width of the annotation.
         """
         self.annotation_line_width = annotation["line"]["width"]
 
+    # TODO: Outdated?
     def _set_annotation_class(self, annotation):
         """
         This function sets the class of the annotation.
@@ -188,6 +185,7 @@ class Annotations:
             if item["color"] == annotation["line"]["color"]:
                 self.annotation_class = item["id"]
 
+    # TODO: Outdated?
     def _set_annotation_image_shape(self, image_idx):
         """
         This function sets the the size of the image slice
@@ -331,6 +329,6 @@ class ShapeConversion:
                 x, y = curve.point(t).real, curve.point(t).imag
                 x = max(min(int(x), image_width - 1), 0)
                 y = max(min(int(y), image_height - 1), 0)
-                # mask[y, x] = mask_class
+                mask[y, x] = mask_class
         # mask = morphology.dilation(mask, morphology.disk(radius=line_width))
         return mask

@@ -555,7 +555,6 @@ def export_annotation(n_clicks, all_annotations, global_store):
     annotations = Annotations(all_annotations, global_store)
     EXPORT_AS_SPARSE = False  # todo replace with input
 
-
     if annotations.has_annotations():
         metadata_file = {
             "content": json.dumps(annotations.get_annotations()),
