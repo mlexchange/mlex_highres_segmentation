@@ -340,6 +340,16 @@ def open_annotation_class_modal(
     Output({"type": "save-edited-annotation-class-btn", "index": MATCH}, "disabled"),
     Output({"type": "bad-edit-label", "index": MATCH}, "children"),
     Output({"type": "edit-annotation-class-modal", "index": MATCH}, "title"),
+    Output(
+        {"type": "edit-annotation-class-text-input", "index": MATCH},
+        "value",
+        allow_duplicate=True,
+    ),
+    Output(
+        {"type": "edit-annotation-class-colorpicker", "index": MATCH},
+        "value",
+        allow_duplicate=True,
+    ),
     Input({"type": "edit-annotation-class", "index": MATCH}, "n_clicks"),
     Input({"type": "save-edited-annotation-class-btn", "index": MATCH}, "n_clicks"),
     Input({"type": "edit-annotation-class-text-input", "index": MATCH}, "value"),
@@ -363,12 +373,18 @@ def open_edit_class_modal(
     and checks if the new class name is available.
     """
     modal_title = f"Edit class: {class_to_edit['label']}"
+    # check for duplicate color/duplicate label
     if ctx.triggered_id["type"] in [
         "edit-annotation-class-text-input",
         "edit-annotation-class-colorpicker",
     ]:
+        print(new_color)
+        # get all colors and labels
         current_classes = [a["label"] for a in all_annotation_class_store]
         current_colors = [a["color"] for a in all_annotation_class_store]
+        # its ok to rename the current class color/label to its own name
+        current_classes.remove(class_to_edit["label"])
+        current_colors.remove(class_to_edit["color"])
         edit_disabled = False
         error_msg = []
         if new_label in current_classes:
@@ -378,8 +394,19 @@ def open_edit_class_modal(
         if new_color in current_colors:
             edit_disabled = True
             error_msg.append("Color Already in use!")
-        return no_update, edit_disabled, error_msg, modal_title
-    return not opened, False, no_update, modal_title
+        return no_update, edit_disabled, error_msg, modal_title, no_update, no_update
+    # add the current class name and color in the modal. (in case user wants to only edit one thing)
+    if ctx.triggered_id["type"] == "edit-annotation-class":
+        return (
+            not opened,
+            no_update,
+            no_update,
+            no_update,
+            class_to_edit["label"],
+            class_to_edit["color"],
+        )
+
+    return not opened, False, no_update, modal_title, no_update, no_update
 
 
 @callback(
@@ -416,21 +443,28 @@ def open_delete_class_modal(
     State({"type": "edit-annotation-class-text-input", "index": MATCH}, "value"),
     State({"type": "edit-annotation-class-colorpicker", "index": MATCH}, "value"),
     State({"type": "annotation-class-store", "index": MATCH}, "data"),
+    State("image-selection-slider", "value"),
     prevent_initial_call=True,
 )
-def edit_annotation_class(edit_clicked, new_label, new_color, annotation_class_store):
+def edit_annotation_class(
+    edit_clicked, new_label, new_color, annotation_class_store, img_idx
+):
     """This callback edits the name of an annotation class"""
+    img_idx = str(img_idx - 1)
     annotation_class_store["label"] = new_label
     annotation_class_store["color"] = new_color
-    class_color_transparent = new_color.replace("rgb", "rgba")[:-1] + ",0.5)"
     class_color_identifier = {
         "width": "25px",
         "height": "25px",
-        "background-color": class_color_transparent,
+        "background-color": new_color + "50",
         "margin": "5px",
         "borderRadius": "3px",
         "border": f"2px solid {new_color}",
     }
+    if img_idx in annotation_class_store["annotations"]:
+        for a in annotation_class_store["annotations"][img_idx]:
+            a["line"]["color"] = new_color
+
     return new_label, class_color_identifier, annotation_class_store, ""
 
 
