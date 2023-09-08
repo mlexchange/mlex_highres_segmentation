@@ -439,6 +439,7 @@ def open_delete_class_modal(
     Output({"type": "annotation-class-color", "index": MATCH}, "style"),
     Output({"type": "annotation-class-store", "index": MATCH}, "data"),
     Output({"type": "edit-annotation-class-text-input", "index": MATCH}, "value"),
+    Output({"type": "annotation-class", "index": MATCH}, "n_clicks"),
     Input({"type": "save-edited-annotation-class-btn", "index": MATCH}, "n_clicks"),
     State({"type": "edit-annotation-class-text-input", "index": MATCH}, "value"),
     State({"type": "edit-annotation-class-colorpicker", "index": MATCH}, "value"),
@@ -451,6 +452,7 @@ def edit_annotation_class(
 ):
     """This callback edits the name of an annotation class"""
     img_idx = str(img_idx - 1)
+    # update store meta data
     annotation_class_store["label"] = new_label
     annotation_class_store["color"] = new_color
     class_color_identifier = {
@@ -465,7 +467,7 @@ def edit_annotation_class(
         for a in annotation_class_store["annotations"][img_idx]:
             a["line"]["color"] = new_color
 
-    return new_label, class_color_identifier, annotation_class_store, ""
+    return new_label, class_color_identifier, annotation_class_store, "", 1
 
 
 @callback(
