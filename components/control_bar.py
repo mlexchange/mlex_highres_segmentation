@@ -3,6 +3,7 @@ from dash import html, dcc
 from dash_iconify import DashIconify
 from utils import data_utils
 from constants import ANNOT_ICONS, KEYBINDS
+import dash_bootstrap_components as dbc
 from dash_extensions import EventListener
 from components.annotation_class import annotation_class_item
 
@@ -453,10 +454,11 @@ def layout():
                                     children=[
                                         html.Div(
                                             [
-                                                dmc.ColorPicker(
+                                                dbc.Input(
+                                                    type="color",
                                                     id="annotation-class-colorpicker",
-                                                    format="rgb",
-                                                    value="rgb(255, 0, 0)",
+                                                    style={"width": 75, "height": 50},
+                                                    value="#DB0606",
                                                 ),
                                                 dmc.Space(w=25),
                                                 html.Div(
