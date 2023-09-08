@@ -43,13 +43,17 @@ import random
 @callback(
     Output("current-class-selection", "data", allow_duplicate=True),
     Input({"type": "annotation-class", "index": ALL}, "n_clicks"),
+    State({"type": "annotation-class-store", "index": ALL}, "data"),
     prevent_initial_call=True,
 )
-def update_current_class_selection(class_selected):
+def update_current_class_selection(class_selected, all_annotation_classes):
+    print(all_annotation_classes)
     current_selection = None
     if ctx.triggered_id:
         if len(ctx.triggered) == 1:
-            current_selection = ctx.triggered_id["index"]
+            for c in all_annotation_classes:
+                if c["class_id"] == ctx.triggered_id["index"]:
+                    current_selection = c["color"]
         # More than one item in the trigger means the trigger comes from adding a new class.
         # We dont want to reset the current selection in this case
         else:
@@ -60,9 +64,9 @@ def update_current_class_selection(class_selected):
 @callback(
     Output({"type": "annotation-class", "index": ALL}, "style"),
     Input("current-class-selection", "data"),
-    State({"type": "annotation-class", "index": ALL}, "id"),
+    State({"type": "annotation-class-store", "index": ALL}, "data"),
 )
-def update_selected_class_style(selected_class, current_ids):
+def update_selected_class_style(selected_class, all_annotation_classes):
     """
     This callback is responsible for updating the style of the selected annotation class to make it appear
     like it has been "selected"
@@ -82,7 +86,7 @@ def update_selected_class_style(selected_class, current_ids):
         "justifyContent": "space-between",
         "backgroundColor": "#EAECEF",
     }
-    ids = [c["index"] for c in current_ids]
+    ids = [c["color"] for c in all_annotation_classes]
     if selected_class in ids:
         # find index of selected class and change its style
         index = ids.index(selected_class)
@@ -514,7 +518,7 @@ def clear_annotation_class(
     annotation_class_store,
 ):
     """This callback updates the deleted-class-store with the color of the class to delete"""
-    deleted_class = annotation_class_store["color"]
+    deleted_class = annotation_class_store["class_id "]
     return deleted_class
 
 
