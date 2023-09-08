@@ -378,7 +378,6 @@ def open_edit_class_modal(
         "edit-annotation-class-text-input",
         "edit-annotation-class-colorpicker",
     ]:
-        print(new_color)
         # get all colors and labels
         current_classes = [a["label"] for a in all_annotation_class_store]
         current_colors = [a["color"] for a in all_annotation_class_store]
@@ -397,7 +396,6 @@ def open_edit_class_modal(
         return no_update, edit_disabled, error_msg, modal_title, no_update, no_update
     # add the current class name and color in the modal. (in case user wants to only edit one thing)
     if ctx.triggered_id["type"] == "edit-annotation-class":
-        print(class_to_edit["color"])
         return (
             not opened,
             no_update,
@@ -436,10 +434,31 @@ def open_delete_class_modal(
 
 
 @callback(
+    Output("image-viewer", "figure", allow_duplicate=True),
+    Input({"type": "edit-class-store", "index": ALL}, "data"),
+    State({"type": "annotation-class-store", "index": ALL}, "data"),
+    State("image-selection-slider", "value"),
+    prevent_initial_call=True,
+)
+def re_draw_annotations_after_editing_class_color(
+    hide_show_click, all_annotation_class_store, image_idx
+):
+    fig = Patch()
+    image_idx = str(image_idx - 1)
+    all_annotations = []
+    for a in all_annotation_class_store:
+        if a["is_visible"] and "annotations" in a and image_idx in a["annotations"]:
+            all_annotations += a["annotations"][image_idx]
+    fig["layout"]["shapes"] = all_annotations
+    return fig
+
+
+@callback(
     Output({"type": "annotation-class-label", "index": MATCH}, "children"),
     Output({"type": "annotation-class-color", "index": MATCH}, "style"),
     Output({"type": "annotation-class-store", "index": MATCH}, "data"),
     Output({"type": "annotation-class", "index": MATCH}, "n_clicks"),
+    Output({"type": "edit-class-store", "index": MATCH}, "data"),
     Input({"type": "save-edited-annotation-class-btn", "index": MATCH}, "n_clicks"),
     State({"type": "edit-annotation-class-text-input", "index": MATCH}, "value"),
     State({"type": "edit-annotation-class-colorpicker", "index": MATCH}, "value"),
@@ -467,7 +486,7 @@ def edit_annotation_class(
         for a in annotation_class_store["annotations"][img_idx]:
             a["line"]["color"] = new_color
 
-    return new_label, class_color_identifier, annotation_class_store, 1
+    return new_label, class_color_identifier, annotation_class_store, 1, True
 
 
 @callback(

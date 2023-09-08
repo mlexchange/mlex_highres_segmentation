@@ -46,6 +46,10 @@ def annotation_class_item(class_color, class_label):
                 id={"type": "hide-show-class-store", "index": class_id},
                 data={"is_visible": True},
             ),
+            dcc.Store(
+                id={"type": "edit-class-store", "index": class_id},
+                data={"is_visible": True},
+            ),
             html.Div(
                 [
                     # colored box to represent the color of an annotation class
