@@ -58,7 +58,7 @@ class Annotations:
             idx = list(item)[i][0]
             npy_buffer = io.BytesIO()
             np.save(npy_buffer, arr)
-            npy_files.append((f"mask_{idx}.{file_extension}", npy_buffer.getvalue()))
+            npy_files.append((f"mask_{idx+1}.{file_extension}", npy_buffer.getvalue()))
 
         # Step 2: Add the .npy files to a .zip file using buffer
         with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zipf:
