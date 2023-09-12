@@ -1,5 +1,6 @@
-# Dash-App for Segmentation of High-Resolution Images
-...
+# Dash App for Segmentation of High-Resolution Images
+
+This applications is built using Plotly's [Dash](https://dash.plotly.com/) framework and provides a web-based interface for visualizing and annotating high resolution images. 
 
 ## How to use?
 
