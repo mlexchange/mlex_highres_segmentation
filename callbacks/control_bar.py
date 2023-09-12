@@ -776,8 +776,7 @@ def populate_load_annotations_dropdown_menu_options(modal_opened, image_src):
 
 
 @callback(
-    Output("image-viewer", "figure", allow_duplicate=True),
-    Output("annotation-store", "data", allow_duplicate=True),
+    Output("annotation-class-container", "children", allow_duplicate=True),
     Output("data-management-modal", "opened", allow_duplicate=True),
     Input({"type": "load-server-annotations", "index": ALL}, "n_clicks"),
     State("project-name-src", "value"),
@@ -791,7 +790,6 @@ def load_and_apply_selected_annotations(selected_annotation, image_src, img_idx)
     # this callback is triggered when the buttons are created, when that happens we can stop it
     if all([x is None for x in selected_annotation]):
         raise PreventUpdate
-    img_idx -= 1  # dmc.Slider starts from 1, but we need to start from 0
 
     selected_annotation_timestamp = json.loads(
         ctx.triggered[0]["prop_id"].split(".")[0]
@@ -801,14 +799,12 @@ def load_and_apply_selected_annotations(selected_annotation, image_src, img_idx)
     data = DEV_load_exported_json_data(EXPORT_FILE_PATH, USER_NAME, image_src)
     data = DEV_filter_json_data_by_timestamp(data, str(selected_annotation_timestamp))
     data = data[0]["data"]
-    # TODO : when quering from the server, load (data) for user, source, time
-    patched_figure = Patch()
-    if str(img_idx) in data["annotations"]:
-        patched_figure["layout"]["shapes"] = data["annotations"][str(img_idx)]
-    else:
-        patched_figure["layout"]["shapes"] = []
 
-    return patched_figure, data, False
+    annotations = []
+    for annotation_class in data:
+        annotations.append(annotation_class_item(None, None, None, annotation_class))
+
+    return annotations, False
 
 
 @callback(
