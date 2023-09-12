@@ -25,16 +25,8 @@ class Annotations:
                     for shape in slice_data:
                         self._set_annotation_type(shape)
                         self._set_annotation_svg(shape)
-                        # the id of the annotation is the concatenation of its rgb color
-                        id = int(
-                            annotation_class["color"]
-                            .replace("rgb(", "")
-                            .replace(")", "")
-                            .replace(", ", "")
-                            .replace(",", "")
-                        )
                         annotation = {
-                            "id": id,
+                            "id": annotation_class["class_id"],
                             "type": self.annotation_type,
                             "class": annotation_class["label"],
                             "line_width": shape["line"]["width"],

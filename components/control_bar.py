@@ -431,7 +431,7 @@ def layout():
                                         html.Div(
                                             children=[
                                                 annotation_class_item(
-                                                    "#FFA200", "Class 1"
+                                                    "#FFA200", "Class 1", []
                                                 )
                                             ],
                                             id="annotation-class-container",

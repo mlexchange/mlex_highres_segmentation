@@ -2,6 +2,7 @@ import os
 import json
 import requests
 from urllib.parse import urlparse
+import httpx
 
 from tiled.client import from_uri
 from tiled.client.cache import Cache
@@ -103,7 +104,7 @@ if os.getenv("SERVE_LOCALLY", False):
     client = from_uri("http://localhost:8000")
     data = client
 else:
-    client = from_uri(TILED_URI, api_key=API_KEY)
+    client = from_uri(TILED_URI, api_key=API_KEY, timeout=httpx.Timeout(30.0))
     data = client["reconstruction"]
 
 

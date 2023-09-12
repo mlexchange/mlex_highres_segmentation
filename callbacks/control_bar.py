@@ -506,6 +506,7 @@ def edit_annotation_class(
     State("annotation-class-container", "children"),
     State("annotation-class-label", "value"),
     State("annotation-class-colorpicker", "value"),
+    State({"type": "annotation-class-store", "index": ALL}, "data"),
     prevent_initial_call=True,
 )
 def add_annotation_class(
@@ -513,9 +514,11 @@ def add_annotation_class(
     current_classes,
     new_class_label,
     new_class_color,
+    all_annotations_data
 ):
     """This callback adds a new annotation class with the same chosen color and label"""
-    current_classes.append(annotation_class_item(new_class_color, new_class_label))
+    existing_ids = [annotation['class_id'] for annotation in all_annotations_data]
+    current_classes.append(annotation_class_item(new_class_color, new_class_label, existing_ids))
     return "", current_classes, new_class_color
 
 

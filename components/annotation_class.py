@@ -21,9 +21,9 @@ def get_action_icon(type, class_id, icon):
 
 # This function generates a class component with all its buttons (hide/show, edit, delete)
 # The class color is used as an ID to identify a class (as all class colors are unique and cannot be modified)
-def annotation_class_item(class_color, class_label):
+def annotation_class_item(class_color, class_label, existing_ids):
     class_color_transparent = class_color + "50"
-    class_id = str(uuid.uuid4())
+    class_id = 1 if not existing_ids else max(existing_ids) + 1
     return html.Div(
         [  # This store will contain all the meta data for an individual annotation class
             dcc.Store(
