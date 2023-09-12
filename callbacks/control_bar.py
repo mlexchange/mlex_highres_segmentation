@@ -369,10 +369,20 @@ def open_edit_class_modal(
     all_annotation_class_store,
 ):
     """
-    This callback opens and closes the modal that allows you to relabel an existing annotation class
-    and checks if the new class name is available.
+    This callback opens and closes the modal that allows you to relabel an existing annotation class and change its color
+    and checks if the new class name/class color is available.
     """
     modal_title = f"Edit class: {class_to_edit['label']}"
+    # add the current class name and color in the modal (in case user wants to only edit one thing)
+    if ctx.triggered_id["type"] == "edit-annotation-class":
+        return (
+            not opened,
+            no_update,
+            no_update,
+            no_update,
+            class_to_edit["label"],
+            class_to_edit["color"],
+        )
     # check for duplicate color/duplicate label
     if ctx.triggered_id["type"] in [
         "edit-annotation-class-text-input",
@@ -391,20 +401,9 @@ def open_edit_class_modal(
             error_msg.append(html.Br())
             edit_disabled = True
         if new_color in current_colors:
-            edit_disabled = True
             error_msg.append("Color Already in use!")
+            edit_disabled = True
         return no_update, edit_disabled, error_msg, modal_title, no_update, no_update
-    # add the current class name and color in the modal. (in case user wants to only edit one thing)
-    if ctx.triggered_id["type"] == "edit-annotation-class":
-        return (
-            not opened,
-            no_update,
-            no_update,
-            no_update,
-            class_to_edit["label"],
-            class_to_edit["color"],
-        )
-
     return not opened, False, no_update, modal_title, no_update, no_update
 
 
@@ -443,6 +442,10 @@ def open_delete_class_modal(
 def re_draw_annotations_after_editing_class_color(
     hide_show_click, all_annotation_class_store, image_idx
 ):
+    """
+    After editing a class color, the color is changed in the class-store, but the color change is not reflected
+    on the image, so we must regenerate the annotations using Patch() so they show up in the right color.
+    """
     fig = Patch()
     image_idx = str(image_idx - 1)
     all_annotations = []
@@ -469,7 +472,10 @@ def re_draw_annotations_after_editing_class_color(
 def edit_annotation_class(
     edit_clicked, new_label, new_color, annotation_class_store, img_idx
 ):
-    """This callback edits the name of an annotation class"""
+    """
+    This callback edits the name and color of an annotation class by updating class-store metadata. We also trigger
+    edit-class-store so we can then redraw the annotations in re_draw_annotations_after_editing_class_color().
+    """
     img_idx = str(img_idx - 1)
     # update store meta data
     annotation_class_store["label"] = new_label
@@ -482,6 +488,7 @@ def edit_annotation_class(
         "borderRadius": "3px",
         "border": f"2px solid {new_color}",
     }
+    # update color in previous annotation data
     if img_idx in annotation_class_store["annotations"]:
         for a in annotation_class_store["annotations"][img_idx]:
             a["line"]["color"] = new_color
