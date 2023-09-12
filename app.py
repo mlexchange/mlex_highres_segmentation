@@ -14,7 +14,7 @@ app.layout = dmc.MantineProvider(
     children=[
         control_bar_layout(),
         image_viewer_layout(),
-        dcc.Store(id="current-class-selection", data="rgb(22,17,79)"),
+        dcc.Store(id="current-class-selection", data="#FFA200"),
     ],
 )
 

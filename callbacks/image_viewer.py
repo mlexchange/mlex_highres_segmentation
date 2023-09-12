@@ -134,10 +134,22 @@ def render_image(
     Input("keybind-event-listener", "event"),
     State("image-selection-slider", "value"),
     State("image-selection-slider", "max"),
+    State("generate-annotation-class-modal", "opened"),
+    State({"type": "edit-annotation-class-modal", "index": ALL}, "opened"),
     prevent_initial_call=True,
 )
-def keybind_image_slider(n_events, keybind_event_listener, current_slice, max_slice):
+def keybind_image_slider(
+    n_events,
+    keybind_event_listener,
+    current_slice,
+    max_slice,
+    generate_modal_opened,
+    edit_modal_opened,
+):
     """Allows user to use left/right arrow keys to navigate through images"""
+    if generate_modal_opened or any(edit_modal_opened):
+        raise PreventUpdate
+
     pressed_key = (
         keybind_event_listener.get("key", None) if keybind_event_listener else None
     )

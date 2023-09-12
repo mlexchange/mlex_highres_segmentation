@@ -108,9 +108,13 @@ body {
     border-color: #EAECEF !important;
 }
 
-.add-class-btn:hover,
 .annotation-class:hover {
     background-color: #EAECEF !important;
+    cursor: pointer;
+}
+
+.add-class-btn:hover {
+    background-color: #eaecef24 !important;
     cursor: pointer;
 }
 

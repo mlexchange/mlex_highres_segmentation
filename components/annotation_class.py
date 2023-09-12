@@ -1,14 +1,16 @@
 import dash_mantine_components as dmc
 from dash import html, dcc
 from dash_iconify import DashIconify
+import uuid
+import dash_bootstrap_components as dbc
 
 
 # This fucntion creates the action icons needed for an annoation class: specifically hide/show, edit and delete actions
-def get_action_icon(id, color, icon):
+def get_action_icon(type, class_id, icon):
     return dmc.ActionIcon(
         id={
-            "type": id,
-            "index": color,
+            "type": type,
+            "index": class_id,
         },
         variant="subtle",
         color="gray",
@@ -20,27 +22,31 @@ def get_action_icon(id, color, icon):
 # This function generates a class component with all its buttons (hide/show, edit, delete)
 # The class color is used as an ID to identify a class (as all class colors are unique and cannot be modified)
 def annotation_class_item(class_color, class_label):
-    color = class_color
-    class_color = color.replace("rgb", "rgba")
-    class_color_transparent = class_color[:-1] + ",0.5)"
+    class_color_transparent = class_color + "50"
+    class_id = str(uuid.uuid4())
     return html.Div(
         [  # This store will contain all the meta data for an individual annotation class
             dcc.Store(
                 id={
                     "type": "annotation-class-store",
-                    "index": color,
+                    "index": class_id,
                 },
                 data={
                     "annotations": {},
-                    "color": color,
+                    "color": class_color,
                     "label": class_label,
                     "is_visible": True,
+                    "class_id": class_id,
                 },
             ),
             # These stores are solely responsible for triggereing a callback when a class is deleted or shown/hidden
-            dcc.Store(id={"type": "deleted-class-store", "index": color}),
+            dcc.Store(id={"type": "deleted-class-store", "index": class_id}),
             dcc.Store(
-                id={"type": "hide-show-class-store", "index": color},
+                id={"type": "hide-show-class-store", "index": class_id},
+                data={"is_visible": True},
+            ),
+            dcc.Store(
+                id={"type": "edit-class-store", "index": class_id},
                 data={"is_visible": True},
             ),
             html.Div(
@@ -53,14 +59,18 @@ def annotation_class_item(class_color, class_label):
                             "background-color": class_color_transparent,
                             "margin": "5px",
                             "borderRadius": "3px",
-                            "border": f"2px solid {color}",
+                            "border": f"2px solid {class_color}",
+                        },
+                        id={
+                            "type": "annotation-class-color",
+                            "index": class_id,
                         },
                     ),
                     html.Div(
                         class_label,
                         id={
                             "type": "annotation-class-label",
-                            "index": color,
+                            "index": class_id,
                         },
                     ),
                 ],
@@ -73,10 +83,10 @@ def annotation_class_item(class_color, class_label):
             ),
             html.Div(
                 [
-                    get_action_icon("hide-annotation-class", color, "mdi:eye"),
-                    get_action_icon("edit-annotation-class", color, "uil:edit"),
+                    get_action_icon("hide-annotation-class", class_id, "mdi:eye"),
+                    get_action_icon("edit-annotation-class", class_id, "uil:edit"),
                     get_action_icon(
-                        "delete-annotation-class", color, "octicon:trash-24"
+                        "delete-annotation-class", class_id, "octicon:trash-24"
                     ),
                 ],
                 style={
@@ -87,30 +97,59 @@ def annotation_class_item(class_color, class_label):
                 },
             ),
             dmc.Modal(
-                id={"type": "edit-annotation-class-modal", "index": color},
+                id={"type": "edit-annotation-class-modal", "index": class_id},
                 title="Edit a Custom Annotation Class",
                 children=[
-                    dmc.TextInput(
-                        id={
-                            "type": "edit-annotation-class-text-input",
-                            "index": color,
+                    html.Div(
+                        [
+                            dbc.Input(
+                                type="color",
+                                id={
+                                    "type": "edit-annotation-class-colorpicker",
+                                    "index": class_id,
+                                },
+                                style={"width": 75, "height": 50},
+                            ),
+                            dmc.Space(w=25),
+                            html.Div(
+                                [
+                                    dmc.TextInput(
+                                        id={
+                                            "type": "edit-annotation-class-text-input",
+                                            "index": class_id,
+                                        },
+                                        placeholder="New class label...",
+                                    ),
+                                    html.Div(
+                                        id={
+                                            "type": "bad-edit-label",
+                                            "index": class_id,
+                                        },
+                                        style={
+                                            "color": "red",
+                                            "fontSize": "12px",
+                                            "padding": "3px",
+                                        },
+                                    ),
+                                ]
+                            ),
+                        ],
+                        style={
+                            "display": "flex",
+                            "justify-content": "flex-row",
+                            "align-items": "center",
                         },
-                        placeholder="New class name...",
-                        style={"width": "70%"},
                     ),
                     html.Div(
-                        id={"type": "bad-edit-label", "index": color},
-                        style={"color": "red", "fontSize": "12px", "padding": "3px"},
-                    ),
-                    dmc.Space(h=25),
-                    html.Div(
-                        dmc.Button(
-                            id={
-                                "type": "relabel-annotation-class-btn",
-                                "index": color,
-                            },
-                            children="Save",
-                        ),
+                        [
+                            dmc.Button(
+                                id={
+                                    "type": "save-edited-annotation-class-btn",
+                                    "index": class_id,
+                                },
+                                children="Save",
+                            ),
+                        ],
                         style={
                             "display": "flex",
                             "justify-content": "flex-end",
@@ -119,7 +158,7 @@ def annotation_class_item(class_color, class_label):
                 ],
             ),
             dmc.Modal(
-                id={"type": "delete-annotation-class-modal", "index": color},
+                id={"type": "delete-annotation-class-modal", "index": class_id},
                 children=[
                     dmc.Center(
                         dmc.Text(
@@ -132,7 +171,7 @@ def annotation_class_item(class_color, class_label):
                             dmc.Button(
                                 id={
                                     "type": "modal-cancel-delete-class-btn",
-                                    "index": color,
+                                    "index": class_id,
                                 },
                                 children="Cancel",
                             ),
@@ -140,7 +179,7 @@ def annotation_class_item(class_color, class_label):
                             dmc.Button(
                                 id={
                                     "type": "modal-continue-delete-class-btn",
-                                    "index": color,
+                                    "index": class_id,
                                 },
                                 children="Confirm",
                                 variant="outline",
@@ -163,5 +202,5 @@ def annotation_class_item(class_color, class_label):
             "justifyContent": "space-between",
         },
         className="annotation-class",
-        id={"type": "annotation-class", "index": color},
+        id={"type": "annotation-class", "index": class_id},
     )
