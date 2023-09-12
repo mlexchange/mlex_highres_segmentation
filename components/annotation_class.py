@@ -3,7 +3,6 @@ from dash import html, dcc
 from dash_iconify import DashIconify
 import uuid
 import dash_bootstrap_components as dbc
-import dash_daq as daq
 
 
 # This fucntion creates the action icons needed for an annoation class: specifically hide/show, edit and delete actions
