@@ -1,14 +1,14 @@
-import os
 import json
-import requests
+import os
 from urllib.parse import urlparse
 import httpx
 
+import requests
+from dotenv import load_dotenv
 from tiled.client import from_uri
+from tiled.client.array import ArrayClient
 from tiled.client.cache import Cache
 from tiled.client.container import Container
-from tiled.client.array import ArrayClient
-from dotenv import load_dotenv
 
 
 def DEV_download_google_sample_data():

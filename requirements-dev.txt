@@ -3,3 +3,4 @@ flake8==6.0.0
 tiled[all]
 pytest
 pytest-mock
+isort==5.12.0
