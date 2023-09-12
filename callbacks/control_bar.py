@@ -4,16 +4,29 @@ import os
 import time
 
 import dash_mantine_components as dmc
-from dash import (ALL, MATCH, Input, Output, Patch, State, callback,
-                  clientside_callback, ctx, dcc, no_update)
+from dash import (
+    ALL,
+    MATCH,
+    Input,
+    Output,
+    Patch,
+    State,
+    callback,
+    clientside_callback,
+    ctx,
+    dcc,
+    no_update,
+)
 from dash.exceptions import PreventUpdate
 from dash_iconify import DashIconify
 
 from components.control_bar import class_action_icon
 from constants import ANNOT_ICONS, ANNOT_NOTIFICATION_MSGS, KEYBINDS
 from utils.annotations import Annotations
-from utils.data_utils import (DEV_filter_json_data_by_timestamp,
-                              DEV_load_exported_json_data)
+from utils.data_utils import (
+    DEV_filter_json_data_by_timestamp,
+    DEV_load_exported_json_data,
+)
 
 # TODO - temporary local file path and user for annotation saving and exporting
 EXPORT_FILE_PATH = "data/exported_annotation_data.json"

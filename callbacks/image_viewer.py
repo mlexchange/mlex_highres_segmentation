@@ -4,15 +4,27 @@ import dash
 import dash_mantine_components as dmc
 import numpy as np
 import plotly.express as px
-from dash import (ClientsideFunction, Input, Output, Patch, State, callback,
-                  clientside_callback, ctx)
+from dash import (
+    ClientsideFunction,
+    Input,
+    Output,
+    Patch,
+    State,
+    callback,
+    clientside_callback,
+    ctx,
+)
 from dash.exceptions import PreventUpdate
 from dash_iconify import DashIconify
 
 from constants import ANNOT_ICONS, ANNOT_NOTIFICATION_MSGS, KEYBINDS
 from utils.data_utils import get_data_sequence_by_name, get_data_shape_by_name
-from utils.plot_utils import (create_viewfinder, downscale_view,
-                              get_view_finder_max_min, resize_canvas)
+from utils.plot_utils import (
+    create_viewfinder,
+    downscale_view,
+    get_view_finder_max_min,
+    resize_canvas,
+)
 
 clientside_callback(
     ClientsideFunction(namespace="clientside", function_name="get_container_size"),

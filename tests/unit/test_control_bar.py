@@ -18,4 +18,5 @@ def test_reset_filters(mocker, nclicks, tiled_data_mock):
         return_value=tiled_data_mock,
     )
     from callbacks.control_bar import reset_filters
+
     assert reset_filters(nclicks) == 100
