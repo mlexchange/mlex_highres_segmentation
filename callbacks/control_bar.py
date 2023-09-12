@@ -510,15 +510,13 @@ def edit_annotation_class(
     prevent_initial_call=True,
 )
 def add_annotation_class(
-    create,
-    current_classes,
-    new_class_label,
-    new_class_color,
-    all_annotations_data
+    create, current_classes, new_class_label, new_class_color, all_annotations_data
 ):
     """This callback adds a new annotation class with the same chosen color and label"""
-    existing_ids = [annotation['class_id'] for annotation in all_annotations_data]
-    current_classes.append(annotation_class_item(new_class_color, new_class_label, existing_ids))
+    existing_ids = [annotation["class_id"] for annotation in all_annotations_data]
+    current_classes.append(
+        annotation_class_item(new_class_color, new_class_label, existing_ids)
+    )
     return "", current_classes, new_class_color
 
 
@@ -699,31 +697,34 @@ def export_annotation(n_clicks, all_annotations, global_store):
     Output("data-modal-save-status", "children"),
     Input("save-annotations", "n_clicks"),
     State("annotation-store", "data"),
+    State({"type": "annotation-class-store", "index": ALL}, "data"),
     State("project-name-src", "value"),
     prevent_initial_call=True,
 )
-def save_data(n_clicks, annotation_store, image_src):
+def save_data(n_clicks, global_store, all_annotations, image_src):
     """This callback is responsible for saving the annotation data to the store"""
     if not n_clicks:
         raise PreventUpdate
-    if annotation_store["annotations"] == {}:
-        return "No annotations to save!"
 
-    # TODO: save store to the server file-user system, this will be changed to DB later
-    export_data = {
-        "user": USER_NAME,
-        "source": image_src,
-        "time": time.strftime("%Y-%m-%d-%H:%M:%S"),
-        "data": json.dumps(annotation_store),
-    }
-    # Convert export_data to JSON string
-    export_data_json = json.dumps(export_data)
+    print(all_annotations)
 
-    # Append export_data JSON string to the file
-    if export_data["data"] != "{}":
-        with open(EXPORT_FILE_PATH, "a+") as f:
-            f.write(export_data_json + "\n")
-    return "Data saved!"
+    if all_annotations:
+        # TODO: save store to the server file-user system, this will be changed to DB later
+        export_data = {
+            "user": USER_NAME,
+            "source": image_src,
+            "time": time.strftime("%Y-%m-%d-%H:%M:%S"),
+            "data": json.dumps(all_annotations),
+        }
+        # Convert export_data to JSON string
+        export_data_json = json.dumps(export_data)
+
+        # Append export_data JSON string to the file
+        if export_data["data"] != "{}":
+            with open(EXPORT_FILE_PATH, "a+") as f:
+                f.write(export_data_json + "\n")
+        return "Data saved!"
+    return "No annotations to save!"
 
 
 @callback(
@@ -751,23 +752,18 @@ def populate_load_annotations_dropdown_menu_options(modal_opened, image_src):
     if not modal_opened:
         raise PreventUpdate
 
-    # TODO : when quering from the server, get (annotation save time) for user, source, order by time
     data = DEV_load_exported_json_data(EXPORT_FILE_PATH, USER_NAME, image_src)
     if not data:
         return "No annotations found for the selected data source."
-    # TODO : when quering from the server, load data for user, source, order by time
 
     buttons = []
-    for i, data_json in enumerate(data):
-        no_of_annotations = 0
-        for key, annotation_list in data_json["data"]["annotations"].items():
-            no_of_annotations += len(annotation_list)
-
-        number_of_annotated_images = len(data_json["data"]["annotations"])
+    for item in data:
+        annotations = item["data"]
+        num_classes = len(annotations)
         buttons.append(
             dmc.Button(
-                f"{no_of_annotations} annotations across {number_of_annotated_images} images, created at {data_json['time']}",
-                id={"type": "load-server-annotations", "index": data_json["time"]},
+                f"{num_classes} classes, created at {item['time']}",
+                id={"type": "load-server-annotations", "index": item["time"]},
                 variant="light",
             )
         )
