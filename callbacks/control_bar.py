@@ -492,6 +492,7 @@ def edit_annotation_class(
     if img_idx in annotation_class_store["annotations"]:
         for a in annotation_class_store["annotations"][img_idx]:
             a["line"]["color"] = new_color
+            a["fillcolor"] = new_color
 
     return new_label, class_color_identifier, annotation_class_store, 1, True
 
