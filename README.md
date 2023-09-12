@@ -1,6 +1,9 @@
 # Dash App for Segmentation of High-Resolution Images
 
-This applications is built using Plotly's [Dash](https://dash.plotly.com/) framework and provides a web-based interface for visualizing and annotating high resolution images. 
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black) [![Imports: isort](https://img.shields.io/badge/%20imports-isort-%231674b1)](https://pycqa.github.io/isort/)
+
+This applications is built using Plotly's [Dash](https://dash.plotly.com/) framework and provides a web-based interface for visualizing and annotating high resolution images output from [ALS](https://als.lbl.gov/) beamlines. 
+
 
 ## How to use?
 
@@ -10,6 +13,12 @@ This applications is built using Plotly's [Dash](https://dash.plotly.com/) frame
 
 ```
 pip install -r requirements.txt
+```
+
+and 
+
+```
+pip install -r requirements-dev.txt
 ```
 
 2. Configure a connection to the Tiled server via a `.env` file with the following environment variables:
