@@ -1,28 +1,18 @@
-from dash import (
-    Input,
-    Output,
-    State,
-    callback,
-    ctx,
-    Patch,
-    clientside_callback,
-    ClientsideFunction,
-)
+import random
+
 import dash
 import dash_mantine_components as dmc
-from dash.exceptions import PreventUpdate
-import plotly.express as px
 import numpy as np
-import random
+import plotly.express as px
+from dash import (ClientsideFunction, Input, Output, Patch, State, callback,
+                  clientside_callback, ctx)
+from dash.exceptions import PreventUpdate
 from dash_iconify import DashIconify
-from utils.data_utils import get_data_shape_by_name, get_data_sequence_by_name
-from constants import KEYBINDS, ANNOT_ICONS, ANNOT_NOTIFICATION_MSGS
-from utils.plot_utils import (
-    create_viewfinder,
-    downscale_view,
-    get_view_finder_max_min,
-    resize_canvas,
-)
+
+from constants import ANNOT_ICONS, ANNOT_NOTIFICATION_MSGS, KEYBINDS
+from utils.data_utils import get_data_sequence_by_name, get_data_shape_by_name
+from utils.plot_utils import (create_viewfinder, downscale_view,
+                              get_view_finder_max_min, resize_canvas)
 
 clientside_callback(
     ClientsideFunction(namespace="clientside", function_name="get_container_size"),

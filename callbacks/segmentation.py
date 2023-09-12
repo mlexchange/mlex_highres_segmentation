@@ -1,7 +1,8 @@
-from dash import callback, Input, Output, State, no_update
+import numpy as np
+from dash import Input, Output, State, callback, no_update
+
 from utils.annotations import Annotations
 from utils.data_utils import get_data_sequence_by_name
-import numpy as np
 
 
 # NEXT STEPS:
