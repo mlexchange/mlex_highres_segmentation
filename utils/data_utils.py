@@ -1,8 +1,8 @@
 import json
 import os
 from urllib.parse import urlparse
-import httpx
 
+import httpx
 import requests
 from dotenv import load_dotenv
 from tiled.client import from_uri
