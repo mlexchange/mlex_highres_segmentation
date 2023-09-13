@@ -7,6 +7,7 @@ from constants import ANNOT_ICONS, KEYBINDS
 import dash_bootstrap_components as dbc
 from dash_extensions import EventListener
 from components.annotation_class import annotation_class_item
+from utils import data_utils
 
 
 def _tooltip(text, children):
