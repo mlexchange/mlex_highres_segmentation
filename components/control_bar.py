@@ -1,7 +1,8 @@
 import dash_mantine_components as dmc
-from dash import html, dcc
+from dash import dcc, html
+from dash_extensions import EventListener
 from dash_iconify import DashIconify
-from utils import data_utils
+
 from constants import ANNOT_ICONS, KEYBINDS
 import dash_bootstrap_components as dbc
 from dash_extensions import EventListener

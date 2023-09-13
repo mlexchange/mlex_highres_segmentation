@@ -1,17 +1,15 @@
+import io
+import math
+import zipfile
+
 import numpy as np
 from skimage import draw
 import math
 from svgpathtools import parse_path
-from matplotlib.path import Path
-import scipy.sparse as sp
-import io
-
-import zipfile
 
 
 class Annotations:
     def __init__(self, annotation_store, global_store):
-
         if annotation_store:
             slices = []
             for annotation_class in annotation_store:
@@ -20,7 +18,6 @@ class Annotations:
             annotations = {key: [] for key in slices}
 
             for annotation_class in annotation_store:
-
                 for image_idx, slice_data in annotation_class["annotations"].items():
                     for shape in slice_data:
                         self._set_annotation_type(shape)

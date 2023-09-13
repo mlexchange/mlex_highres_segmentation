@@ -1,21 +1,20 @@
 import os
 import time
 from dash import (
-    Input,
-    Output,
-    dcc,
-    State,
-    callback,
-    Patch,
     ALL,
     MATCH,
-    ctx,
+    Input,
+    Output,
+    Patch,
+    State,
+    callback,
     clientside_callback,
+    ctx,
+    dcc,
     no_update,
     html,
 )
 from dash.exceptions import PreventUpdate
-import dash_mantine_components as dmc
 from dash_iconify import DashIconify
 import json
 from utils.annotations import Annotations
@@ -23,8 +22,8 @@ from components.annotation_class import annotation_class_item
 from constants import KEYBINDS, ANNOT_ICONS, ANNOT_NOTIFICATION_MSGS, KEY_MODES
 import json
 from utils.data_utils import (
-    DEV_load_exported_json_data,
     DEV_filter_json_data_by_timestamp,
+    DEV_load_exported_json_data,
 )
 
 
@@ -658,7 +657,6 @@ clientside_callback(
     prevent_initial_call=True,
 )
 def export_annotation(n_clicks, all_annotations, global_store):
-
     annotations = Annotations(all_annotations, global_store)
     EXPORT_AS_SPARSE = False  # todo replace with input
 

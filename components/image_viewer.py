@@ -1,6 +1,7 @@
-from dash import html, dcc
 import dash_mantine_components as dmc
+from dash import dcc, html
 from dash_iconify import DashIconify
+
 from utils.plot_utils import blank_fig
 
 COMPONENT_STYLE = {
