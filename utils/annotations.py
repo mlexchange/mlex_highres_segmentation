@@ -4,7 +4,6 @@ import zipfile
 
 import numpy as np
 from skimage import draw
-import math
 from svgpathtools import parse_path
 
 

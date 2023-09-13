@@ -1,4 +1,5 @@
-from dash import callback, Input, Output, State, no_update, ALL
+from dash import ALL, Input, Output, State, callback, no_update
+
 from utils.annotations import Annotations
 from utils.data_utils import get_data_sequence_by_name
 

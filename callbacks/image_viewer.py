@@ -5,6 +5,7 @@ import dash_mantine_components as dmc
 import numpy as np
 import plotly.express as px
 from dash import (
+    ALL,
     ClientsideFunction,
     Input,
     Output,
@@ -12,8 +13,6 @@ from dash import (
     State,
     callback,
     clientside_callback,
-    ClientsideFunction,
-    ALL,
 )
 from dash.exceptions import PreventUpdate
 from dash_iconify import DashIconify

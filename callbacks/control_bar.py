@@ -1,5 +1,7 @@
+import json
 import os
 import time
+
 from dash import (
     ALL,
     MATCH,
@@ -11,21 +13,19 @@ from dash import (
     clientside_callback,
     ctx,
     dcc,
-    no_update,
     html,
+    no_update,
 )
 from dash.exceptions import PreventUpdate
 from dash_iconify import DashIconify
-import json
-from utils.annotations import Annotations
+
 from components.annotation_class import annotation_class_item
-from constants import KEYBINDS, ANNOT_ICONS, ANNOT_NOTIFICATION_MSGS, KEY_MODES
-import json
+from constants import ANNOT_ICONS, ANNOT_NOTIFICATION_MSGS, KEY_MODES, KEYBINDS
+from utils.annotations import Annotations
 from utils.data_utils import (
     DEV_filter_json_data_by_timestamp,
     DEV_load_exported_json_data,
 )
-
 
 # TODO - temporary local file path and user for annotation saving and exporting
 EXPORT_FILE_PATH = "data/exported_annotation_data.json"
