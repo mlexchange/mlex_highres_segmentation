@@ -3,7 +3,9 @@ import math
 import zipfile
 
 import numpy as np
-from skimage import draw
+import scipy.sparse as sp
+from matplotlib.path import Path
+from skimage import draw, morphology
 from svgpathtools import parse_path
 
 
