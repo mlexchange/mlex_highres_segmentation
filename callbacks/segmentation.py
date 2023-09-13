@@ -1,3 +1,4 @@
+import numpy as np
 from dash import ALL, Input, Output, State, callback, no_update
 
 from utils.annotations import Annotations
