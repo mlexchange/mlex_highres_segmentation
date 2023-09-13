@@ -1,10 +1,31 @@
 import dash_mantine_components as dmc
-from dash import html, dcc
-from dash_iconify import DashIconify
-from utils import data_utils
-from constants import ANNOT_ICONS, KEYBINDS
-import random
+from dash import dcc, html
 from dash_extensions import EventListener
+from dash_iconify import DashIconify
+
+from constants import ANNOT_ICONS, KEYBINDS
+from utils import data_utils
+
+
+def _tooltip(text, children):
+    return dmc.Tooltip(
+        label=text, withArrow=True, position="top", color="#464646", children=children
+    )
+
+
+def _control_item(title, title_id, item):
+    return dmc.Grid(
+        [
+            dmc.Text(
+                title,
+                id=title_id,
+                size="sm",
+                style={"width": "100px", "margin": "auto", "paddingRight": "5px"},
+                align="right",
+            ),
+            html.Div(item, style={"width": "265px", "margin": "auto"}),
+        ]
+    )
 
 
 def _accordion_item(title, icon, value, children, id):
@@ -14,7 +35,7 @@ def _accordion_item(title, icon, value, children, id):
                 title,
                 icon=DashIconify(
                     icon=icon,
-                    color=dmc.theme.DEFAULT_COLORS["blue"][6],
+                    color="#00313C",
                     width=20,
                 ),
             ),
@@ -37,8 +58,6 @@ def layout():
             style={"width": "400px"},
             children=[
                 dmc.AccordionMultiple(
-                    chevron=DashIconify(icon="ant-design:plus-outlined"),
-                    disableChevronRotation=True,
                     value=["data-select", "image-transformations", "annotations"],
                     children=[
                         _accordion_item(
@@ -47,14 +66,81 @@ def layout():
                             "data-select",
                             id="data-selection-controls",
                             children=[
-                                dmc.Text("Image"),
-                                dmc.Select(
-                                    id="project-name-src",
-                                    data=DATA_OPTIONS,
-                                    value=DATA_OPTIONS[0] if DATA_OPTIONS else None,
-                                    placeholder="Select an image to view...",
+                                dmc.Space(h=5),
+                                _control_item(
+                                    "Dataset",
+                                    "image-selector",
+                                    dmc.Select(
+                                        id="project-name-src",
+                                        data=DATA_OPTIONS,
+                                        value=DATA_OPTIONS[0] if DATA_OPTIONS else None,
+                                        placeholder="Select an image to view...",
+                                    ),
                                 ),
-                                dmc.Space(h=20),
+                                dmc.Space(h=25),
+                                _control_item(
+                                    "Slice 1",
+                                    "image-selection-text",
+                                    [
+                                        dmc.Grid(
+                                            [
+                                                dmc.Col(
+                                                    _tooltip(
+                                                        "Previous image",
+                                                        children=dmc.ActionIcon(
+                                                            DashIconify(
+                                                                icon="ooui:previous-ltr",
+                                                                width=10,
+                                                            ),
+                                                            variant="subtle",
+                                                            size="sm",
+                                                            id="image-selection-previous",
+                                                        ),
+                                                    ),
+                                                    span=1,
+                                                    style={
+                                                        "margin": "auto",
+                                                        "paddingRight": "0px",
+                                                    },
+                                                ),
+                                                dmc.Col(
+                                                    [
+                                                        dmc.Slider(
+                                                            min=1,
+                                                            max=1000,
+                                                            step=1,
+                                                            value=25,
+                                                            id="image-selection-slider",
+                                                            size="sm",
+                                                            color="gray",
+                                                        ),
+                                                    ],
+                                                    span="auto",
+                                                    style={"margin": "auto"},
+                                                ),
+                                                dmc.Col(
+                                                    _tooltip(
+                                                        "Next image",
+                                                        children=dmc.ActionIcon(
+                                                            DashIconify(
+                                                                icon="ooui:previous-rtl",
+                                                                width=10,
+                                                            ),
+                                                            variant="subtle",
+                                                            id="image-selection-next",
+                                                        ),
+                                                    ),
+                                                    span=1,
+                                                    style={
+                                                        "margin": "auto",
+                                                        "paddingLeft": "0px",
+                                                    },
+                                                ),
+                                            ]
+                                        )
+                                    ],
+                                ),
+                                dmc.Space(h=10),
                             ],
                         ),
                         _accordion_item(
@@ -64,46 +150,93 @@ def layout():
                             id="image-transformation-controls",
                             children=html.Div(
                                 [
-                                    dmc.Text("Brightness", size="sm"),
-                                    dmc.Slider(
-                                        id=f"figure-brightness",
-                                        value=100,
-                                        min=0,
-                                        max=255,
-                                        step=1,
-                                        color="gray",
-                                        size="sm",
-                                    ),
                                     dmc.Space(h=5),
-                                    dmc.Text("Contrast", size="sm"),
-                                    dmc.Slider(
-                                        id=f"figure-contrast",
-                                        value=100,
-                                        min=0,
-                                        max=255,
-                                        step=1,
-                                        color="gray",
-                                        size="sm",
+                                    _control_item(
+                                        "Brightness",
+                                        "bightness-text",
+                                        [
+                                            dmc.Grid(
+                                                [
+                                                    dmc.Slider(
+                                                        id={
+                                                            "type": "slider",
+                                                            "index": "brightness",
+                                                        },
+                                                        value=100,
+                                                        min=0,
+                                                        max=255,
+                                                        step=1,
+                                                        color="gray",
+                                                        size="sm",
+                                                        style={"width": "225px"},
+                                                    ),
+                                                    dmc.ActionIcon(
+                                                        _tooltip(
+                                                            "Reset brightness",
+                                                            children=[
+                                                                DashIconify(
+                                                                    icon="fluent:arrow-reset-32-regular",
+                                                                    width=15,
+                                                                ),
+                                                            ],
+                                                        ),
+                                                        size="xs",
+                                                        variant="subtle",
+                                                        id={
+                                                            "type": "reset",
+                                                            "index": "brightness",
+                                                        },
+                                                        n_clicks=0,
+                                                        style={"margin": "auto"},
+                                                    ),
+                                                ],
+                                                style={"margin": "0px"},
+                                            )
+                                        ],
                                     ),
-                                    dmc.Space(h=10),
-                                    dmc.ActionIcon(
-                                        dmc.Tooltip(
-                                            label="Reset filters",
-                                            children=[
-                                                DashIconify(
-                                                    icon="fluent:arrow-reset-32-regular",
-                                                    width=20,
+                                    dmc.Space(h=20),
+                                    _control_item(
+                                        "Contrast",
+                                        "contrast-text",
+                                        dmc.Grid(
+                                            [
+                                                dmc.Slider(
+                                                    id={
+                                                        "type": "slider",
+                                                        "index": "contrast",
+                                                    },
+                                                    value=100,
+                                                    min=0,
+                                                    max=255,
+                                                    step=1,
+                                                    color="gray",
+                                                    size="sm",
+                                                    style={"width": "225px"},
+                                                ),
+                                                dmc.ActionIcon(
+                                                    _tooltip(
+                                                        "Reset contrast",
+                                                        children=[
+                                                            DashIconify(
+                                                                icon="fluent:arrow-reset-32-regular",
+                                                                width=15,
+                                                            ),
+                                                        ],
+                                                    ),
+                                                    size="xs",
+                                                    variant="subtle",
+                                                    id={
+                                                        "type": "reset",
+                                                        "index": "contrast",
+                                                    },
+                                                    n_clicks=0,
+                                                    style={"margin": "auto"},
                                                 ),
                                             ],
+                                            style={"margin": "0px"},
                                         ),
-                                        size="lg",
-                                        variant="filled",
-                                        id="filters-reset",
-                                        n_clicks=0,
-                                        mb=10,
-                                        ml="auto",
-                                        style={"margin": "auto"},
                                     ),
+                                    dmc.Space(h=10),
                                 ]
                             ),
                         ),
@@ -113,120 +246,167 @@ def layout():
                             "annotations",
                             id="annotations-controls",
                             children=[
-                                dmc.Center(
-                                    dmc.Switch(
-                                        id="view-annotations",
-                                        size="sm",
-                                        radius="lg",
+                                dmc.Space(h=5),
+                                dmc.Grid(
+                                    [
+                                        html.Div(
+                                            children=[
+                                                _tooltip(
+                                                    "Open freeform (Q)",
+                                                    dmc.ActionIcon(
+                                                        id="open-freeform",
+                                                        variant="subtle",
+                                                        color="gray",
+                                                        children=DashIconify(
+                                                            icon=ANNOT_ICONS[
+                                                                "open-freeform"
+                                                            ],
+                                                            width=20,
+                                                        ),
+                                                        style={
+                                                            "backgroundColor": "#EAECEF"
+                                                        },
+                                                        size="lg",
+                                                    ),
+                                                ),
+                                                _tooltip(
+                                                    "Closed freeform (W)",
+                                                    dmc.ActionIcon(
+                                                        id="closed-freeform",
+                                                        variant="subtle",
+                                                        color="gray",
+                                                        children=DashIconify(
+                                                            icon=ANNOT_ICONS[
+                                                                "closed-freeform"
+                                                            ],
+                                                            width=20,
+                                                        ),
+                                                        size="lg",
+                                                    ),
+                                                ),
+                                                _tooltip(
+                                                    "Line (E)",
+                                                    dmc.ActionIcon(
+                                                        id="line",
+                                                        variant="subtle",
+                                                        color="gray",
+                                                        children=DashIconify(
+                                                            icon="ci:line-l", width=20
+                                                        ),
+                                                        size="lg",
+                                                    ),
+                                                ),
+                                                _tooltip(
+                                                    "Circle (R)",
+                                                    dmc.ActionIcon(
+                                                        id="circle",
+                                                        variant="subtle",
+                                                        color="gray",
+                                                        children=DashIconify(
+                                                            icon=ANNOT_ICONS["circle"],
+                                                            width=20,
+                                                        ),
+                                                        size="lg",
+                                                    ),
+                                                ),
+                                                _tooltip(
+                                                    "Rectangle (T)",
+                                                    dmc.ActionIcon(
+                                                        id="rectangle",
+                                                        variant="subtle",
+                                                        color="gray",
+                                                        children=DashIconify(
+                                                            icon=ANNOT_ICONS[
+                                                                "rectangle"
+                                                            ],
+                                                            width=20,
+                                                        ),
+                                                        size="lg",
+                                                    ),
+                                                ),
+                                                _tooltip(
+                                                    "Eraser (S)",
+                                                    dmc.ActionIcon(
+                                                        id="eraser",
+                                                        variant="subtle",
+                                                        color="gray",
+                                                        children=DashIconify(
+                                                            icon=ANNOT_ICONS["eraser"],
+                                                            width=20,
+                                                        ),
+                                                        size="lg",
+                                                    ),
+                                                ),
+                                                dmc.Tooltip(
+                                                    dmc.ActionIcon(
+                                                        id="delete-all",
+                                                        variant="subtle",
+                                                        color="gray",
+                                                        children=DashIconify(
+                                                            icon=ANNOT_ICONS[
+                                                                "delete-all"
+                                                            ],
+                                                            width=20,
+                                                        ),
+                                                        size="lg",
+                                                    ),
+                                                    label="Clear All Annotations",
+                                                    multiline=True,
+                                                ),
+                                                _tooltip(
+                                                    "Pan and zoom (A)",
+                                                    dmc.ActionIcon(
+                                                        id="pan-and-zoom",
+                                                        variant="subtle",
+                                                        color="gray",
+                                                        children=DashIconify(
+                                                            icon=ANNOT_ICONS[
+                                                                "pan-and-zoom"
+                                                            ],
+                                                            width=20,
+                                                        ),
+                                                        size="lg",
+                                                    ),
+                                                ),
+                                            ],
+                                            className="flex-row",
+                                            style={
+                                                "width": "275px",
+                                                "justify-content": "space-evenly",
+                                                "padding": "2.5px",
+                                                "border": "1px solid #EAECEF",
+                                                "border-radius": "5px",
+                                            },
+                                        ),
+                                        dmc.Switch(
+                                            id="view-annotations",
+                                            size="xs",
+                                            radius="md",
+                                            color="gray",
+                                            label="View",
+                                            checked=True,
+                                            styles={
+                                                "trackLabel": {"cursor": "pointer"},
+                                                "margin": "auto",
+                                            },
+                                        ),
+                                    ]
+                                ),
+                                dmc.Space(h=30),
+                                _control_item(
+                                    "Drawing width",
+                                    "paintbrush-text",
+                                    dmc.Slider(
+                                        id="paintbrush-width",
+                                        value=5,
+                                        min=1,
+                                        max=20,
+                                        step=1,
                                         color="gray",
-                                        label="View annotation layer",
-                                        checked=True,
-                                        styles={"trackLabel": {"cursor": "pointer"}},
-                                    )
+                                        size="sm",
+                                    ),
                                 ),
                                 dmc.Space(h=20),
-                                dmc.Text("Annotation mode", size="sm"),
-                                html.Div(
-                                    children=[
-                                        dmc.Tooltip(
-                                            dmc.ActionIcon(
-                                                id="open-freeform",
-                                                variant="outline",
-                                                color="gray",
-                                                children=DashIconify(
-                                                    icon=ANNOT_ICONS["open-freeform"]
-                                                ),
-                                                style={"border": "3px solid black"},
-                                            ),
-                                            label="Open Freeform: draw any open shape",
-                                            multiline=True,
-                                        ),
-                                        dmc.Tooltip(
-                                            dmc.ActionIcon(
-                                                id="closed-freeform",
-                                                variant="outline",
-                                                color="gray",
-                                                children=DashIconify(
-                                                    icon=ANNOT_ICONS["closed-freeform"]
-                                                ),
-                                            ),
-                                            label="Closed Freeform: draw a shape that will auto-complete",
-                                            multiline=True,
-                                        ),
-                                        dmc.Tooltip(
-                                            dmc.ActionIcon(
-                                                id="line",
-                                                variant="outline",
-                                                color="gray",
-                                                children=DashIconify(icon="ci:line-l"),
-                                            ),
-                                            label="Line: draw a straight line",
-                                            multiline=True,
-                                        ),
-                                        dmc.Tooltip(
-                                            dmc.ActionIcon(
-                                                id="circle",
-                                                variant="outline",
-                                                color="gray",
-                                                children=DashIconify(
-                                                    icon=ANNOT_ICONS["circle"]
-                                                ),
-                                            ),
-                                            label="Circle: create a filled circle",
-                                            multiline=True,
-                                        ),
-                                        dmc.Tooltip(
-                                            dmc.ActionIcon(
-                                                id="rectangle",
-                                                variant="outline",
-                                                color="gray",
-                                                children=DashIconify(
-                                                    icon=ANNOT_ICONS["rectangle"]
-                                                ),
-                                            ),
-                                            label="Rectangle: create a filled rectangle",
-                                            multiline=True,
-                                        ),
-                                        dmc.Tooltip(
-                                            dmc.ActionIcon(
-                                                id="eraser",
-                                                variant="outline",
-                                                color="gray",
-                                                children=DashIconify(
-                                                    icon=ANNOT_ICONS["eraser"]
-                                                ),
-                                            ),
-                                            label="Eraser: click on the shape to erase then click this button to delete the selected shape",
-                                            multiline=True,
-                                        ),
-                                        dmc.Tooltip(
-                                            dmc.ActionIcon(
-                                                id="delete-all",
-                                                variant="outline",
-                                                color="gray",
-                                                children=DashIconify(
-                                                    icon=ANNOT_ICONS["delete-all"]
-                                                ),
-                                            ),
-                                            label="Clear All Annotations",
-                                            multiline=True,
-                                        ),
-                                        dmc.Tooltip(
-                                            dmc.ActionIcon(
-                                                id="pan-and-zoom",
-                                                variant="outline",
-                                                color="gray",
-                                                children=DashIconify(
-                                                    icon=ANNOT_ICONS["pan-and-zoom"]
-                                                ),
-                                            ),
-                                            label="Stop Drawing: pan, zoom, select annotations and edit them using the nodes",
-                                            multiline=True,
-                                        ),
-                                    ],
-                                    className="flex-row",
-                                    style={"justify-content": "space-evenly"},
-                                ),
                                 dmc.Modal(
                                     title="Warning",
                                     id="delete-all-warning",
@@ -251,84 +431,87 @@ def layout():
                                         ),
                                     ],
                                 ),
-                                dmc.Space(h=20),
-                                dmc.Text("Paintbrush size", size="sm"),
-                                dmc.Slider(
-                                    id="paintbrush-width",
-                                    value=5,
-                                    min=1,
-                                    max=20,
-                                    step=1,
-                                    color="gray",
-                                    size="sm",
-                                ),
-                                dmc.Space(h=20),
-                                dmc.Text("Annotation class", size="sm"),
                                 html.Div(
-                                    id="annotation-class-selection",
-                                    children=[
-                                        dmc.ActionIcon(
-                                            id={
-                                                "type": "annotation-color",
-                                                "index": "rgb(249,82,82)",
-                                            },
-                                            w=30,
-                                            variant="filled",
+                                    [
+                                        dmc.Text("Manage classes", size="sm"),
+                                        html.Div(
+                                            id="annotation-class-selection",
+                                            children=[
+                                                dmc.ActionIcon(
+                                                    id={
+                                                        "type": "annotation-color",
+                                                        "index": "rgb(249,82,82)",
+                                                    },
+                                                    w=30,
+                                                    variant="filled",
+                                                    style={
+                                                        "background-color": "rgb(249,82,82)",
+                                                        "border": "3px solid black",
+                                                        "width": "fit-content",
+                                                        "padding": "5px",
+                                                        "margin-right": "10px",
+                                                    },
+                                                    children="1",
+                                                ),
+                                            ],
                                             style={
-                                                "background-color": "rgb(249,82,82)",
-                                                "border": "3px solid black",
-                                                "width": "fit-content",
-                                                "padding": "5px",
-                                                "margin-right": "10px",
+                                                "display": "flex",
+                                                "flex-wrap": "wrap",
+                                                "justify-content": "flex-start",
                                             },
-                                            children="1",
+                                        ),
+                                        dmc.Space(h=10),
+                                        dmc.Grid(
+                                            justify="space-between",
+                                            children=[
+                                                dmc.Button(
+                                                    id="generate-annotation-class",
+                                                    children="Add",
+                                                    variant="subtle",
+                                                    color="gray",
+                                                    style={"width": "85px"},
+                                                    leftIcon=DashIconify(
+                                                        icon="ic:baseline-plus"
+                                                    ),
+                                                ),
+                                                dmc.Button(
+                                                    id="edit-annotation-class",
+                                                    children="Edit",
+                                                    variant="subtle",
+                                                    color="gray",
+                                                    style={"width": "85px"},
+                                                    leftIcon=DashIconify(
+                                                        icon="uil:edit"
+                                                    ),
+                                                ),
+                                                dmc.Button(
+                                                    id="hide-annotation-class",
+                                                    children="View",
+                                                    variant="subtle",
+                                                    color="gray",
+                                                    style={"width": "85px"},
+                                                    leftIcon=DashIconify(
+                                                        icon="mdi:hide"
+                                                    ),
+                                                ),
+                                                dmc.Button(
+                                                    id="delete-annotation-class",
+                                                    children="Delete",
+                                                    variant="subtle",
+                                                    color="gray",
+                                                    style={"width": "90px"},
+                                                    leftIcon=DashIconify(
+                                                        icon="octicon:trash-24"
+                                                    ),
+                                                ),
+                                            ],
                                         ),
                                     ],
                                     style={
-                                        "display": "flex",
-                                        "flex-wrap": "wrap",
-                                        "justify-content": "space-evenly",
+                                        "border": "1px solid #EAECEF",
+                                        "borderRadius": "5px",
+                                        "padding": "10px",
                                     },
-                                ),
-                                dmc.Space(h=10),
-                                dmc.Group(
-                                    grow=True,
-                                    children=[
-                                        dmc.Button(
-                                            id="generate-annotation-class",
-                                            children="Generate Class",
-                                            variant="outline",
-                                            leftIcon=DashIconify(
-                                                icon="ic:baseline-plus"
-                                            ),
-                                        ),
-                                        dmc.Button(
-                                            id="edit-annotation-class",
-                                            children="Edit Class",
-                                            variant="outline",
-                                            leftIcon=DashIconify(icon="uil:edit"),
-                                        ),
-                                    ],
-                                ),
-                                dmc.Space(h=10),
-                                dmc.Group(
-                                    grow=True,
-                                    children=[
-                                        dmc.Button(
-                                            id="hide-annotation-class",
-                                            children="Hide/Show Classes",
-                                            variant="outline",
-                                            leftIcon=DashIconify(icon="mdi:hide"),
-                                        ),
-                                        dmc.Button(
-                                            id="delete-annotation-class",
-                                            children="Delete Classes",
-                                            variant="outline",
-                                            leftIcon=DashIconify(
-                                                icon="octicon:trash-24"
-                                            ),
-                                        ),
-                                    ],
                                 ),
                                 dmc.Modal(
                                     id="generate-annotation-class-modal",
@@ -394,7 +577,7 @@ def layout():
                                             style={
                                                 "display": "flex",
                                                 "flex-wrap": "wrap",
-                                                "justify-content": "space-evenly",
+                                                "justify-content": "flex-start",
                                             },
                                         ),
                                         dmc.Space(h=10),
@@ -426,7 +609,7 @@ def layout():
                                             style={
                                                 "display": "flex",
                                                 "flex-wrap": "wrap",
-                                                "justify-content": "space-evenly",
+                                                "justify-content": "flex-start",
                                             },
                                         ),
                                         dmc.Space(h=10),
@@ -455,13 +638,19 @@ def layout():
                                     ],
                                 ),
                                 dmc.Space(h=20),
-                                dmc.Center(
-                                    dmc.Button(
-                                        "Save/Load/Export",
-                                        id="open-data-management-modal-button",
-                                        variant="light",
-                                        style={"width": "160px", "margin": "5px"},
-                                    ),
+                                dmc.Button(
+                                    "Clear all annotations",
+                                    id="clear-all",
+                                    variant="outline",
+                                    style={"width": "100%"},
+                                ),
+                                dmc.Space(h=3),
+                                dmc.Button(
+                                    "Save and export",
+                                    id="open-data-management-modal-button",
+                                    variant="outline",
+                                    color="#00313C",
+                                    style={"width": "100%"},
                                 ),
                                 dmc.Modal(
                                     title="Data Management",
@@ -606,15 +795,16 @@ def drawer_section(children):
                     radius="sm",
                     compact=True,
                     variant="outline",
-                    color="indigo",
+                    color="gray",
                 ),
                 position={"left": "25px", "top": "25px"},
             ),
             dmc.Drawer(
-                title=dmc.Text("ML Exchange", weight=700),
+                title=dmc.Text("ML Exchange Image Segmentation", weight=700),
                 id="drawer-controls",
                 padding="md",
-                transition="slide-right",
+                transition="fade",
+                transitionDuration=500,
                 shadow="md",
                 withOverlay=False,
                 position="left",
@@ -623,9 +813,12 @@ def drawer_section(children):
                     "drawer": {
                         "width": "fit-content",
                         "height": "fit-content",
-                        "max-height": "90%",
+                        "max-height": "100%",
                         "overflow-y": "auto",
-                        "margin": "20px 0 0 20px",
+                        "margin": "0px",
+                    },
+                    "root": {
+                        "opacity": "0.95",
                     },
                 },
                 children=children,
@@ -684,7 +877,7 @@ def create_keybind_row(keys, text):
 
 def create_info_card_affix():
     return dmc.Affix(
-        position={"bottom": 20, "left": 20},
+        position={"bottom": 20, "right": 20},
         zIndex=9999999,
         children=dmc.HoverCard(
             shadow="md",
@@ -700,14 +893,24 @@ def create_info_card_affix():
                     ),
                 ),
                 dmc.HoverCardDropdown(
-                    [
+                    style={"marginRight": "20px"},
+                    children=[
                         dmc.Text(
-                            "Keybinding Shortcuts",
+                            "Shortcuts",
                             size="lg",
                             weight=700,
                         ),
                         dmc.Stack(
                             [
+                                dmc.Divider(variant="solid", color="gray"),
+                                create_keybind_row(
+                                    "→",
+                                    "Next slice",
+                                ),
+                                create_keybind_row(
+                                    "←",
+                                    "Previous slice",
+                                ),
                                 dmc.Divider(variant="solid", color="gray"),
                                 create_keybind_row(
                                     KEYBINDS["open-freeform"].upper(),
@@ -750,7 +953,7 @@ def create_info_card_affix():
                             ],
                             p=0,
                         ),
-                    ]
+                    ],
                 ),
             ],
         ),
@@ -764,7 +967,7 @@ def class_action_icon(class_color, class_label, label_color):
     style = {
         "background-color": class_color,
         "width": "fit-content",
-        "border": "1px solid black",
+        "backgroundColor": "#EAECEF",
         "color": label_color,
         "padding": "5px",
         "margin-right": "10px",

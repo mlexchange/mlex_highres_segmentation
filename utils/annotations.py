@@ -1,12 +1,12 @@
-import numpy as np
-from skimage import draw, morphology
-import math
-from svgpathtools import parse_path
-from matplotlib.path import Path
-import scipy.sparse as sp
 import io
-
+import math
 import zipfile
+
+import numpy as np
+import scipy.sparse as sp
+from matplotlib.path import Path
+from skimage import draw, morphology
+from svgpathtools import parse_path
 
 
 class Annotations:
