@@ -603,7 +603,7 @@ def clear_annotation_class(
     remove,
     annotation_class_store,
 ):
-    """This callback updates the deleted-class-store with the color of the class to delete"""
+    """This callback updates the deleted-class-store with the id of the class to delete"""
     deleted_class = annotation_class_store["class_id"]
     return deleted_class
 
