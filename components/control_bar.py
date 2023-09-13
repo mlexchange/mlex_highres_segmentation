@@ -624,8 +624,25 @@ def layout():
                                     style={"width": "160px", "margin": "5px"},
                                 ),
                                 html.Div(id="output-details"),
+                                html.Div(
+                                    id="overlay-switch-container",
+                                    children=[
+                                        dmc.Switch(
+                                            id="show-result-overlay",
+                                            size="sm",
+                                            radius="lg",
+                                            color="gray",
+                                            label="View segmentation overlay",
+                                            checked=False,
+                                            disabled=True,
+                                            styles={
+                                                "trackLabel": {"cursor": "pointer"}
+                                            },
+                                        ),
+                                    ],
+                                    loading=False,
+                                ),
                             ],
-                            loading=False,
                         ),
                     ],
                 ),
