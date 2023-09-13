@@ -20,11 +20,6 @@ from dash import (
 from dash.exceptions import PreventUpdate
 from dash_iconify import DashIconify
 
-<<<<<<< HEAD
-import os
-import time
-from utils import data_utils
-=======
 from components.control_bar import class_action_icon
 from constants import ANNOT_ICONS, ANNOT_NOTIFICATION_MSGS, KEYBINDS
 from utils.annotations import Annotations
@@ -32,7 +27,10 @@ from utils.data_utils import (
     DEV_filter_json_data_by_timestamp,
     DEV_load_exported_json_data,
 )
->>>>>>> main
+
+import os
+import time
+from utils import data_utils
 
 # TODO - temporary local file path and user for annotation saving and exporting
 EXPORT_FILE_PATH = "data/exported_annotation_data.json"
@@ -910,9 +908,8 @@ def open_controls_drawer(n_clicks):
 )
 def open_controls_drawer(is_opened):
     if is_opened:
-<<<<<<< HEAD
-        raise PreventUpdate
-    return {"padding-left": "125px"}
+        return {"display": "none"}
+    return {}
 
 
 @callback(
@@ -929,34 +926,27 @@ def populate_classification_results(image_src):
     ]
     if results:
         value = results[0]
-        switch = (
-            dmc.Switch(
-                id="show-result-overlay",
-                size="sm",
-                radius="lg",
-                color="gray",
-                label="View segmentation overlay",
-                checked=True,
-                disabled=False,
-                styles={"trackLabel": {"cursor": "pointer"}},
-            ),
+        switch = dmc.Switch(
+            id="show-result-overlay",
+            size="sm",
+            radius="lg",
+            color="gray",
+            label="View segmentation overlay",
+            checked=True,
+            disabled=False,
+            styles={"trackLabel": {"cursor": "pointer"}},
         )
+
     else:
         value = None
-        switch = (
-            dmc.Switch(
-                id="show-result-overlay",
-                size="sm",
-                radius="lg",
-                color="gray",
-                label="View segmentation overlay",
-                checked=False,
-                disabled=True,
-                styles={"trackLabel": {"cursor": "pointer"}},
-            ),
+        switch = dmc.Switch(
+            id="show-result-overlay",
+            size="sm",
+            radius="lg",
+            color="gray",
+            label="View segmentation overlay",
+            checked=False,
+            disabled=True,
+            styles={"trackLabel": {"cursor": "pointer"}},
         )
     return results, value, switch
-=======
-        return {"display": "none"}
-    return {}
->>>>>>> main
