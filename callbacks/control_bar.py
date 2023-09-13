@@ -1,10 +1,9 @@
 import json
 import os
-import random
 import time
-
-import dash_mantine_components as dmc
+import random
 import plotly.express as px
+import dash_mantine_components as dmc
 from dash import (
     ALL,
     MATCH,
@@ -56,7 +55,7 @@ def update_current_class_selection(class_selected, all_annotation_classes):
                     current_selection = c["color"]
         # More than one item in the trigger means the trigger comes from adding/deleting a new class
         # make the selected class the last one in the UI
-        else:
+        elif len(all_annotation_classes) > 0:
             current_selection = all_annotation_classes[-1]["color"]
     return current_selection
 
@@ -592,7 +591,6 @@ def delete_annotation_class(is_deleted, all_classes):
         updated_classes = [
             c for c in all_classes if c["props"]["id"]["index"] != is_deleted
         ]
-
         return updated_classes
     return no_update
 
