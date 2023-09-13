@@ -28,6 +28,7 @@ from utils.annotations import Annotations
 from utils.data_utils import (
     DEV_filter_json_data_by_timestamp,
     DEV_load_exported_json_data,
+    get_data_project_names,
 )
 
 # TODO - temporary local file path and user for annotation saving and exporting
@@ -821,3 +822,43 @@ def open_controls_drawer(n_clicks, is_opened):
             return no_update, {"display": "none"}
         return no_update, {}
     return no_update, no_update
+
+
+@callback(
+    Output("result-selector", "data"),
+    Output("result-selector", "value"),
+    Output("overlay-switch-container", "children"),
+    Input("project-name-src", "value"),
+)
+def populate_classification_results(image_src):
+    results = [
+        item
+        for item in get_data_project_names()
+        if ("seg" in item and image_src in item)
+    ]
+    if results:
+        value = results[0]
+        switch = dmc.Switch(
+            id="show-result-overlay",
+            size="sm",
+            radius="lg",
+            color="gray",
+            label="View segmentation overlay",
+            checked=True,
+            disabled=False,
+            styles={"trackLabel": {"cursor": "pointer"}},
+        )
+
+    else:
+        value = None
+        switch = dmc.Switch(
+            id="show-result-overlay",
+            size="sm",
+            radius="lg",
+            color="gray",
+            label="View segmentation overlay",
+            checked=False,
+            disabled=True,
+            styles={"trackLabel": {"cursor": "pointer"}},
+        )
+    return results, value, switch
