@@ -431,7 +431,7 @@ def layout():
                                         html.Div(
                                             children=[
                                                 annotation_class_item(
-                                                    "#FFA200", "Class 1"
+                                                    "#FFA200", "Class 1", []
                                                 )
                                             ],
                                             id="annotation-class-container",
@@ -668,7 +668,6 @@ def drawer_section(children):
                 data={
                     "dragmode": "drawopenpath",
                     "visible": True,
-                    "annotations": {},  # TODO remove this when saving funcionality is updated
                     "view": {},
                     "active_img_shape": [],
                 },
