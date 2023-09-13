@@ -1,9 +1,10 @@
 import json
 import os
-import time
 import random
-import plotly.express as px
+import time
+
 import dash_mantine_components as dmc
+import plotly.express as px
 from dash import (
     ALL,
     MATCH,
