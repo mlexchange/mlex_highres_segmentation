@@ -1,8 +1,10 @@
 import json
 import os
+import random
 import time
 
 import dash_mantine_components as dmc
+import plotly.express as px
 from dash import (
     ALL,
     MATCH,
@@ -37,7 +39,6 @@ if not os.path.exists(EXPORT_FILE_PATH):
     with open(EXPORT_FILE_PATH, "w") as f:
         pass
 # TODO - temporary local file path and user for annotation saving and exporting
-import random
 
 
 @callback(
@@ -53,10 +54,10 @@ def update_current_class_selection(class_selected, all_annotation_classes):
             for c in all_annotation_classes:
                 if c["class_id"] == ctx.triggered_id["index"]:
                     current_selection = c["color"]
-        # More than one item in the trigger means the trigger comes from adding a new class.
-        # We dont want to reset the current selection in this case
-        else:
-            current_selection = no_update
+        # More than one item in the trigger means the trigger comes from adding/deleting a new class
+        # make the selected class the last one in the UI
+        elif len(all_annotation_classes) > 0:
+            current_selection = all_annotation_classes[-1]["color"]
     return current_selection
 
 
@@ -304,6 +305,7 @@ def open_warning_modal(
     Output("generate-annotation-class-modal", "opened"),
     Output("create-annotation-class", "disabled"),
     Output("bad-label-color", "children"),
+    Output("annotation-class-colorpicker", "value"),
     Input("generate-annotation-class", "n_clicks"),
     Input("create-annotation-class", "n_clicks"),
     Input("annotation-class-label", "value"),
@@ -319,9 +321,9 @@ def open_annotation_class_modal(
     This callback opens and closes the modal that is used to create a new annotation class and checks
     if color and class name chosen are available
     """
+    current_classes = [a["label"] for a in all_annotation_class_store]
+    current_colors = [a["color"] for a in all_annotation_class_store]
     if ctx.triggered_id in ["annotation-class-label", "annotation-class-colorpicker"]:
-        current_classes = [a["label"] for a in all_annotation_class_store]
-        current_colors = [a["color"] for a in all_annotation_class_store]
         disable_class_creation = False
         error_msg = []
         if new_label in current_classes:
@@ -331,8 +333,12 @@ def open_annotation_class_modal(
         if new_color in current_colors:
             disable_class_creation = True
             error_msg.append("Color Already in use!")
-        return no_update, disable_class_creation, error_msg
-    return not opened, False, ""
+        return no_update, disable_class_creation, error_msg, no_update
+    # define 48 sample colors - keep the ones that don't already exist - suggest a random one for the color picker
+    color_suggestions = px.colors.qualitative.Dark24 + px.colors.qualitative.Alphabet
+    color_suggestions = [c for c in color_suggestions if c not in current_colors]
+    random_color = random.choice(color_suggestions) if color_suggestions else "#DB0606"
+    return not opened, False, "", random_color
 
 
 @callback(
@@ -578,10 +584,7 @@ def hide_show_annotation_class(
     State("annotation-class-container", "children"),
     prevent_initial_call=True,
 )
-def delete_annotation_class(
-    is_deleted,
-    all_classes,
-):
+def delete_annotation_class(is_deleted, all_classes):
     """This callback deletes the class from memory using the color from the deleted-class-store"""
     is_deleted = [x for x in is_deleted if x is not None]
     if is_deleted:
