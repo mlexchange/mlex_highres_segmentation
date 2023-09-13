@@ -574,6 +574,7 @@ def hide_show_annotation_class(
 
 @callback(
     Output("annotation-class-container", "children"),
+    Output("current-class-selection", "data", allow_duplicate=True),
     Input({"type": "deleted-class-store", "index": ALL}, "data"),
     State("annotation-class-container", "children"),
     prevent_initial_call=True,
@@ -589,8 +590,8 @@ def delete_annotation_class(
         updated_classes = [
             c for c in all_classes if c["props"]["id"]["index"] != is_deleted
         ]
-        return updated_classes
-    return no_update
+        return updated_classes, all_classes[-1]["props"]["id"]
+    return no_update, no_update
 
 
 @callback(
