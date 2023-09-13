@@ -61,7 +61,9 @@ def layout():
     """
     Returns the layout for the control panel in the app UI
     """
-    DATA_OPTIONS = data_utils.get_data_project_names()
+    DATA_OPTIONS = [
+        item for item in data_utils.get_data_project_names() if "seg" not in item
+    ]
     return drawer_section(
         dmc.Stack(
             style={"width": "400px"},
@@ -592,6 +594,10 @@ def layout():
                                         ),
                                     ],
                                     loading=False,
+                                ),
+                                dmc.Select(
+                                    id="result-selector",
+                                    placeholder="Select an ML result...",
                                 ),
                             ],
                         ),
