@@ -53,10 +53,10 @@ def update_current_class_selection(class_selected, all_annotation_classes):
             for c in all_annotation_classes:
                 if c["class_id"] == ctx.triggered_id["index"]:
                     current_selection = c["color"]
-        # More than one item in the trigger means the trigger comes from adding a new class.
-        # We dont want to reset the current selection in this case
+        # More than one item in the trigger means the trigger comes from adding/deleting a new class
+        # make the selected class the last one in the UI
         else:
-            current_selection = no_update
+            current_selection = all_annotation_classes[-1]["color"]
     return current_selection
 
 
@@ -579,15 +579,11 @@ def hide_show_annotation_class(
 
 @callback(
     Output("annotation-class-container", "children"),
-    Output("current-class-selection", "data", allow_duplicate=True),
     Input({"type": "deleted-class-store", "index": ALL}, "data"),
     State("annotation-class-container", "children"),
     prevent_initial_call=True,
 )
-def delete_annotation_class(
-    is_deleted,
-    all_classes,
-):
+def delete_annotation_class(is_deleted, all_classes):
     """This callback deletes the class from memory using the color from the deleted-class-store"""
     is_deleted = [x for x in is_deleted if x is not None]
     if is_deleted:
@@ -595,8 +591,9 @@ def delete_annotation_class(
         updated_classes = [
             c for c in all_classes if c["props"]["id"]["index"] != is_deleted
         ]
-        return updated_classes, all_classes[-1]["props"]["id"]
-    return no_update, no_update
+
+        return updated_classes
+    return no_update
 
 
 @callback(
