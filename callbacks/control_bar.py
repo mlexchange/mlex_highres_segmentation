@@ -838,27 +838,10 @@ def populate_classification_results(image_src):
     ]
     if results:
         value = results[0]
-        switch = dmc.Switch(
-            id="show-result-overlay",
-            size="sm",
-            radius="lg",
-            color="gray",
-            label="View segmentation overlay",
-            checked=True,
-            disabled=False,
-            styles={"trackLabel": {"cursor": "pointer"}},
-        )
-
+        checked = True
+        disabled = False
     else:
         value = None
-        switch = dmc.Switch(
-            id="show-result-overlay",
-            size="sm",
-            radius="lg",
-            color="gray",
-            label="View segmentation overlay",
-            checked=False,
-            disabled=True,
-            styles={"trackLabel": {"cursor": "pointer"}},
-        )
-    return results, value, switch
+        checked = False
+        disabled = True
+    return results, value, checked, disabled
