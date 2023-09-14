@@ -65,9 +65,9 @@ def render_image(
     if image_idx:
         image_idx -= 1  # slider starts at 1, so subtract 1 to get the correct index
         tf = get_data_sequence_by_name(project_name)[image_idx]
-    if toggle_seg_result:
-        result = get_data_sequence_by_name(seg_result_selection)[image_idx]
-        tf = 0.1 * tf + 0.9 * result
+        if toggle_seg_result:
+            result = get_data_sequence_by_name(seg_result_selection)[image_idx]
+            tf = 0.1 * tf + 0.9 * result
     else:
         tf = np.zeros((500, 500))
 
