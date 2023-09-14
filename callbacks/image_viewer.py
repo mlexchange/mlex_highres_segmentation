@@ -17,7 +17,8 @@ from dash import (
 )
 from dash.exceptions import PreventUpdate
 from dash_iconify import DashIconify
-
+from plotly.subplots import make_subplots
+import plotly.graph_objects as go
 from constants import ANNOT_ICONS, ANNOT_NOTIFICATION_MSGS, KEYBINDS
 from utils.data_utils import get_data_sequence_by_name, get_data_shape_by_name
 from utils.plot_utils import (
@@ -32,6 +33,17 @@ clientside_callback(
     Output("screen-size", "data"),
     Input("url", "href"),
 )
+
+
+@callback(
+    Output("image-viewer", "figure", allow_duplicate=True),
+    Input("seg-result-opacity-slider", "value"),
+    prevent_initial_call=True,
+)
+def update_opacity(slider):
+    fig = Patch()
+    fig["data"][1]["opacity"] = slider
+    return fig
 
 
 @callback(
@@ -62,16 +74,24 @@ def render_image(
     current_color,
     seg_result_selection,
 ):
+    fig2 = None
     if image_idx:
         image_idx -= 1  # slider starts at 1, so subtract 1 to get the correct index
         tf = get_data_sequence_by_name(project_name)[image_idx]
         if toggle_seg_result:
             result = get_data_sequence_by_name(seg_result_selection)[image_idx]
-            tf = 0.1 * tf + 0.9 * result
     else:
         tf = np.zeros((500, 500))
 
-    fig = px.imshow(tf, binary_string=True)
+    if toggle_seg_result:
+        fig = px.imshow(tf, binary_string=True)
+        fig.add_trace(
+            go.Heatmap(z=result, opacity=0.1, showscale=False, colorscale="Greys")
+        )
+
+    else:
+        fig = px.imshow(tf, binary_string=True)
+
     fig.update_layout(
         margin=dict(l=0, r=0, t=0, b=0),
         xaxis=dict(visible=False),
