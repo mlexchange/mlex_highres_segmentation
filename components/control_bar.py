@@ -650,10 +650,10 @@ def layout():
                                 ),
                                 dmc.Slider(
                                     id="seg-result-opacity-slider",
-                                    value=0.5,
+                                    value=50,
                                     min=0,
-                                    max=1,
-                                    step=0.1,
+                                    max=100,
+                                    step=1,
                                     color="gray",
                                     size="sm",
                                     style={"width": "225px"},

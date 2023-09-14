@@ -40,9 +40,9 @@ clientside_callback(
     Input("seg-result-opacity-slider", "value"),
     prevent_initial_call=True,
 )
-def update_opacity(slider):
+def update_opacity_for_segmentation_overlay(opacity):
     fig = Patch()
-    fig["data"][1]["opacity"] = slider
+    fig["data"][1]["opacity"] = opacity / 100
     return fig
 
 
@@ -74,7 +74,6 @@ def render_image(
     current_color,
     seg_result_selection,
 ):
-    fig2 = None
     if image_idx:
         image_idx -= 1  # slider starts at 1, so subtract 1 to get the correct index
         tf = get_data_sequence_by_name(project_name)[image_idx]
@@ -82,15 +81,9 @@ def render_image(
             result = get_data_sequence_by_name(seg_result_selection)[image_idx]
     else:
         tf = np.zeros((500, 500))
-
+    fig = px.imshow(tf, binary_string=True)
     if toggle_seg_result:
-        fig = px.imshow(tf, binary_string=True)
-        fig.add_trace(
-            go.Heatmap(z=result, opacity=0.1, showscale=False, colorscale="Greys")
-        )
-
-    else:
-        fig = px.imshow(tf, binary_string=True)
+        fig.add_trace(go.Heatmap(z=result, opacity=0.1, showscale=False))
 
     fig.update_layout(
         margin=dict(l=0, r=0, t=0, b=0),
