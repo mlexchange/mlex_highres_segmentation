@@ -827,7 +827,9 @@ def open_controls_drawer(n_clicks, is_opened):
 @callback(
     Output("result-selector", "data"),
     Output("result-selector", "value"),
-    Output("overlay-switch-container", "children"),
+    Output("show-result-overlay", "checked"),
+    Output("show-result-overlay", "disabled"),
+    Output("seg-result-opacity-slider", "disabled"),
     Input("project-name-src", "value"),
 )
 def populate_classification_results(image_src):
@@ -839,9 +841,11 @@ def populate_classification_results(image_src):
     if results:
         value = results[0]
         checked = True
-        disabled = False
+        disabled_toggle = False
+        disabled_slider = False
     else:
         value = None
         checked = False
-        disabled = True
-    return results, value, checked, disabled
+        disabled_toggle = True
+        disabled_slider = True
+    return results, value, checked, disabled_toggle, disabled_slider
