@@ -570,45 +570,51 @@ def layout():
                             "run-model",
                             id="model-configuration",
                             children=[
-                                dmc.Button(
-                                    "Run model",
-                                    id="run-model",
-                                    variant="light",
-                                    style={"width": "160px", "margin": "5px"},
-                                ),
-                                html.Div(id="output-details"),
-                                html.Div(
-                                    id="overlay-switch-container",
-                                    children=[
-                                        dmc.Switch(
-                                            id="show-result-overlay",
-                                            size="sm",
-                                            radius="lg",
-                                            color="gray",
-                                            label="View segmentation overlay",
-                                            checked=False,
-                                            disabled=True,
-                                            styles={
-                                                "trackLabel": {"cursor": "pointer"}
-                                            },
-                                        ),
-                                    ],
-                                    loading=False,
-                                ),
-                                dmc.Select(
-                                    id="result-selector",
-                                    placeholder="Select an ML result...",
-                                ),
-                                dmc.Slider(
-                                    id="seg-result-opacity-slider",
-                                    value=50,
-                                    min=0,
-                                    max=100,
-                                    step=1,
-                                    color="gray",
+                                dmc.Space(h=10),
+                                dmc.Switch(
+                                    id="show-result-overlay",
                                     size="sm",
-                                    style={"width": "225px"},
+                                    radius="lg",
+                                    color="gray",
+                                    label="View segmentation overlay",
+                                    checked=False,
+                                    disabled=True,
+                                    styles={"trackLabel": {"cursor": "pointer"}},
                                 ),
+                                dmc.Space(h=25),
+                                _control_item(
+                                    "Segment",
+                                    "",
+                                    dmc.Select(
+                                        id="result-selector",
+                                        placeholder="Select an ML result...",
+                                    ),
+                                ),
+                                dmc.Space(h=25),
+                                _control_item(
+                                    "Opacity",
+                                    "",
+                                    dmc.Slider(
+                                        id="seg-result-opacity-slider",
+                                        value=50,
+                                        min=0,
+                                        max=100,
+                                        step=1,
+                                        color="gray",
+                                        size="sm",
+                                        style={"width": "225px"},
+                                    ),
+                                ),
+                                dmc.Space(h=25),
+                                dmc.Center(
+                                    dmc.Button(
+                                        "Run model",
+                                        id="run-model",
+                                        variant="light",
+                                        style={"width": "160px", "margin": "5px"},
+                                    )
+                                ),
+                                html.Div(id="output-placeholder"),
                             ],
                         ),
                     ],
