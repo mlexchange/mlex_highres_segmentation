@@ -41,26 +41,33 @@ clientside_callback(
     Output("image-viewer-loading", "zIndex", allow_duplicate=True),
     Output("image-metadata", "data"),
     Input("image-selection-slider", "value"),
+    Input("show-result-overlay", "checked"),
     State({"type": "annotation-class-store", "index": ALL}, "data"),
     State("project-name-src", "value"),
     State("annotation-store", "data"),
     State("image-metadata", "data"),
     State("screen-size", "data"),
     State("current-class-selection", "data"),
+    State("result-selector", "value"),
     prevent_initial_call=True,
 )
 def render_image(
     image_idx,
+    toggle_seg_result,
     all_annotation_class_store,
     project_name,
     annotation_store,
     image_metadata,
     screen_size,
     current_color,
+    seg_result_selection,
 ):
     if image_idx:
         image_idx -= 1  # slider starts at 1, so subtract 1 to get the correct index
         tf = get_data_sequence_by_name(project_name)[image_idx]
+    if toggle_seg_result:
+        result = get_data_sequence_by_name(seg_result_selection)[image_idx]
+        tf = 0.1 * tf + 0.9 * result
     else:
         tf = np.zeros((500, 500))
 
