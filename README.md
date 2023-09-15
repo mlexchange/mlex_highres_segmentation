@@ -1,5 +1,11 @@
-# Dash-App for Segmentation of High-Resolution Images
-...
+# Dash App for Segmentation of High-Resolution Images [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black) [![Imports: isort](https://img.shields.io/badge/%20imports-isort-%231674b1)](https://pycqa.github.io/isort/)
+
+
+This application is built using Plotly's [Dash](https://dash.plotly.com/) framework and provides a web-based interface for visualizing and annotating high resolution images output from [ALS](https://als.lbl.gov/) beamlines. 
+
+Image data is accessed via a [Tiled](https://github.com/bluesky/tiled) client, which provides chunkwise access to multidimensional TIFF sequences. 
+
+![plot](assets/preview.png)
 
 ## How to use?
 
@@ -9,6 +15,12 @@
 
 ```
 pip install -r requirements.txt
+```
+
+and 
+
+```
+pip install -r requirements-dev.txt
 ```
 
 2. Configure a connection to the Tiled server via a `.env` file with the following environment variables:
@@ -26,8 +38,10 @@ python app.py
 
 ### Local tiled connection
 
+Developers may also choose to set up a local Tiled server with access to minimal datasets (eg. in the case that the remote server is down).
+
 To start local tiled connection:
-1. Add `SERVE_LOCALLY=True` flag to `env` file (or to your environmental variables)
+1. Add `SERVE_LOCALLY=True` flag to `.env` file (or to your environmental variables)
 2. Start the app once, which will create `data/` directory and download 2 sample projects with 2 images each.
 3. Open a second terminal and run `tiled serve directory --public data`.
 

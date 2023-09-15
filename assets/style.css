@@ -1,3 +1,7 @@
+html * {
+    font-family: 'Franklin Gothic Medium', Arial, sans-serif;
+}
+
 .flex-row {
     display: flex;
     flex-direction: row;
@@ -97,4 +101,35 @@ body {
 
 #open-data-management-modal-button:hover {
     background-color: #00313c0e;
+}
+
+.mantine-UnstyledButton-root.mantine-Button-root.add-class-btn.mantine-l8qp3y {
+    color: #9EA4AB !important;
+    border-color: #EAECEF !important;
+}
+
+.annotation-class:hover {
+    background-color: #EAECEF !important;
+    cursor: pointer;
+}
+
+.add-class-btn:hover {
+    background-color: #eaecef24 !important;
+    cursor: pointer;
+}
+
+.mantine-UnstyledButton-root.mantine-Button-root.mantine-8nr514,
+.mantine-UnstyledButton-root.mantine-Button-root.mantine-q631dw {
+    color: white !important;
+    background-color: #007681 !important;
+}
+
+.mantine-UnstyledButton-root.mantine-Button-root.mantine-8nr514:disabled {
+    background-color: rgb(233, 236, 239) !important;
+    color: rgb(173, 181, 189) !important;
+}
+
+.mantine-Text-root.mantine-Modal-title {
+    font-weight: 700 !important;
+
 }

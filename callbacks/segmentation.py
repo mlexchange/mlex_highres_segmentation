@@ -1,5 +1,5 @@
 import numpy as np
-from dash import Input, Output, State, callback, no_update
+from dash import ALL, Input, Output, State, callback, no_update
 
 from utils.annotations import Annotations
 from utils.data_utils import get_data_sequence_by_name
@@ -12,13 +12,13 @@ from utils.data_utils import get_data_sequence_by_name
     Output("output-placeholder", "children"),
     Input("run-model", "n_clicks"),
     State("annotation-store", "data"),
+    State({"type": "annotation-class-store", "index": ALL}, "data"),
     State("project-name-src", "value"),
 )
-def run_job(n_clicks, annotation_store, project_name):
+def run_job(n_clicks, global_store, all_annotations, project_name):
     # As a placeholder, pulling together the inputs we'd need if we were going to submit a job
     if n_clicks:
-        annotations = Annotations(annotation_store)
-        annotations.create_annotation_metadata()
+        annotations = Annotations(all_annotations, global_store)
         annotations.create_annotation_mask(
             sparse=False
         )  # TODO: Would sparse need to be true?
