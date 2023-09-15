@@ -1,6 +1,5 @@
 import dash_mantine_components as dmc
 from dash import dcc, html
-from dash_iconify import DashIconify
 
 from utils.plot_utils import blank_fig
 
@@ -14,6 +13,9 @@ FIGURE_CONFIG = {"displayModeBar": False, "scrollZoom": True, "doubleClick": Fal
 
 
 def layout():
+    """
+    Returns the layout for the image viewer in the app UI
+    """
     return html.Div(
         style=COMPONENT_STYLE,
         children=[

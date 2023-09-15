@@ -10,12 +10,18 @@ from utils import data_utils
 
 
 def _tooltip(text, children):
+    """
+    Returns a customized layout for a tooltip
+    """
     return dmc.Tooltip(
         label=text, withArrow=True, position="top", color="#464646", children=children
     )
 
 
 def _control_item(title, title_id, item):
+    """
+    Returns a customized layout for a control item
+    """
     return dmc.Grid(
         [
             dmc.Text(
@@ -31,6 +37,9 @@ def _control_item(title, title_id, item):
 
 
 def _accordion_item(title, icon, value, children, id):
+    """
+    Returns a customized layout for an accordion item
+    """
     return dmc.AccordionItem(
         [
             dmc.AccordionControl(
@@ -48,6 +57,9 @@ def _accordion_item(title, icon, value, children, id):
 
 
 def layout():
+    """
+    Returns the layout for the control panel in the app UI
+    """
     DATA_OPTIONS = data_utils.get_data_project_names()
     return drawer_section(
         dmc.Stack(

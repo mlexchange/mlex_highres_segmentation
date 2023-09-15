@@ -5,7 +5,7 @@ import zipfile
 import numpy as np
 import scipy.sparse as sp
 from matplotlib.path import Path
-from skimage import draw, morphology
+from skimage import draw
 from svgpathtools import parse_path
 
 

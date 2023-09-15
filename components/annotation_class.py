@@ -1,13 +1,14 @@
-import uuid
-
 import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
 from dash import dcc, html
 from dash_iconify import DashIconify
 
 
-# This fucntion creates the action icons needed for an annoation class: specifically hide/show, edit and delete actions
 def get_action_icon(type, class_id, icon):
+    """
+    Returns the action icons needed for an annotations class. Specifically, hide/show,
+    edit, and delete actions.
+    """
     return dmc.ActionIcon(
         id={
             "type": type,
@@ -20,8 +21,11 @@ def get_action_icon(type, class_id, icon):
     )
 
 
-# This function generates a class component with all its buttons (hide/show, edit, delete)
 def annotation_class_item(class_color, class_label, existing_ids, data=None):
+    """
+    Returns the layout for an annotation class item. Includes all relevant buttons and
+    various dcc.Stores that enable functionality with existing pattern-matching callbacks.
+    """
     if data:
         class_color = data["color"]
         class_label = data["label"]

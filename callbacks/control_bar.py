@@ -23,7 +23,7 @@ from dash.exceptions import PreventUpdate
 from dash_iconify import DashIconify
 
 from components.annotation_class import annotation_class_item
-from constants import ANNOT_ICONS, ANNOT_NOTIFICATION_MSGS, KEY_MODES, KEYBINDS
+from constants import ANNOT_ICONS, ANNOT_NOTIFICATION_MSGS, KEY_MODES
 from utils.annotations import Annotations
 from utils.data_utils import (
     DEV_filter_json_data_by_timestamp,
@@ -38,7 +38,6 @@ USER_NAME = "user1"
 if not os.path.exists(EXPORT_FILE_PATH):
     with open(EXPORT_FILE_PATH, "w") as f:
         pass
-# TODO - temporary local file path and user for annotation saving and exporting
 
 
 @callback(
@@ -375,8 +374,8 @@ def open_edit_class_modal(
     all_annotation_class_store,
 ):
     """
-    This callback opens and closes the modal that allows you to relabel an existing annotation class and change its color
-    and checks if the new class name/class color is available.
+    This callback opens and closes the modal that allows you to relabel an existing
+    annotation class and change its color and checks if the new class name/class color is available.
     """
     modal_title = f"Edit class: {class_to_edit['label']}"
     # add the current class name and color in the modal (in case user wants to only edit one thing)
@@ -564,8 +563,9 @@ def hide_show_annotation_class(
     hide_show_class_store,
 ):
     """
-    This callback updates both the annotation-class-store (which contains the annotation data) and the hide-show-class-store
-    which is only used to trigger the callback that will actually patch the figure: hide_show_annotations_on_fig().
+    This callback updates both the annotation-class-store (which contains the annotation data)
+    and the hide-show-class-store which is only used to trigger the callback that will
+    actually patch the figure: hide_show_annotations_on_fig().
     Also updates the hide/show icon accordingly.
     """
     is_visible = annotation_class_store["is_visible"]
@@ -673,7 +673,7 @@ def export_annotation(n_clicks, all_annotations, global_store):
 
         annotations.create_annotation_mask(sparse=EXPORT_AS_SPARSE)
         mask_data = annotations.get_annotation_mask_as_bytes()
-        mask_file = dcc.send_bytes(mask_data, filename=f"annotation_masks.zip")
+        mask_file = dcc.send_bytes(mask_data, filename="annotation_masks.zip")
 
         notification_title = "Annotation Exported!"
         notification_message = "Succesfully exported in .json format."
