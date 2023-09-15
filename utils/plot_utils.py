@@ -161,4 +161,5 @@ def resize_canvas(h, w, H, W, figure):
     figure.update_yaxes(range=[y1, y0])
     figure.update_xaxes(range=[x0, x1])
 
-    return figure
+    image_center_coor = {"y1": y1, "y0": y0, "x0": x0, "x1": x1}
+    return figure, image_center_coor
