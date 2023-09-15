@@ -818,8 +818,10 @@ def drawer_section(children):
                     ],
                     "classes_shown": {},
                     "classes_hidden": {},
+                    "image_center_coor": {}
                 },
             ),
+            create_reset_view_affix(),
             create_info_card_affix(),
             dmc.NotificationsProvider(html.Div(id="notifications-container")),
             dcc.Download(id="export-annotation-metadata"),
@@ -848,6 +850,24 @@ def create_keybind_row(keys, text):
     return dmc.Group(
         position="apart",
         children=[html.Div(keybinds), dmc.Text(text, size="sm")],
+    )
+
+
+def create_reset_view_affix():
+    return dmc.Affix(
+        position={"bottom": 60, "right": 20},
+        zIndex=9999999,
+        children=_tooltip(
+            text="Center the image",
+            children=dmc.ActionIcon(
+                DashIconify(icon="carbon:center-square"),
+                id="reset-view",
+                size="lg",
+                radius="lg",
+                variant="filled",
+                mb=10,
+            ),
+        ),
     )
 
 
