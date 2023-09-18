@@ -4,3 +4,4 @@ tiled[all]
 pytest
 pytest-mock
 isort==5.12.0
+greenlet==2.0.2
