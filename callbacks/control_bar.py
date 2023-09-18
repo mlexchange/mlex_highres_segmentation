@@ -806,25 +806,41 @@ def open_controls_drawer(n_clicks, is_opened):
 @callback(
     Output("result-selector", "data"),
     Output("result-selector", "value"),
-    Output("show-result-overlay", "checked"),
-    Output("show-result-overlay", "disabled"),
+    Output("result-selector", "disabled"),
+    Output("show-result-overlay-toggle", "checked"),
+    Output("show-result-overlay-toggle", "disabled"),
     Output("seg-result-opacity-slider", "disabled"),
     Input("project-name-src", "value"),
+    Input("show-result-overlay-toggle", "checked"),
+    State("result-selector", "disabled"),
+    State("seg-result-opacity-slider", "disabled"),
 )
-def populate_classification_results(image_src):
-    results = [
-        item
-        for item in get_data_project_names()
-        if ("seg" in item and image_src in item)
-    ]
-    if results:
-        value = results[0]
-        checked = True
+def populate_classification_results(
+    image_src, toggle, dropdown_enabled, slider_enabled
+):
+    results = []
+    value = None
+    checked = False
+    disabled_dropdown = True
+    disabled_toggle = True
+    disabled_slider = True
+    if ctx.triggered_id == "show-result-overlay-toggle":
+        value = no_update
+        checked = no_update
+        disabled_dropdown = not dropdown_enabled
         disabled_toggle = False
-        disabled_slider = False
+        disabled_slider = not slider_enabled
     else:
-        value = None
-        checked = False
-        disabled_toggle = True
-        disabled_slider = True
-    return results, value, checked, disabled_toggle, disabled_slider
+        results = [
+            item
+            for item in get_data_project_names()
+            if ("seg" in item and image_src in item)
+        ]
+        if results:
+            value = results[0]
+            disabled_dropdown = False
+            checked = True
+            disabled_toggle = False
+            disabled_slider = False
+
+    return results, value, disabled_dropdown, checked, disabled_toggle, disabled_slider
