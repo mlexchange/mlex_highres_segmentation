@@ -61,6 +61,7 @@ def update_opacity_for_segmentation_overlay(opacity):
     State("screen-size", "data"),
     State("current-class-selection", "data"),
     State("result-selector", "value"),
+    State("seg-result-opacity-slider", "value"),
     prevent_initial_call=True,
 )
 def render_image(
@@ -73,6 +74,7 @@ def render_image(
     screen_size,
     current_color,
     seg_result_selection,
+    opacity,
 ):
     if image_idx:
         image_idx -= 1  # slider starts at 1, so subtract 1 to get the correct index
@@ -84,6 +86,7 @@ def render_image(
     fig = px.imshow(tf, binary_string=True)
     if toggle_seg_result:
         fig.add_trace(go.Heatmap(z=result, opacity=0.1, showscale=False))
+        fig["data"][1]["opacity"] = opacity / 100
 
     fig.update_layout(
         margin=dict(l=0, r=0, t=0, b=0),
