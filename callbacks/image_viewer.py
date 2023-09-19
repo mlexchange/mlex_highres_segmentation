@@ -4,6 +4,7 @@ import dash
 import dash_mantine_components as dmc
 import numpy as np
 import plotly.express as px
+import plotly.graph_objects as go
 from dash import (
     ALL,
     ClientsideFunction,
@@ -18,7 +19,7 @@ from dash import (
 from dash.exceptions import PreventUpdate
 from dash_iconify import DashIconify
 from plotly.subplots import make_subplots
-import plotly.graph_objects as go
+
 from constants import ANNOT_ICONS, ANNOT_NOTIFICATION_MSGS, KEYBINDS
 from utils.data_utils import get_data_sequence_by_name, get_data_shape_by_name
 from utils.plot_utils import (
