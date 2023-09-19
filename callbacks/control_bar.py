@@ -825,6 +825,7 @@ def populate_classification_results(
     disabled_toggle = True
     disabled_slider = True
     if ctx.triggered_id == "show-result-overlay-toggle":
+        results = no_update
         value = no_update
         checked = no_update
         disabled_dropdown = not dropdown_enabled
