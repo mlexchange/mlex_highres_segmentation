@@ -1,19 +1,18 @@
 import json
 import os
-from urllib.parse import urlparse
 
 import httpx
 import requests
 from dotenv import load_dotenv
 from tiled.client import from_uri
 from tiled.client.array import ArrayClient
-from tiled.client.cache import Cache
 from tiled.client.container import Container
 
 
 def DEV_download_google_sample_data():
     """
-    Download sample project images to data/ folder, this only happens once, after that the download is skipped if the data exists.
+    Download sample project images to data/ folder, this only happens once,
+    after that the download is skipped if the data exists.
     """
 
     def download_file(url, destination):
@@ -145,6 +144,6 @@ def get_data_shape_by_name(project_name):
     Retrieve shape of the data
     """
     project_container = get_data_sequence_by_name(project_name)
-    if not project_container is None:
+    if project_container:
         return project_container.shape
     return None

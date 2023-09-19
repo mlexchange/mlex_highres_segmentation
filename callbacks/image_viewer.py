@@ -207,9 +207,11 @@ def keybind_image_slider(
 )
 def update_viewfinder(relayout_data, annotation_store):
     """
-    When relayoutData is triggered, update the viewfinder box to match the new view position of the image (including zooming).
-    The viewfinder box is downsampled to match the size of the viewfinder.
-    The viewfinder box is contained within the figure layout, so that if the user zooms out/pans away, they will still be able to see the viewfinder box.
+    When relayoutData is triggered, update the viewfinder box to match the
+    new view position of the image (including zooming). The viewfinder box is
+    downsampled to match the size of the viewfinder. The viewfinder box is
+    contained within the figure layout, so that if the user zooms out/pans away,
+    they will still be able to see the viewfinder box.
     """
     # Callback is triggered when the image is first loaded, but the annotation_store is not yet populated so we need to prevent the update
     if not annotation_store["active_img_shape"]:
@@ -270,8 +272,8 @@ def locally_store_annotations(
 ):
     """
     Upon finishing a relayout event (drawing, panning or zooming), this function takes the
-    currently drawn shapes or zoom/pan data, and stores the lastest added shape to the appropriate class-annotation-store,
-    or the image pan/zoom position to the anntations-store.
+    currently drawn shapes or zoom/pan data, and stores the lastest added shape to the
+    appropriate class-annotation-store, or the image pan/zoom position to the anntations-store.
     """
     img_idx = str(img_idx - 1)
     if "shapes" in relayout_data:
@@ -322,13 +324,9 @@ def update_slider_values(project_name, annotation_store):
     """
     When the data source is loaded, this callback will set the slider values and chain call
     "update_selection_and_image" callback which will update image and slider selection component.
-    ## TODO - change Input("project-name-src", "data") to value when image-src will contain buckets of data and not just one image
-    ## TODO - eg, when a different image source is selected, update slider values which is then used to select image within that source
     """
     # Retrieve data shape if project_name is valid and points to a 3d array
-    data_shape = (
-        get_data_shape_by_name(project_name) if not project_name is None else None
-    )
+    data_shape = get_data_shape_by_name(project_name) if project_name else None
     disable_slider = data_shape is None
     if not disable_slider:
         # TODO: Assuming that all slices have the same image shape
@@ -400,8 +398,7 @@ def update_selection_and_image(
 )
 def reset_figure_view(n_clicks, annotation_store):
     """
-    This callback will reset the view of the image to the center of the screen (no zoom, no pan)
-
+    This callback will reset the view of the image to the center of the screen (no zoom, no pan).
     RelayoutData is updated too, which then triggers callback that updates viewfinder box
     """
     image_center_coor = annotation_store["image_center_coor"]
