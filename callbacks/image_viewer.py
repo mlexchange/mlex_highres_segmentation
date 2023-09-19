@@ -45,8 +45,8 @@ clientside_callback(
 def hide_show_segmentation_overlay(toggle_seg_result, opacity):
     """
     This callback is responsible for hiding or showing the segmentation results overaly
-    by making the opacity 0 (given that this iamge has already been rendered in the render_image callback.
-    This callback also adjusts the opactiy of the result based on the slider
+    by making the opacity 0 (given that this iamge has already been rendered in the render_image callback).
+    This callback also adjusts the opactiy of the results based on the opacity slider.
     """
     fig = Patch()
     fig["data"][1]["opacity"] = opacity / 100
