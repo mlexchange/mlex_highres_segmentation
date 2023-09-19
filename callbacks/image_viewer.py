@@ -37,12 +37,20 @@ clientside_callback(
 
 @callback(
     Output("image-viewer", "figure", allow_duplicate=True),
+    Input("show-result-overlay-toggle", "checked"),
     Input("seg-result-opacity-slider", "value"),
     prevent_initial_call=True,
 )
-def update_opacity_for_segmentation_overlay(opacity):
+def hide_show_segmentation_overlay(toggle_seg_result, opacity):
+    """
+    This callback is responsible for hiding or showing the segmentation results overaly
+    by making the opacity 0 (given that this iamge has already been rendered in the render_image callback.
+    This callback also adjusts the opactiy of the result based on the slider
+    """
     fig = Patch()
     fig["data"][1]["opacity"] = opacity / 100
+    if ctx.triggered_id == "show-result-overlay-toggle" and not toggle_seg_result:
+        fig["data"][1]["opacity"] = 0
     return fig
 
 
@@ -53,7 +61,7 @@ def update_opacity_for_segmentation_overlay(opacity):
     Output("image-viewer-loading", "zIndex", allow_duplicate=True),
     Output("image-metadata", "data"),
     Input("image-selection-slider", "value"),
-    Input("show-result-overlay", "checked"),
+    State("show-result-overlay-toggle", "checked"),
     State({"type": "annotation-class-store", "index": ALL}, "data"),
     State("project-name-src", "value"),
     State("annotation-store", "data"),
