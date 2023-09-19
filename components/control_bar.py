@@ -621,7 +621,7 @@ def layout():
                             children=[
                                 dmc.Space(h=10),
                                 dmc.Switch(
-                                    id="show-result-overlay",
+                                    id="show-result-overlay-toggle",
                                     size="sm",
                                     radius="lg",
                                     color="gray",
