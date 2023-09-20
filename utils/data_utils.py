@@ -1,4 +1,3 @@
-import os
 import json
 import requests
 from utils.annotations import Annotations
@@ -7,11 +6,17 @@ from tiled.client import from_uri
 from tiled.client.container import Container
 from tiled.client.array import ArrayClient
 from dotenv import load_dotenv
+from tiled.client import from_uri
+from tiled.client.array import ArrayClient
+from tiled.client.container import Container
+import os
+import httpx
 
 
 def DEV_download_google_sample_data():
     """
-    Download sample project images to data/ folder, this only happens once, after that the download is skipped if the data exists.
+    Download sample project images to data/ folder, this only happens once,
+    after that the download is skipped if the data exists.
     """
 
     def download_file(url, destination):
@@ -89,18 +94,15 @@ def DEV_filter_json_data_by_timestamp(data, timestamp):
     return [data for data in data if data["time"] == timestamp]
 
 
-def save_annotations_data(annotation_store, project_name):
+def save_annotations_data(global_store, all_annotations, project_name):
     """
     Transforms annotations data to a pixelated mask and outputs to
     the Tiled server
 
     # TODO: Save data to Tiled server after transformation
     """
-    annotations = Annotations(annotation_store)
-    annotations.create_annotation_metadata()
-    annotations.create_annotation_mask(
-        sparse=False
-    )  # TODO: Would sparse need to be true?
+    annotations = Annotations(all_annotations, global_store)
+    annotations.create_annotation_mask(sparse=True) # TODO: Check sparse status
 
     # Get metadata and annotation data
     metadata = annotations.get_annotations()
@@ -135,7 +137,7 @@ if os.getenv("SERVE_LOCALLY", False):
     client = from_uri("http://localhost:8000")
     data = client
 else:
-    client = from_uri(TILED_URI, api_key=API_KEY)
+    client = from_uri(TILED_URI, api_key=API_KEY, timeout=httpx.Timeout(30.0))
     data = client["reconstruction"]
 
 
@@ -176,6 +178,6 @@ def get_data_shape_by_name(project_name):
     Retrieve shape of the data
     """
     project_container = get_data_sequence_by_name(project_name)
-    if not project_container is None:
+    if project_container:
         return project_container.shape
     return None

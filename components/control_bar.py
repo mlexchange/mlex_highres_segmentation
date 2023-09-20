@@ -1,18 +1,27 @@
+import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
-from dash import html, dcc
-from dash_iconify import DashIconify
-from utils import data_utils
-from constants import ANNOT_ICONS, KEYBINDS
+from dash import dcc, html
 from dash_extensions import EventListener
+from dash_iconify import DashIconify
+
+from components.annotation_class import annotation_class_item
+from constants import ANNOT_ICONS, KEYBINDS
+from utils import data_utils
 
 
 def _tooltip(text, children):
+    """
+    Returns a customized layout for a tooltip
+    """
     return dmc.Tooltip(
         label=text, withArrow=True, position="top", color="#464646", children=children
     )
 
 
 def _control_item(title, title_id, item):
+    """
+    Returns a customized layout for a control item
+    """
     return dmc.Grid(
         [
             dmc.Text(
@@ -28,6 +37,9 @@ def _control_item(title, title_id, item):
 
 
 def _accordion_item(title, icon, value, children, id, loading=True):
+    """
+    Returns a customized layout for an accordion item
+    """
     if loading:
         panel = dmc.LoadingOverlay(
             dmc.AccordionPanel(children=children, id=id),
@@ -53,6 +65,9 @@ def _accordion_item(title, icon, value, children, id, loading=True):
 
 
 def layout():
+    """
+    Returns the layout for the control panel in the app UI
+    """
     DATA_OPTIONS = data_utils.get_data_project_names()
     return drawer_section(
         dmc.Stack(
@@ -247,9 +262,43 @@ def layout():
                             "annotations",
                             id="annotations-controls",
                             children=[
-                                dmc.Space(h=5),
+                                dmc.Text(
+                                    "Drawing Toolbar",
+                                    size="sm",
+                                    align="right",
+                                    color="#9EA4AB",
+                                ),
+                                dmc.Space(h=15),
                                 dmc.Grid(
                                     [
+                                        dmc.Space(w=8),
+                                        html.Div(
+                                            children=[
+                                                _tooltip(
+                                                    "Pan and zoom (A)",
+                                                    dmc.ActionIcon(
+                                                        id="pan-and-zoom",
+                                                        variant="subtle",
+                                                        color="gray",
+                                                        children=DashIconify(
+                                                            icon=ANNOT_ICONS[
+                                                                "pan-and-zoom"
+                                                            ],
+                                                            width=20,
+                                                        ),
+                                                        size="lg",
+                                                    ),
+                                                ),
+                                            ],
+                                            className="flex-row",
+                                            style={
+                                                "justify-content": "space-evenly",
+                                                "padding": "2.5px",
+                                                "border": "1px solid #EAECEF",
+                                                "border-radius": "5px",
+                                            },
+                                        ),
+                                        dmc.Space(w=10),
                                         html.Div(
                                             children=[
                                                 _tooltip(
@@ -338,57 +387,14 @@ def layout():
                                                         size="lg",
                                                     ),
                                                 ),
-                                                dmc.Tooltip(
-                                                    dmc.ActionIcon(
-                                                        id="delete-all",
-                                                        variant="subtle",
-                                                        color="gray",
-                                                        children=DashIconify(
-                                                            icon=ANNOT_ICONS[
-                                                                "delete-all"
-                                                            ],
-                                                            width=20,
-                                                        ),
-                                                        size="lg",
-                                                    ),
-                                                    label="Clear All Annotations",
-                                                    multiline=True,
-                                                ),
-                                                _tooltip(
-                                                    "Pan and zoom (A)",
-                                                    dmc.ActionIcon(
-                                                        id="pan-and-zoom",
-                                                        variant="subtle",
-                                                        color="gray",
-                                                        children=DashIconify(
-                                                            icon=ANNOT_ICONS[
-                                                                "pan-and-zoom"
-                                                            ],
-                                                            width=20,
-                                                        ),
-                                                        size="lg",
-                                                    ),
-                                                ),
                                             ],
                                             className="flex-row",
                                             style={
-                                                "width": "275px",
+                                                "width": "301px",
                                                 "justify-content": "space-evenly",
                                                 "padding": "2.5px",
                                                 "border": "1px solid #EAECEF",
                                                 "border-radius": "5px",
-                                            },
-                                        ),
-                                        dmc.Switch(
-                                            id="view-annotations",
-                                            size="xs",
-                                            radius="md",
-                                            color="gray",
-                                            label="View",
-                                            checked=True,
-                                            styles={
-                                                "trackLabel": {"cursor": "pointer"},
-                                                "margin": "auto",
                                             },
                                         ),
                                     ]
@@ -405,9 +411,10 @@ def layout():
                                         step=1,
                                         color="gray",
                                         size="sm",
+                                        style={"width": "257px"},
                                     ),
                                 ),
-                                dmc.Space(h=20),
+                                dmc.Space(h=10),
                                 dmc.Modal(
                                     title="Warning",
                                     id="delete-all-warning",
@@ -419,13 +426,14 @@ def layout():
                                         dmc.Group(
                                             [
                                                 dmc.Button(
-                                                    "Cancel", id="modal-cancel-button"
+                                                    "Cancel",
+                                                    id="modal-cancel-delete-button",
                                                 ),
                                                 dmc.Button(
                                                     "Continue",
                                                     color="red",
                                                     variant="outline",
-                                                    id="modal-delete-button",
+                                                    id="modal-continue-delete-button",
                                                 ),
                                             ],
                                             position="right",
@@ -434,207 +442,80 @@ def layout():
                                 ),
                                 html.Div(
                                     [
-                                        dmc.Text("Manage classes", size="sm"),
-                                        html.Div(
-                                            id="annotation-class-selection",
-                                            children=[
-                                                dmc.ActionIcon(
-                                                    id={
-                                                        "type": "annotation-color",
-                                                        "index": "rgb(249,82,82)",
-                                                    },
-                                                    w=30,
-                                                    variant="filled",
-                                                    style={
-                                                        "background-color": "rgb(249,82,82)",
-                                                        "border": "3px solid black",
-                                                        "width": "fit-content",
-                                                        "padding": "5px",
-                                                        "margin-right": "10px",
-                                                    },
-                                                    children="1",
-                                                ),
-                                            ],
-                                            style={
-                                                "display": "flex",
-                                                "flex-wrap": "wrap",
-                                                "justify-content": "flex-start",
-                                            },
+                                        dmc.Text(
+                                            "Manage Classes",
+                                            size="sm",
+                                            align="right",
+                                            color="#9EA4AB",
                                         ),
                                         dmc.Space(h=10),
-                                        dmc.Grid(
-                                            justify="space-between",
+                                        html.Div(
                                             children=[
-                                                dmc.Button(
-                                                    id="generate-annotation-class",
-                                                    children="Add",
-                                                    variant="subtle",
-                                                    color="gray",
-                                                    style={"width": "85px"},
-                                                    leftIcon=DashIconify(
-                                                        icon="ic:baseline-plus"
-                                                    ),
-                                                ),
-                                                dmc.Button(
-                                                    id="edit-annotation-class",
-                                                    children="Edit",
-                                                    variant="subtle",
-                                                    color="gray",
-                                                    style={"width": "85px"},
-                                                    leftIcon=DashIconify(
-                                                        icon="uil:edit"
-                                                    ),
-                                                ),
-                                                dmc.Button(
-                                                    id="hide-annotation-class",
-                                                    children="View",
-                                                    variant="subtle",
-                                                    color="gray",
-                                                    style={"width": "85px"},
-                                                    leftIcon=DashIconify(
-                                                        icon="mdi:hide"
-                                                    ),
-                                                ),
-                                                dmc.Button(
-                                                    id="delete-annotation-class",
-                                                    children="Delete",
-                                                    variant="subtle",
-                                                    color="gray",
-                                                    style={"width": "90px"},
-                                                    leftIcon=DashIconify(
-                                                        icon="octicon:trash-24"
-                                                    ),
-                                                ),
+                                                annotation_class_item(
+                                                    "#FFA200", "Class 1", []
+                                                )
                                             ],
+                                            id="annotation-class-container",
                                         ),
+                                        dmc.Button(
+                                            "+ Add new class... ",
+                                            id="generate-annotation-class",
+                                            variant="outline",
+                                            style={
+                                                "width": "100%",
+                                            },
+                                            className="add-class-btn",
+                                        ),
+                                        dmc.Space(h=20),
                                     ],
-                                    style={
-                                        "border": "1px solid #EAECEF",
-                                        "borderRadius": "5px",
-                                        "padding": "10px",
-                                    },
                                 ),
                                 dmc.Modal(
                                     id="generate-annotation-class-modal",
-                                    title="Generate a Custom Annotation Class",
+                                    title="Create a new annotation class",
                                     children=[
-                                        dmc.Center(
-                                            dmc.ColorPicker(
-                                                id="annotation-class-colorpicker",
-                                                format="rgb",
-                                            ),
-                                        ),
-                                        dmc.Space(h=10),
-                                        dmc.Center(
-                                            dmc.TextInput(
-                                                id="annotation-class-label",
-                                                placeholder="Annotation Class Label",
-                                            ),
-                                        ),
-                                        dmc.Space(h=10),
-                                        dmc.Center(
-                                            dmc.Button(
-                                                id="create-annotation-class",
-                                                children="Create Annotation Class",
-                                                variant="light",
-                                            ),
-                                        ),
-                                        html.Div(id="bad-label-color"),
-                                    ],
-                                ),
-                                dmc.Modal(
-                                    id="edit-annotation-class-modal",
-                                    title="Edit a Custom Annotation Class",
-                                    children=[
-                                        dmc.Text("Select a generated class to edit:"),
-                                        dmc.Select(
-                                            id="current-annotation-classes-edit"
-                                        ),
-                                        dmc.Space(h=10),
-                                        dmc.Center(
-                                            dmc.TextInput(
-                                                id="annotation-class-label-edit",
-                                                placeholder="New Class Label",
-                                            ),
-                                        ),
-                                        dmc.Space(h=10),
-                                        dmc.Center(
-                                            dmc.Button(
-                                                id="relabel-annotation-class",
-                                                children="Edit Annotation Class",
-                                                variant="light",
-                                            ),
-                                        ),
-                                        html.Div(id="bad-label"),
-                                    ],
-                                ),
-                                dmc.Modal(
-                                    id="hide-annotation-class-modal",
-                                    title="Hide/Show Annotation Classes",
-                                    children=[
-                                        dmc.Text("Select annotation classes to hide:"),
                                         html.Div(
-                                            id="current-annotation-classes-hide",
+                                            [
+                                                dbc.Input(
+                                                    type="color",
+                                                    id="annotation-class-colorpicker",
+                                                    style={"width": 75, "height": 50},
+                                                    value="#DB0606",
+                                                ),
+                                                dmc.Space(w=25),
+                                                html.Div(
+                                                    [
+                                                        dmc.TextInput(
+                                                            id="annotation-class-label",
+                                                            placeholder="Class label...",
+                                                        ),
+                                                        html.Div(
+                                                            id="bad-label-color",
+                                                            style={
+                                                                "color": "red",
+                                                                "fontSize": "12px",
+                                                                "padding": "3px",
+                                                            },
+                                                        ),
+                                                    ]
+                                                ),
+                                            ],
                                             style={
                                                 "display": "flex",
-                                                "flex-wrap": "wrap",
-                                                "justify-content": "flex-start",
+                                                "justify-content": "flex-row",
+                                                "align-items": "center",
                                             },
-                                        ),
-                                        dmc.Space(h=10),
-                                        dmc.Center(
-                                            dmc.Button(
-                                                id="conceal-annotation-class",
-                                                children="Apply Changes",
-                                                variant="light",
-                                            ),
-                                        ),
-                                        dmc.Center(
-                                            dmc.Text(
-                                                "No classes selected",
-                                                color="red",
-                                                id="at-least-one-hide",
-                                            ),
-                                        ),
-                                    ],
-                                ),
-                                dmc.Modal(
-                                    id="delete-annotation-class-modal",
-                                    title="Delete Custom Annotation Class(es)",
-                                    children=[
-                                        dmc.Text(
-                                            "Select all generated classes to remove:"
                                         ),
                                         html.Div(
-                                            id="current-annotation-classes",
-                                            style={
-                                                "display": "flex",
-                                                "flex-wrap": "wrap",
-                                                "justify-content": "flex-start",
-                                            },
-                                        ),
-                                        dmc.Space(h=10),
-                                        dmc.Center(
-                                            dmc.Text(
-                                                "NOTE: Deleting a class will delete all annotations associated with that class!",
-                                                color="red",
-                                            )
-                                        ),
-                                        dmc.Center(
                                             [
                                                 dmc.Button(
-                                                    id="remove-annotation-class",
-                                                    children="Delete Selected Class(es)",
-                                                    variant="light",
+                                                    id="create-annotation-class",
+                                                    children="Save",
                                                 ),
-                                            ]
-                                        ),
-                                        dmc.Center(
-                                            dmc.Text(
-                                                "There must be at least one annotation class!",
-                                                color="red",
-                                                id="at-least-one",
-                                            ),
+                                            ],
+                                            style={
+                                                "display": "flex",
+                                                "justify-content": "flex-end",
+                                            },
                                         ),
                                     ],
                                 ),
@@ -809,21 +690,12 @@ def drawer_section(children):
                 data={
                     "dragmode": "drawopenpath",
                     "visible": True,
-                    "annotations": {},
                     "view": {},
                     "active_img_shape": [],
-                    # TODO: Hard-coding default annotation class
-                    "label_mapping": [
-                        {
-                            "color": "rgb(249,82,82)",
-                            "label": "1",
-                            "id": "1",
-                        }
-                    ],
-                    "classes_shown": {},
-                    "classes_hidden": {},
+                    "image_center_coor": {},
                 },
             ),
+            create_reset_view_affix(),
             create_info_card_affix(),
             dmc.NotificationsProvider(html.Div(id="notifications-container")),
             dcc.Download(id="export-annotation-metadata"),
@@ -856,6 +728,24 @@ def create_keybind_row(keys, text):
     return dmc.Group(
         position="apart",
         children=[html.Div(keybinds), dmc.Text(text, size="sm")],
+    )
+
+
+def create_reset_view_affix():
+    return dmc.Affix(
+        position={"bottom": 60, "right": 20},
+        zIndex=9999999,
+        children=_tooltip(
+            text="Center the image",
+            children=dmc.ActionIcon(
+                DashIconify(icon="carbon:center-square"),
+                id="reset-view",
+                size="lg",
+                radius="lg",
+                variant="filled",
+                mb=10,
+            ),
+        ),
     )
 
 
@@ -925,10 +815,6 @@ def create_info_card_affix():
                                     KEYBINDS["erase"].upper(),
                                     "Erase Annotation Mode",
                                 ),
-                                create_keybind_row(
-                                    KEYBINDS["delete-all"].upper(),
-                                    "Delete all annotations",
-                                ),
                                 dmc.Divider(variant="solid", color="gray"),
                                 create_keybind_row(
                                     ["1-9"],
@@ -941,25 +827,4 @@ def create_info_card_affix():
                 ),
             ],
         ),
-    )
-
-
-def class_action_icon(class_color, class_label, label_color):
-    """
-    This component creates an action icon for the given annotation class.
-    """
-    style = {
-        "background-color": class_color,
-        "width": "fit-content",
-        "backgroundColor": "#EAECEF",
-        "color": label_color,
-        "padding": "5px",
-        "margin-right": "10px",
-    }
-    return dmc.ActionIcon(
-        id={"type": "annotation-color", "index": class_color},
-        w=30,
-        variant="filled",
-        style=style,
-        children=class_label,
     )

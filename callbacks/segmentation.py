@@ -1,4 +1,6 @@
-from dash import callback, Input, Output, State, no_update
+import numpy as np
+from dash import ALL, Input, Output, State, callback, no_update
+
 from utils.annotations import Annotations
 from utils.data_utils import get_data_sequence_by_name
 import numpy as np
@@ -61,9 +63,10 @@ DEMO_WORKFLOW = {
     Output("submitted-job-id", "data"),
     Input("run-model", "n_clicks"),
     State("annotation-store", "data"),
+    State({"type": "annotation-class-store", "index": ALL}, "data"),
     State("project-name-src", "value"),
 )
-def run_job(n_clicks, annotation_store, project_name):
+def run_job(n_clicks, global_store, all_annotations, project_name):
     """
     This callback collects parameters from the UI and submits a job to the computing api.
     If the app is run from "dev" mode, then only a placeholder job_uid will be created.
