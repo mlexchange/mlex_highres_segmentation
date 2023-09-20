@@ -86,7 +86,9 @@ def run_job(n_clicks, global_store, all_annotations, project_name):
                 job_uid,
             )
         else:
-            data_utils.save_annotations_data(annotation_store, project_name)
+            data_utils.save_annotations_data(
+                global_store, all_annotations, project_name
+            )
             job_submitted = requests.post(
                 "http://job-service:8080/api/v0/workflows", json=DEMO_WORKFLOW
             )
