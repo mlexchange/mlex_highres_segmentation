@@ -1,16 +1,16 @@
-import numpy as np
-from dash import ALL, Input, Output, State, callback, no_update
+import os
+import time
+import uuid
 
+import dash_mantine_components as dmc
+import numpy as np
+import requests
+from dash import ALL, Input, Output, State, callback, no_update
+from dash.exceptions import PreventUpdate
+
+from utils import data_utils
 from utils.annotations import Annotations
 from utils.data_utils import get_data_sequence_by_name
-import numpy as np
-from dash.exceptions import PreventUpdate
-import os
-import uuid
-import requests
-import time
-import dash_mantine_components as dmc
-from utils import data_utils
 
 MODE = os.getenv("MODE", "")
 

@@ -1,16 +1,15 @@
 import json
-import requests
-from utils.annotations import Annotations
+import os
+
+import httpx
 import numpy as np
-from tiled.client import from_uri
-from tiled.client.container import Container
-from tiled.client.array import ArrayClient
+import requests
 from dotenv import load_dotenv
 from tiled.client import from_uri
 from tiled.client.array import ArrayClient
 from tiled.client.container import Container
-import os
-import httpx
+
+from utils.annotations import Annotations
 
 
 def DEV_download_google_sample_data():
@@ -102,7 +101,7 @@ def save_annotations_data(global_store, all_annotations, project_name):
     # TODO: Save data to Tiled server after transformation
     """
     annotations = Annotations(all_annotations, global_store)
-    annotations.create_annotation_mask(sparse=True) # TODO: Check sparse status
+    annotations.create_annotation_mask(sparse=True)  # TODO: Check sparse status
 
     # Get metadata and annotation data
     metadata = annotations.get_annotations()
