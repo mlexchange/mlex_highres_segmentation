@@ -3,6 +3,7 @@ import dash_mantine_components as dmc
 from dash import dcc, html
 from dash_extensions import EventListener
 from dash_iconify import DashIconify
+from dash_breakpoints import WindowBreakpoints
 
 from components.annotation_class import annotation_class_item
 from constants import ANNOT_ICONS, KEYBINDS
@@ -701,6 +702,9 @@ def drawer_section(children):
                     }
                 ],
                 id="keybind-event-listener",
+            ),
+            WindowBreakpoints(
+                id="window-resize",
             ),
         ]
     )

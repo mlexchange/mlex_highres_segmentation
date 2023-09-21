@@ -6,7 +6,6 @@ import numpy as np
 import plotly.express as px
 from dash import (
     ALL,
-    ClientsideFunction,
     Input,
     Output,
     Patch,
@@ -25,13 +24,47 @@ from utils.plot_utils import (
     downscale_view,
     get_view_finder_max_min,
     resize_canvas,
+    resize_canvas_with_zoom,
 )
 
-clientside_callback(
-    ClientsideFunction(namespace="clientside", function_name="get_container_size"),
-    Output("screen-size", "data"),
-    Input("url", "href"),
+
+@callback(
+    Output("image-viewer", "figure", allow_duplicate=True),
+    Output("annotation-store", "data", allow_duplicate=True),
+    Output("image-viewfinder", "figure", allow_duplicate=True),
+    Input("window-resize", "width"),
+    Input("window-resize", "height"),
+    State("annotation-store", "data"),
+    prevent_initial_call=True,
 )
+def resize_window_event(screen_width, screen_height, annotation_store):
+    if not annotation_store["active_img_shape"]:
+        raise PreventUpdate
+    print(screen_width, screen_height)
+
+    h, w = annotation_store["active_img_shape"]
+    image_center_coor = resize_canvas(h, w, screen_height, screen_width)
+    new_figure = Patch()
+    new_figure["layout"]["yaxis"]["range"] = [
+        image_center_coor["y1"],
+        image_center_coor["y0"],
+    ]
+    new_figure["layout"]["xaxis"]["range"] = [
+        image_center_coor["x0"],
+        image_center_coor["x1"],
+    ]
+    annotation_store["screen_size"] = {"W": screen_width, "H": screen_height}
+    annotation_store["image_center_coor"] = image_center_coor
+
+    DOWNSCALED_img_max_height, DOWNSCALED_img_max_width = get_view_finder_max_min(
+        annotation_store["image_ratio"]
+    )
+    patched_fig_viewfinder = Patch()
+    patched_fig_viewfinder["layout"]["shapes"][0]["x0"] = 0
+    patched_fig_viewfinder["layout"]["shapes"][0]["y0"] = DOWNSCALED_img_max_height
+    patched_fig_viewfinder["layout"]["shapes"][0]["x1"] = DOWNSCALED_img_max_width
+    patched_fig_viewfinder["layout"]["shapes"][0]["y1"] = 0
+    return new_figure, annotation_store, patched_fig_viewfinder
 
 
 @callback(
@@ -45,7 +78,6 @@ clientside_callback(
     State("project-name-src", "value"),
     State("annotation-store", "data"),
     State("image-metadata", "data"),
-    State("screen-size", "data"),
     State("current-class-selection", "data"),
     prevent_initial_call=True,
 )
@@ -55,7 +87,6 @@ def render_image(
     project_name,
     annotation_store,
     image_metadata,
-    screen_size,
     current_color,
 ):
     if image_idx:
@@ -87,24 +118,25 @@ def render_image(
         fig["layout"]["shapes"] = all_annotations
         view = annotation_store["view"]
 
-    if screen_size:
-        if view:
-            image_center_coor = annotation_store["image_center_coor"]
-            # we have a zoom + window size to take into account
-            if "xaxis_range_0" in view:
-                fig.update_layout(
-                    xaxis=dict(range=[view["xaxis_range_0"], view["xaxis_range_1"]]),
-                    yaxis=dict(range=[view["yaxis_range_0"], view["yaxis_range_1"]]),
-                )
-        else:
-            # no zoom level to take into account, window size only
-            fig, image_center_coor = resize_canvas(
-                tf.shape[0], tf.shape[1], screen_size["H"], screen_size["W"], fig
-            )
+    screen_size = annotation_store["screen_size"]
+    if view:
+        image_center_coor = annotation_store["image_center_coor"]
+        # we have a zoom + window size to take into account
+        if "xaxis_range_0" in view:
+            fig, view = resize_canvas_with_zoom(view, screen_size, fig)
+            image_center_coor = view
+    else:
+        # no zoom level to take into account, window size only
+        image_center_coor = resize_canvas(
+            tf.shape[0], tf.shape[1], screen_size["H"], screen_size["W"]
+        )
+        fig.update_yaxes(range=[image_center_coor["y1"], image_center_coor["y0"]])
+        fig.update_xaxes(range=[image_center_coor["x0"], image_center_coor["x1"]])
 
     patched_annotation_store = Patch()
-    patched_annotation_store["image_center_coor"] = image_center_coor
     patched_annotation_store["active_img_shape"] = list(tf.shape)
+    patched_annotation_store["image_center_coor"] = image_center_coor
+
     fig_loading_overlay = -1
 
     image_ratio = round(tf.shape[1] / tf.shape[0], 2)
@@ -319,8 +351,10 @@ def clear_annotations_on_dataset_change(change_project, all_annotation_class_sto
     Output("annotation-store", "data"),
     Input("project-name-src", "value"),
     State("annotation-store", "data"),
+    State("window-resize", "width"),
+    State("window-resize", "height"),
 )
-def update_slider_values(project_name, annotation_store):
+def update_slider_values(project_name, annotation_store, screen_width, screen_height):
     """
     When the data source is loaded, this callback will set the slider values and chain call
     "update_selection_and_image" callback which will update image and slider selection component.
@@ -336,6 +370,7 @@ def update_slider_values(project_name, annotation_store):
     slider_value = 0 if disable_slider else 1
     annotation_store["view"] = {}
     annotation_store["image_ratio"] = 1
+    annotation_store["screen_size"] = {"W": screen_width, "H": screen_height}
     return (
         min_slider_value,
         max_slider_value,
