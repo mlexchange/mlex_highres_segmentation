@@ -639,8 +639,8 @@ def reset_filters(n_clicks):
 # TODO: check this when plotly is updated
 clientside_callback(
     """
-    function eraseShape(_, graph_id) {
-        Plotly.eraseActiveShape(graph_id)
+    function deleteShape(_, graph_id) {
+        Plotly.deleteActiveShape(graph_id)
         return dash_clientside.no_update
     }
     """,
