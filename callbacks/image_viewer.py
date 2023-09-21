@@ -40,7 +40,6 @@ from utils.plot_utils import (
 def resize_window_event(screen_width, screen_height, annotation_store):
     if not annotation_store["active_img_shape"]:
         raise PreventUpdate
-    print(screen_width, screen_height)
 
     h, w = annotation_store["active_img_shape"]
     image_center_coor = resize_canvas(h, w, screen_height, screen_width)
