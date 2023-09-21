@@ -94,7 +94,7 @@ def render_image(
         tf = np.zeros((500, 500))
     fig = px.imshow(tf, binary_string=True)
     if toggle_seg_result:
-        fig.add_trace(go.Heatmap(z=result, opacity=0.1, showscale=False))
+        fig.add_trace(go.Heatmap(z=result, showscale=False, colorscale=None))
         fig["data"][1]["opacity"] = opacity / 100
 
     fig.update_layout(
