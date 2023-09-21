@@ -2,11 +2,14 @@ import json
 import os
 
 import httpx
+import numpy as np
 import requests
 from dotenv import load_dotenv
 from tiled.client import from_uri
 from tiled.client.array import ArrayClient
 from tiled.client.container import Container
+
+from utils.annotations import Annotations
 
 
 def DEV_download_google_sample_data():
@@ -88,6 +91,36 @@ def DEV_load_exported_json_data(file_path, USER_NAME, PROJECT_NAME):
 
 def DEV_filter_json_data_by_timestamp(data, timestamp):
     return [data for data in data if data["time"] == timestamp]
+
+
+def save_annotations_data(global_store, all_annotations, project_name):
+    """
+    Transforms annotations data to a pixelated mask and outputs to
+    the Tiled server
+
+    # TODO: Save data to Tiled server after transformation
+    """
+    annotations = Annotations(all_annotations, global_store)
+    annotations.create_annotation_mask(sparse=True)  # TODO: Check sparse status
+
+    # Get metadata and annotation data
+    metadata = annotations.get_annotations()
+    mask = annotations.get_annotation_mask()
+
+    # Get raw images associated with each annotated slice
+    img_idx = list(metadata.keys())
+    img = data[project_name]
+    raw = []
+    for idx in img_idx:
+        ar = img[int(idx)]
+        raw.append(ar)
+    try:
+        raw = np.stack(raw)
+        mask = np.stack(mask)
+    except ValueError:
+        return "No annotations to process."
+
+    return
 
 
 load_dotenv()
