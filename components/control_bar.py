@@ -684,7 +684,6 @@ def drawer_section(children):
                     "visible": True,
                     "view": {},
                     "active_img_shape": [],
-                    "image_center_coor": {},
                 },
             ),
             create_reset_view_affix(),

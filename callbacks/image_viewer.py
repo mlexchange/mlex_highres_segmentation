@@ -38,6 +38,7 @@ from utils.plot_utils import (
     Input("image-selection-slider", "value"),
     Input("window-resize", "width"),
     Input("window-resize", "height"),
+    Input("reset-view", "n_clicks"),
     State({"type": "annotation-class-store", "index": ALL}, "data"),
     State("project-name-src", "value"),
     State("annotation-store", "data"),
@@ -49,6 +50,7 @@ def render_image(
     image_idx,
     screen_width,
     screen_height,
+    reset_view,
     all_annotation_class_store,
     project_name,
     annotation_store,
@@ -84,21 +86,20 @@ def render_image(
         fig["layout"]["shapes"] = all_annotations
         view = annotation_store["view"]
 
-    patched_annotation_store = Patch()
     if screen_width and screen_height:
-        if view:
+        if view and ctx.triggered_id != "reset-view":
             # we have a zoom + window size to take into account
             if "xaxis_range_0" in view:
                 fig, view = resize_canvas_with_zoom(
                     view, screen_height, screen_width, fig
                 )
         else:
-            # no zoom level to take into account, window size only, save center coordinates
-            fig, image_center_coor = resize_canvas(
+            # no zoom level to take into account, window size only, also used for reset view case
+            fig = resize_canvas(
                 tf.shape[0], tf.shape[1], screen_height, screen_width, fig
             )
-            patched_annotation_store["image_center_coor"] = image_center_coor
-
+            view = {}
+    patched_annotation_store = Patch()
     patched_annotation_store["active_img_shape"] = list(tf.shape)
     fig_loading_overlay = -1
 
@@ -382,38 +383,3 @@ def update_selection_and_image(
         disable_next_image,
         f"Slice {new_slider_value}",
     )
-
-
-@callback(
-    Output("image-viewer", "figure", allow_duplicate=True),
-    Output("image-viewer", "relayoutData"),
-    Input("reset-view", "n_clicks"),
-    State("annotation-store", "data"),
-    prevent_initial_call=True,
-)
-def reset_figure_view(n_clicks, annotation_store):
-    """
-    This callback will reset the view of the image to the center of the screen (no zoom, no pan).
-    RelayoutData is updated too, which then triggers callback that updates viewfinder box
-    """
-    image_center_coor = annotation_store["image_center_coor"]
-    if image_center_coor is None:
-        raise PreventUpdate
-
-    new_figure = Patch()
-    new_figure["layout"]["yaxis"]["range"] = [
-        image_center_coor["y1"],
-        image_center_coor["y0"],
-    ]
-    new_figure["layout"]["xaxis"]["range"] = [
-        image_center_coor["x0"],
-        image_center_coor["x1"],
-    ]
-
-    relayout_data = {
-        "xaxis.range[0]": image_center_coor["x0"],
-        "yaxis.range[0]": image_center_coor["y0"],
-        "xaxis.range[1]": image_center_coor["x1"],
-        "yaxis.range[1]": image_center_coor["y1"],
-    }
-    return new_figure, relayout_data

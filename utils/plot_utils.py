@@ -162,9 +162,8 @@ def resize_canvas(h, w, H, W, figure):
         xaxis=dict(range=[x0, x1]),
         yaxis=dict(range=[y1, y0]),
     )
-    image_center_coor = {"y1": y1, "y0": y0, "x0": x0, "x1": x1}
 
-    return figure, image_center_coor
+    return figure
 
 
 def resize_canvas_with_zoom(view, H, W, fig):
