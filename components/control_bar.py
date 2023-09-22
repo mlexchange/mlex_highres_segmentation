@@ -663,7 +663,7 @@ def layout():
                                         style={"width": "160px", "margin": "5px"},
                                     )
                                 ),
-                                html.Div(id="output-placeholder"),
+                                html.Div(id="output-details"),
                             ],
                         ),
                     ],
