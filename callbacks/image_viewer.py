@@ -12,10 +12,10 @@ from constants import ANNOT_ICONS, ANNOT_NOTIFICATION_MSGS, KEYBINDS
 from utils.data_utils import get_data_sequence_by_name, get_data_shape_by_name
 from utils.plot_utils import (
     create_viewfinder,
-    downscale_view,
     get_view_finder_max_min,
-    resize_canvas,
+    get_center_coordinates,
     resize_canvas_with_zoom,
+    patch_viefinder_box,
 )
 
 
@@ -31,29 +31,38 @@ from utils.plot_utils import (
 def resize_window_event(screen_width, screen_height, annotation_store):
     if not annotation_store["active_img_shape"]:
         raise PreventUpdate
-
-    h, w = annotation_store["active_img_shape"]
-    image_center_coor = resize_canvas(h, w, screen_height, screen_width)
-    new_figure = Patch()
-    new_figure["layout"]["yaxis"]["range"] = [
-        image_center_coor["y1"],
-        image_center_coor["y0"],
-    ]
-    new_figure["layout"]["xaxis"]["range"] = [
-        image_center_coor["x0"],
-        image_center_coor["x1"],
-    ]
     annotation_store["screen_size"] = {"W": screen_width, "H": screen_height}
+    print(annotation_store["screen_size"], "\n")
+
+    # resize the canvas to fit the screen
+    new_figure = Patch()
+    new_figure, view = resize_canvas_with_zoom(
+        annotation_store["view"],
+        annotation_store["screen_size"],
+        fig_patch=new_figure,
+    )
+    annotation_store["view"] = view
+
+    # resize the viewfinder box to match the new canvas size / zoom level
+    patched_fig_viewfinder = Patch()
+    patched_fig_viewfinder = patch_viefinder_box(
+        view["xaxis_range_0"],
+        view["yaxis_range_0"],
+        view["xaxis_range_1"],
+        view["yaxis_range_1"],
+        annotation_store,
+        patched_fig_viewfinder,
+    )
+
+    # update the image center coordinates since the canvas has been resized
+    image_center_coor = get_center_coordinates(
+        annotation_store["active_img_shape"][0],
+        annotation_store["active_img_shape"][1],
+        screen_height,
+        screen_width,
+    )
     annotation_store["image_center_coor"] = image_center_coor
 
-    DOWNSCALED_img_max_height, DOWNSCALED_img_max_width = get_view_finder_max_min(
-        annotation_store["image_ratio"]
-    )
-    patched_fig_viewfinder = Patch()
-    patched_fig_viewfinder["layout"]["shapes"][0]["x0"] = 0
-    patched_fig_viewfinder["layout"]["shapes"][0]["y0"] = DOWNSCALED_img_max_height
-    patched_fig_viewfinder["layout"]["shapes"][0]["x1"] = DOWNSCALED_img_max_width
-    patched_fig_viewfinder["layout"]["shapes"][0]["y1"] = 0
     return new_figure, annotation_store, patched_fig_viewfinder
 
 
@@ -108,22 +117,27 @@ def render_image(
         fig["layout"]["shapes"] = all_annotations
         view = annotation_store["view"]
 
+    patched_annotation_store = Patch()
     screen_size = annotation_store["screen_size"]
     if view:
         image_center_coor = annotation_store["image_center_coor"]
         # we have a zoom + window size to take into account
         if "xaxis_range_0" in view:
             fig, view = resize_canvas_with_zoom(view, screen_size, fig)
-            image_center_coor = view
+            # image_center_coor = view
     else:
         # no zoom level to take into account, window size only
-        image_center_coor = resize_canvas(
+        image_center_coor = get_center_coordinates(
             tf.shape[0], tf.shape[1], screen_size["H"], screen_size["W"]
         )
         fig.update_yaxes(range=[image_center_coor["y1"], image_center_coor["y0"]])
         fig.update_xaxes(range=[image_center_coor["x0"], image_center_coor["x1"]])
+        # set base (centered) view values for the first image in case user resizes window before annotation_store["view"] has a chance to be set in a relayout event
+        patched_annotation_store["view"]["xaxis_range_0"] = image_center_coor["x0"]
+        patched_annotation_store["view"]["xaxis_range_1"] = image_center_coor["x1"]
+        patched_annotation_store["view"]["yaxis_range_0"] = image_center_coor["y1"]
+        patched_annotation_store["view"]["yaxis_range_1"] = image_center_coor["y0"]
 
-    patched_annotation_store = Patch()
     patched_annotation_store["active_img_shape"] = list(tf.shape)
     patched_annotation_store["image_center_coor"] = image_center_coor
 
@@ -238,31 +252,19 @@ def update_viewfinder(relayout_data, annotation_store):
     # Callback is triggered when the image is first loaded, but the annotation_store is not yet populated so we need to prevent the update
     if not annotation_store["active_img_shape"]:
         raise PreventUpdate
-    patched_fig = Patch()
-
-    DOWNSCALED_img_max_height, DOWNSCALED_img_max_width = get_view_finder_max_min(
-        annotation_store["image_ratio"]
-    )
 
     if "xaxis.range[0]" not in relayout_data:
         raise PreventUpdate
-    else:
-        x0, y0, x1, y1 = downscale_view(
-            relayout_data["xaxis.range[0]"],
-            relayout_data["yaxis.range[0]"],
-            relayout_data["xaxis.range[1]"],
-            relayout_data["yaxis.range[1]"],
-            annotation_store["active_img_shape"],
-            (DOWNSCALED_img_max_height, DOWNSCALED_img_max_width),
-        )
-        patched_fig["layout"]["shapes"][0]["x0"] = x0 if x0 > 0 else 0
-        patched_fig["layout"]["shapes"][0]["y0"] = (
-            y0 if y0 < DOWNSCALED_img_max_height else DOWNSCALED_img_max_height
-        )
-        patched_fig["layout"]["shapes"][0]["x1"] = (
-            x1 if x1 < DOWNSCALED_img_max_width else DOWNSCALED_img_max_width
-        )
-        patched_fig["layout"]["shapes"][0]["y1"] = y1 if y1 > 0 else 0
+    print(relayout_data)
+    patched_fig = Patch()
+    patched_fig = patch_viefinder_box(
+        relayout_data["xaxis.range[0]"],
+        relayout_data["yaxis.range[0]"],
+        relayout_data["xaxis.range[1]"],
+        relayout_data["yaxis.range[1]"],
+        annotation_store,
+        patched_fig,
+    )
     return patched_fig
 
 

@@ -126,7 +126,7 @@ def get_view_finder_max_min(image_ratio):
         return 250 / image_ratio, 250
 
 
-def resize_canvas(h, w, H, W):
+def get_center_coordinates(h, w, H, W):
     img_ratio = w / h
     screen_ratio = W / H
     if w <= W and h <= H:
@@ -162,14 +162,59 @@ def resize_canvas(h, w, H, W):
     return image_center_coor
 
 
-def resize_canvas_with_zoom(view, screen_size, fig):
+def resize_canvas_with_zoom(view, screen_size, fig=None, fig_patch=None):
     H = screen_size["H"]
     W = screen_size["W"]
     x0 = view["xaxis_range_0"]
     y0 = view["yaxis_range_0"]
     x1 = view["xaxis_range_1"]
     y1 = view["yaxis_range_1"]
-    y1 = y0 - H / W * (x1 - x0)
-    fig.update_layout(xaxis=dict(range=[x0, x1]), yaxis=dict(range=[y0, y1]))
+    y1 = y0 - ((H / W) * (x1 - x0))
     view["yaxis_range_1"] = y1
-    return fig, view
+    if fig:
+        fig.update_layout(xaxis=dict(range=[x0, x1]), yaxis=dict(range=[y0, y1]))
+        return fig, view
+    elif fig_patch:
+        fig_patch["layout"]["yaxis"]["range"] = [
+            view["yaxis_range_0"],
+            view["yaxis_range_1"],
+        ]
+        fig_patch["layout"]["xaxis"]["range"] = [
+            view["xaxis_range_0"],
+            view["xaxis_range_1"],
+        ]
+        return fig_patch, view
+    return view
+
+
+def patch_viefinder_box(
+    xaxis_range_0,
+    yaxis_range_0,
+    xaxis_range_1,
+    yaxis_range_1,
+    annotation_store,
+    patched_fig_viewfinder,
+):
+    """
+    This function updates the location of the red box in the viewfinder, depending on where the user is looking at in the image viewer.
+    """
+    DOWNSCALED_img_max_height, DOWNSCALED_img_max_width = get_view_finder_max_min(
+        annotation_store["image_ratio"]
+    )
+    x0, y0, x1, y1 = downscale_view(
+        xaxis_range_0,
+        yaxis_range_0,
+        xaxis_range_1,
+        yaxis_range_1,
+        annotation_store["active_img_shape"],
+        (DOWNSCALED_img_max_height, DOWNSCALED_img_max_width),
+    )
+    patched_fig_viewfinder["layout"]["shapes"][0]["x0"] = x0 if x0 > 0 else 0
+    patched_fig_viewfinder["layout"]["shapes"][0]["y0"] = (
+        y0 if y0 < DOWNSCALED_img_max_height else DOWNSCALED_img_max_height
+    )
+    patched_fig_viewfinder["layout"]["shapes"][0]["x1"] = (
+        x1 if x1 < DOWNSCALED_img_max_width else DOWNSCALED_img_max_width
+    )
+    patched_fig_viewfinder["layout"]["shapes"][0]["y1"] = y1 if y1 > 0 else 0
+    return patched_fig_viewfinder
