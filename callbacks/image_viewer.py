@@ -84,22 +84,21 @@ def render_image(
         fig["layout"]["shapes"] = all_annotations
         view = annotation_store["view"]
 
+    patched_annotation_store = Patch()
     if screen_width and screen_height:
         if view:
-            image_center_coor = annotation_store["image_center_coor"]
             # we have a zoom + window size to take into account
             if "xaxis_range_0" in view:
                 fig, view = resize_canvas_with_zoom(
                     view, screen_height, screen_width, fig
                 )
         else:
-            # no zoom level to take into account, window size only
+            # no zoom level to take into account, window size only, save center coordinates
             fig, image_center_coor = resize_canvas(
                 tf.shape[0], tf.shape[1], screen_height, screen_width, fig
             )
+            patched_annotation_store["image_center_coor"] = image_center_coor
 
-    patched_annotation_store = Patch()
-    patched_annotation_store["image_center_coor"] = image_center_coor
     patched_annotation_store["active_img_shape"] = list(tf.shape)
     fig_loading_overlay = -1
 
