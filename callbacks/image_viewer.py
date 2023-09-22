@@ -85,7 +85,7 @@ def render_image(
 
         fig["layout"]["shapes"] = all_annotations
         view = annotation_store["view"]
-
+    patched_annotation_store = Patch()
     if screen_width and screen_height:
         if view and ctx.triggered_id != "reset-view":
             # we have a zoom + window size to take into account
@@ -98,8 +98,9 @@ def render_image(
             fig = resize_canvas(
                 tf.shape[0], tf.shape[1], screen_height, screen_width, fig
             )
+            patched_annotation_store["view"] = {}
             view = {}
-    patched_annotation_store = Patch()
+
     patched_annotation_store["active_img_shape"] = list(tf.shape)
     fig_loading_overlay = -1
 
