@@ -415,26 +415,35 @@ def open_edit_class_modal(
 @callback(
     Output({"type": "delete-annotation-class-modal", "index": MATCH}, "opened"),
     Output({"type": "delete-annotation-class-modal", "index": MATCH}, "title"),
+    Output({"type": "cannot-delete-last-class-modal", "index": MATCH}, "opened"),
     Input({"type": "delete-annotation-class", "index": MATCH}, "n_clicks"),
     Input({"type": "modal-continue-delete-class-btn", "index": MATCH}, "n_clicks"),
     Input({"type": "modal-cancel-delete-class-btn", "index": MATCH}, "n_clicks"),
+    Input({"type": "ok-to-not-delete-last-class-btn", "index": MATCH}, "n_clicks"),
+    State({"type": "cannot-delete-last-class-modal", "index": MATCH}, "opened"),
     State({"type": "delete-annotation-class-modal", "index": MATCH}, "opened"),
     State({"type": "annotation-class-store", "index": MATCH}, "data"),
+    State({"type": "annotation-class-store", "index": ALL}, "data"),
     prevent_initial_call=True,
 )
 def open_delete_class_modal(
     remove_class,
     continue_remove_class_modal,
     cancel_remove_class_modal,
-    opened,
+    ok_not_delete_modal,
+    cannot_delete_modal_opened,
+    delete_modal_opened,
     class_to_delete,
+    all_annotation_classes,
 ):
     """
     This callback opens and closes the modal that allows you to relabel an existing annotation class
-    and triggers the delete_annotation_class() callback.
+    and triggers the delete_annotation_class() callback. It prevents the user from deleting the last class.
     """
+    if len(all_annotation_classes) == 1:
+        return no_update, no_update, not cannot_delete_modal_opened
     modal_title = f"Delete class: {class_to_delete['label']}"
-    return not opened, modal_title
+    return not delete_modal_opened, modal_title, no_update
 
 
 @callback(
