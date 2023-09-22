@@ -36,18 +36,11 @@ def _control_item(title, title_id, item):
     )
 
 
-def _accordion_item(title, icon, value, children, id, loading=True):
+def _accordion_item(title, icon, value, children, id):
     """
     Returns a customized layout for an accordion item
     """
-    if loading:
-        panel = dmc.LoadingOverlay(
-            dmc.AccordionPanel(children=children, id=id),
-            loaderProps={"size": 0},
-            overlayOpacity=0.4,
-        )
-    else:
-        panel = dmc.AccordionPanel(children=children, id=id)
+    panel = dmc.AccordionPanel(children=children, id=id)
     return dmc.AccordionItem(
         [
             dmc.AccordionControl(
@@ -625,7 +618,6 @@ def layout():
                                 ),
                                 html.Div(id="output-details"),
                             ],
-                            loading=False,
                         ),
                     ],
                 ),
