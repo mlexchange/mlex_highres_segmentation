@@ -800,3 +800,14 @@ def open_controls_drawer(n_clicks, is_opened):
             return no_update, {"display": "none"}
         return no_update, {}
     return no_update, no_update
+
+
+@callback(
+    Output("current-annotated-slices", "data"),
+    Input({"type": "annotation-class-store", "index": ALL}, "data"),
+)
+def update_current_annotated_slices_values(all_classes):
+    all = []
+    for a in all_classes:
+        all += list(a["annotations"].keys())
+    return list(set(all))
