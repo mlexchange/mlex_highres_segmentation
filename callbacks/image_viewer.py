@@ -25,12 +25,7 @@ from utils.plot_utils import (
     downscale_view,
     get_view_finder_max_min,
     resize_canvas,
-)
-
-clientside_callback(
-    ClientsideFunction(namespace="clientside", function_name="get_container_size"),
-    Output("screen-size", "data"),
-    Input("url", "href"),
+    resize_canvas_with_zoom,
 )
 
 
@@ -41,21 +36,23 @@ clientside_callback(
     Output("image-viewer-loading", "zIndex", allow_duplicate=True),
     Output("image-metadata", "data"),
     Input("image-selection-slider", "value"),
+    Input("window-resize", "width"),
+    Input("window-resize", "height"),
     State({"type": "annotation-class-store", "index": ALL}, "data"),
     State("project-name-src", "value"),
     State("annotation-store", "data"),
     State("image-metadata", "data"),
-    State("screen-size", "data"),
     State("current-class-selection", "data"),
     prevent_initial_call=True,
 )
 def render_image(
     image_idx,
+    screen_width,
+    screen_height,
     all_annotation_class_store,
     project_name,
     annotation_store,
     image_metadata,
-    screen_size,
     current_color,
 ):
     if image_idx:
@@ -87,19 +84,18 @@ def render_image(
         fig["layout"]["shapes"] = all_annotations
         view = annotation_store["view"]
 
-    if screen_size:
+    if screen_width and screen_height:
         if view:
             image_center_coor = annotation_store["image_center_coor"]
             # we have a zoom + window size to take into account
             if "xaxis_range_0" in view:
-                fig.update_layout(
-                    xaxis=dict(range=[view["xaxis_range_0"], view["xaxis_range_1"]]),
-                    yaxis=dict(range=[view["yaxis_range_0"], view["yaxis_range_1"]]),
+                fig, view = resize_canvas_with_zoom(
+                    view, screen_height, screen_width, fig
                 )
         else:
             # no zoom level to take into account, window size only
             fig, image_center_coor = resize_canvas(
-                tf.shape[0], tf.shape[1], screen_size["H"], screen_size["W"], fig
+                tf.shape[0], tf.shape[1], screen_height, screen_width, fig
             )
 
     patched_annotation_store = Patch()

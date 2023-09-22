@@ -20,7 +20,6 @@ def layout():
         style=COMPONENT_STYLE,
         children=[
             dcc.Store("image-metadata", data={"name": None}),
-            dcc.Store("screen-size"),
             dcc.Location("url"),
             dmc.LoadingOverlay(
                 id="image-viewer-loading",
