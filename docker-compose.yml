@@ -7,7 +7,7 @@ services:
     command: 'gunicorn -b 0.0.0.0:8075 --reload app:server'
     environment:
       TILED_URI: '${TILED_URI}'
-      API_KEY: '${API_KEY}'
+      TILED_API_KEY: '${TILED_API_KEY}'
     volumes:
       - ./app.py:/app/app.py
       - ./callbacks:/app/callbacks

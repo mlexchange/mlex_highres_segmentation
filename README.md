@@ -27,7 +27,7 @@ pip install -r requirements-dev.txt
 
 ```
 TILED_URI='https://mlex-segmentation.als.lbl.gov'
-API_KEY=<key-provided-on-request>
+TILED_API_KEY=<key-provided-on-request>
 MODE='dev'
 ```
 

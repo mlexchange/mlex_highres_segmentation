@@ -126,7 +126,7 @@ def save_annotations_data(global_store, all_annotations, project_name):
 load_dotenv()
 
 TILED_URI = os.getenv("TILED_URI")
-API_KEY = os.getenv("API_KEY")
+TILED_API_KEY = os.getenv("TILED_API_KEY")
 
 if os.getenv("SERVE_LOCALLY", False):
     print("To run a Tiled server locally run `tiled serve directory --public data`.")
@@ -136,7 +136,7 @@ if os.getenv("SERVE_LOCALLY", False):
     client = from_uri("http://localhost:8000")
     data = client
 else:
-    client = from_uri(TILED_URI, api_key=API_KEY, timeout=httpx.Timeout(30.0))
+    client = from_uri(TILED_URI, api_key=TILED_API_KEY, timeout=httpx.Timeout(30.0))
     data = client["reconstruction"]
 
 
