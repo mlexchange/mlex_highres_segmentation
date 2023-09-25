@@ -160,31 +160,6 @@ class Annotations:
                 "y1": annotation["y1"],
             }
 
-    # TODO: Outdated?
-    def _set_annotation_line_width(self, annotation):
-        """
-        This function sets the line width of the annotation.
-        """
-        self.annotation_line_width = annotation["line"]["width"]
-
-    # TODO: Outdated?
-    def _set_annotation_class(self, annotation):
-        """
-        This function sets the class of the annotation.
-        """
-        self.annotation_class = 99
-        for item in self.annotation_store["label_mapping"]:
-            if item["color"] == annotation["line"]["color"]:
-                self.annotation_class = item["id"]
-
-    # TODO: Outdated?
-    def _set_annotation_image_shape(self, image_idx):
-        """
-        This function sets the the size of the image slice
-        """
-        # TODO: Assuming all images in the slice are the same shape
-        self.annotation_image_shape = self.annotation_store["image_shapes"][0]
-
 
 class ShapeConversion:
     @classmethod
