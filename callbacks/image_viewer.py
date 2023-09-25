@@ -40,7 +40,10 @@ clientside_callback(
     Output("annotation-store", "data", allow_duplicate=True),
     Output("image-viewer-loading", "zIndex", allow_duplicate=True),
     Output("image-metadata", "data"),
+    Output("annotated-slices-selector", "value"),
+    Output("image-selection-slider", "value", allow_duplicate=True),
     Input("image-selection-slider", "value"),
+    Input("annotated-slices-selector", "value"),
     State({"type": "annotation-class-store", "index": ALL}, "data"),
     State("project-name-src", "value"),
     State("annotation-store", "data"),
@@ -51,6 +54,7 @@ clientside_callback(
 )
 def render_image(
     image_idx,
+    slice_selection,
     all_annotation_class_store,
     project_name,
     annotation_store,
@@ -58,6 +62,12 @@ def render_image(
     screen_size,
     current_color,
 ):
+    reset_slice_selection = dash.no_update
+    update_slider_value = dash.no_update
+    if ctx.triggered_id == "annotated-slices-selector":
+        image_idx = int(slice_selection)
+        reset_slice_selection = None
+        update_slider_value = image_idx - 1
     if image_idx:
         image_idx -= 1  # slider starts at 1, so subtract 1 to get the correct index
         tf = get_data_sequence_by_name(project_name)[image_idx]
@@ -128,6 +138,8 @@ def render_image(
         patched_annotation_store,
         fig_loading_overlay,
         curr_image_metadata,
+        reset_slice_selection,
+        update_slider_value,
     )
 
 

@@ -156,7 +156,7 @@ def layout():
                                     html.Div(
                                         [
                                             dmc.Select(
-                                                id="current-annotated-slices",
+                                                id="annotated-slices-selector",
                                                 placeholder="Select a slice to view...",
                                                 # style={"width": "90%"},
                                             ),

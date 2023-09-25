@@ -803,11 +803,14 @@ def open_controls_drawer(n_clicks, is_opened):
 
 
 @callback(
-    Output("current-annotated-slices", "data"),
+    Output("annotated-slices-selector", "data"),
     Input({"type": "annotation-class-store", "index": ALL}, "data"),
+    Input("modal-continue-delete-button", "n_clicks"),
+    # TODO add input for eraser mode
 )
-def update_current_annotated_slices_values(all_classes):
+def update_current_annotated_slices_values(all_classes, delete_annotations_click):
     all = []
     for a in all_classes:
         all += list(a["annotations"].keys())
+    all = [str(int(slice) + 1) for slice in all]
     return list(set(all))
