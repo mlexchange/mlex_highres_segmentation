@@ -804,6 +804,7 @@ def open_controls_drawer(n_clicks, is_opened):
 
 @callback(
     Output("annotated-slices-selector", "data"),
+    Output("annotated-slices-selector", "disabled"),
     Input({"type": "annotation-class-store", "index": ALL}, "data"),
     # TODO check if erasing an annotation via the erase triggers this CB (it should)
 )
@@ -815,4 +816,5 @@ def update_current_annotated_slices_values(all_classes):
         {"value": int(slice) + 1, "label": f"Slice {str(int(slice) + 1)}"}
         for slice in all_annotated_slices
     ]
-    return dropdown_values
+    disabled = True if len(dropdown_values) == 0 else False
+    return dropdown_values, disabled
