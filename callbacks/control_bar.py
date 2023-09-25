@@ -640,7 +640,8 @@ def reset_filters(n_clicks):
 clientside_callback(
     """
     function deleteShape(_, graph_id) {
-        Plotly.deleteActiveShape(graph_id)
+        var gd = document.getElementsByClassName('js-plotly-plot')[0];
+        Plotly.deleteActiveShape(gd)
         return dash_clientside.no_update
     }
     """,
