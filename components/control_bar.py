@@ -642,7 +642,7 @@ def layout():
                                 ),
                                 dmc.Space(h=25),
                                 _control_item(
-                                    "Segment",
+                                    "Results",
                                     "",
                                     dmc.Select(
                                         id="result-selector",
