@@ -36,7 +36,7 @@ def _control_item(title, title_id, item):
     )
 
 
-def _accordion_item(title, icon, value, children, id, loading=True):
+def _accordion_item(title, icon, value, children, id, loading=False):
     """
     Returns a customized layout for an accordion item
     """
@@ -620,6 +620,16 @@ def layout():
                             id="model-configuration",
                             children=[
                                 dmc.Space(h=10),
+                                dmc.Center(
+                                    dmc.Button(
+                                        "Run model",
+                                        id="run-model",
+                                        variant="light",
+                                        style={"width": "160px", "margin": "5px"},
+                                    )
+                                ),
+                                html.Div(id="output-details"),
+                                dmc.Space(h=25),
                                 dmc.Switch(
                                     id="show-result-overlay-toggle",
                                     size="sm",
@@ -654,16 +664,6 @@ def layout():
                                         style={"width": "225px"},
                                     ),
                                 ),
-                                dmc.Space(h=25),
-                                dmc.Center(
-                                    dmc.Button(
-                                        "Run model",
-                                        id="run-model",
-                                        variant="light",
-                                        style={"width": "160px", "margin": "5px"},
-                                    )
-                                ),
-                                html.Div(id="output-details"),
                             ],
                         ),
                     ],
