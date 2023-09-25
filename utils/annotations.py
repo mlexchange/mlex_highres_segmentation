@@ -165,42 +165,28 @@ class ShapeConversion:
     @classmethod
     def ellipse_to_array(self, svg_data, image_shape, mask_class):
         image_height, image_width = image_shape
-        x0 = svg_data["x0"]
-        y0 = svg_data["y0"]
-        x1 = svg_data["x1"]
-        y1 = svg_data["y1"]
 
-        # Calculate the radius of the circle (r)
-        r = math.sqrt((x1 - x0) ** 2 + (y1 - y0) ** 2)
+        cx = (svg_data["x0"] + svg_data["x1"]) / 2
+        cy = (svg_data["y0"] + svg_data["y1"]) / 2
 
-        # Calculate the radius in x-direction (r_radius)
-        r_radius = abs(x1 - x0)
+        # Radii calculations
+        r_radius = abs(svg_data["x0"] - svg_data["x1"]) / 2  # Horizontal radius
+        c_radius = abs(svg_data["y0"] - svg_data["y1"]) / 2  # Vertical radius
 
-        # Calculate the radius in y-direction (c_radius)
-        c_radius = abs(y1 - y0)
-
-        # Center of the circle (cx, cy)
-        cx = x0
-        cy = y0
-
-        # Adjust center coordinates to fit within the image bounds
+        # Clip center coordinates to image bounds
         cx = max(min(int(cx), image_width - 1), 0)
         cy = max(min(int(cy), image_height - 1), 0)
 
-        r, cx, cy, r_radius, c_radius = int(r), cx, cy, int(r_radius), int(c_radius)
-
-        # Scale the radius if needed to fit within the image bounds
-        max_radius = min(cx, cy, image_width - cx, image_height - cy)
-        r_radius = min(r_radius, max_radius)
-        c_radius = min(c_radius, max_radius)
-
-        # Create the image and draw the circle
+        # Create mask and draw ellipse
         mask = np.zeros((image_height, image_width), dtype=np.uint8)
-        rr, cc = draw.ellipse(cy, cx, r_radius, c_radius)
+        rr, cc = draw.ellipse(
+            cy, cx, c_radius, r_radius
+        )  # Vertical radius first, then horizontal
 
         # Ensure indices are within valid image bounds
         rr = np.clip(rr, 0, image_height - 1)
         cc = np.clip(cc, 0, image_width - 1)
+
         mask[rr, cc] = mask_class
         return mask
 
