@@ -65,9 +65,9 @@ def render_image(
     reset_slice_selection = dash.no_update
     update_slider_value = dash.no_update
     if ctx.triggered_id == "annotated-slices-selector":
-        image_idx = int(slice_selection)
+        image_idx = slice_selection
         reset_slice_selection = None
-        update_slider_value = image_idx - 1
+        update_slider_value = slice_selection
     if image_idx:
         image_idx -= 1  # slider starts at 1, so subtract 1 to get the correct index
         tf = get_data_sequence_by_name(project_name)[image_idx]

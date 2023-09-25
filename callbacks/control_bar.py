@@ -809,8 +809,11 @@ def open_controls_drawer(n_clicks, is_opened):
     # TODO add input for eraser mode
 )
 def update_current_annotated_slices_values(all_classes, delete_annotations_click):
-    all = []
+    all_annotated_slices = []
     for a in all_classes:
-        all += list(a["annotations"].keys())
-    all = [str(int(slice) + 1) for slice in all]
-    return list(set(all))
+        all_annotated_slices += list(a["annotations"].keys())
+    dropdown_values = [
+        {"value": int(slice) + 1, "label": f"Slice {str(int(slice) + 1)}"}
+        for slice in all_annotated_slices
+    ]
+    return dropdown_values
