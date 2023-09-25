@@ -207,6 +207,32 @@ def annotation_class_item(class_color, class_label, existing_ids, data=None):
                     ),
                 ],
             ),
+            dmc.Modal(
+                id={"type": "cannot-delete-last-class-modal", "index": class_id},
+                children=[
+                    dmc.Center(
+                        dmc.Text(
+                            "You cannot delete the last class",
+                        )
+                    ),
+                    dmc.Space(h=10),
+                    html.Div(
+                        [
+                            dmc.Button(
+                                id={
+                                    "type": "ok-to-not-delete-last-class-btn",
+                                    "index": class_id,
+                                },
+                                children="Ok",
+                            ),
+                        ],
+                        style={
+                            "display": "flex",
+                            "justify-content": "flex-end",
+                        },
+                    ),
+                ],
+            ),
         ],
         style={
             "border": "1px solid #EAECEF",
