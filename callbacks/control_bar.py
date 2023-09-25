@@ -805,10 +805,9 @@ def open_controls_drawer(n_clicks, is_opened):
 @callback(
     Output("annotated-slices-selector", "data"),
     Input({"type": "annotation-class-store", "index": ALL}, "data"),
-    Input("modal-continue-delete-button", "n_clicks"),
-    # TODO add input for eraser mode
+    # TODO check if erasing an annotation via the erase triggers this CB (it should)
 )
-def update_current_annotated_slices_values(all_classes, delete_annotations_click):
+def update_current_annotated_slices_values(all_classes):
     all_annotated_slices = []
     for a in all_classes:
         all_annotated_slices += list(a["annotations"].keys())
