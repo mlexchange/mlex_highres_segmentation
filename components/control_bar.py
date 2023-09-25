@@ -153,17 +153,9 @@ def layout():
                                 _control_item(
                                     "Annotated Slices",
                                     "current-annotated-slice",
-                                    html.Div(
-                                        [
-                                            dmc.Select(
-                                                id="annotated-slices-selector",
-                                                placeholder="Select a slice to view...",
-                                                # style={"width": "90%"},
-                                            ),
-                                            # dmc.Space(w=10),
-                                            # dmc.Button("Go"),
-                                        ],
-                                        # style={"display": "flex"},
+                                    dmc.Select(
+                                        id="annotated-slices-selector",
+                                        placeholder="Select a slice to view...",
                                     ),
                                 ),
                                 dmc.Space(h=10),
