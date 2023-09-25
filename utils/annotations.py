@@ -173,10 +173,6 @@ class ShapeConversion:
         r_radius = abs(svg_data["x0"] - svg_data["x1"]) / 2  # Horizontal radius
         c_radius = abs(svg_data["y0"] - svg_data["y1"]) / 2  # Vertical radius
 
-        # Clip center coordinates to image bounds
-        cx = max(min(int(cx), image_width - 1), 0)
-        cy = max(min(int(cy), image_height - 1), 0)
-
         # Create mask and draw ellipse
         mask = np.zeros((image_height, image_width), dtype=np.uint8)
         rr, cc = draw.ellipse(
