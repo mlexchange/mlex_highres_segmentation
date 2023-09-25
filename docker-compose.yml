@@ -16,9 +16,9 @@ services:
     ports:
       - '8075:8075'
 
-#     networks:
-#       - computing_api_default
+    networks:
+      - computing_api_default
 
-# networks:
-#   computing_api_default:
-#     external: true
+networks:
+  computing_api_default:
+    external: true

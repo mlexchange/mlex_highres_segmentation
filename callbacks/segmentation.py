@@ -14,6 +14,7 @@ from utils.data_utils import get_data_sequence_by_name
 
 MODE = os.getenv("MODE", "")
 
+
 DEMO_WORKFLOW = {
     "user_uid": "high_res_user",
     "job_list": [
@@ -21,15 +22,15 @@ DEMO_WORKFLOW = {
             "mlex_app": "high-res-segmentation",
             "description": "test_1",
             "service_type": "backend",
-            "working_directory": "/data/mlex_repo/mlex_tiled/data",
+            "working_directory": "/Users/wiebke/Documents/Projects/2023.06 Dash Segmentation Plotly/mlex_tiled/data",
             "job_kwargs": {
                 "uri": "mlexchange1/random-forest-dc:1.1",
                 "type": "docker",
-                "cmd": 'python random_forest.py data/seg-results/spiral/image-train data/seg-results-test/spiral/feature data/seg-results/spiral/mask data/seg-results-test/spiral/model \'{"n_estimators": 30, "oob_score": true, "max_depth": 8}\'',
+                "cmd": 'python random_forest.py data/mlex_store/user1/rec20190524_085542_clay_testZMQ_8bit/input data/mlex_store/user1/rec20190524_085542_clay_testZMQ_8bit/feature data/mlex_store/user1/rec20190524_085542_clay_testZMQ_8bit/masks data/mlex_store/user1/rec20190524_085542_clay_testZMQ_8bit/model \'{"n_estimators": 30, "oob_score": true, "max_depth": 8}\'',
                 "kwargs": {
                     "job_type": "train",
                     "experiment_id": "123",
-                    "dataset": "name_of_dataset",
+                    "dataset": "rec20190524_085542_clay_testZMQ_8bit",
                     "params": '{"n_estimators": 30, "oob_score": true, "max_depth": 8}',
                 },
             },
@@ -38,21 +39,21 @@ DEMO_WORKFLOW = {
             "mlex_app": "high-res-segmentation",
             "description": "test_1",
             "service_type": "backend",
-            "working_directory": "/data/mlex_repo/mlex_tiled/data",
+            "working_directory": "/Users/wiebke/Documents/Projects/2023.06 Dash Segmentation Plotly/mlex_tiled/data/",
             "job_kwargs": {
                 "uri": "mlexchange1/random-forest-dc:1.1",
                 "type": "docker",
-                "cmd": "python segment.py data/data/20221222_085501_looking_from_above_spiralUP_CounterClockwise_endPointAtDoor_0-1000 data/seg-results-test/spiral/model/random-forest.model data/seg-results-test/spiral/output '{\"show_progress\": 1}'",
+                "cmd": "python segment.py data/mlex_store/user1/rec20190524_085542_clay_testZMQ_8bit/input data/mlex_store/user1/rec20190524_085542_clay_testZMQ_8bit/model/random-forest.model data/mlex_store/user1/rec20190524_085542_clay_testZMQ_8bit/segmentation/ '{\"show_progress\": 1}'",
                 "kwargs": {
                     "job_type": "train",
                     "experiment_id": "124",
-                    "dataset": "name_of_dataset",
+                    "dataset": "rec20190524_085542_clay_testZMQ_8bit",
                     "params": '{"show_progress": 1}',
                 },
             },
         },
     ],
-    "host_list": ["vaughan.als.lbl.gov"],
+    "host_list": ["local.als.lbl.gov"],
     "dependencies": {"0": [], "1": [0]},
     "requirements": {"num_processors": 2, "num_gpus": 0, "num_nodes": 1},
 }
