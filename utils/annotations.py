@@ -27,7 +27,6 @@ class Annotations:
                             "id": annotation_class["class_id"],
                             "type": self.annotation_type,
                             "class": annotation_class["label"],
-                            "line_width": shape["line"]["width"],
                             # TODO: This is the same across all images in a dataset
                             "image_shape": global_store["image_shapes"][0],
                             "svg_data": self.svg_data,
@@ -212,7 +211,7 @@ class ShapeConversion:
         return mask
 
     @classmethod
-    def line_to_array(self, svg_data, image_shape, mask_class, line_width):
+    def line_to_array(self, svg_data, image_shape, mask_class):
         image_height, image_width = image_shape
         x0 = svg_data["x0"]
         y0 = svg_data["y0"]
@@ -228,7 +227,6 @@ class ShapeConversion:
         mask = np.zeros((image_height, image_width), dtype=np.uint8)
         rr, cc = draw.line(y0, x0, y1, x1)
         mask[rr, cc] = mask_class
-        # mask = morphology.dilation(mask, morphology.disk(radius=line_width))
         return mask
 
     @classmethod
@@ -264,7 +262,7 @@ class ShapeConversion:
         return mask
 
     @classmethod
-    def opened_path_to_array(self, svg_data, image_shape, mask_class, line_width):
+    def opened_path_to_array(self, svg_data, image_shape, mask_class):
         image_height, image_width = image_shape
         path_data = svg_data["path"]
         path = parse_path(path_data)
@@ -272,12 +270,28 @@ class ShapeConversion:
         # Create an empty image
         mask = np.zeros((image_height, image_width), dtype=np.uint8)
 
+        radius = 4
+
         # Convert SVG path to points and draw on the image
         for curve in path:
-            for t in np.linspace(0, 1, 1000):
-                x, y = curve.point(t).real, curve.point(t).imag
-                x = max(min(int(x), image_width - 1), 0)
-                y = max(min(int(y), image_height - 1), 0)
-                mask[y, x] = mask_class
-        # mask = morphology.dilation(mask, morphology.disk(radius=line_width))
+            for t in np.linspace(
+                0, 1, 500
+            ):  # Reduced the number of points to decrease overlap
+                cx, cy = (
+                    curve.point(t).real,
+                    curve.point(t).imag,
+                )  # Center of the circle
+                cx, cy = max(min(int(cx), image_width - 1), 0), max(
+                    min(int(cy), image_height - 1), 0
+                )
+
+                # Draw a disk around (cx, cy) with the given radius
+                for dy in range(-radius, radius + 1):
+                    for dx in range(-radius, radius + 1):
+                        if (
+                            dx**2 + dy**2 <= radius**2
+                        ):  # Check if point is inside circle
+                            x, y = cx + dx, cy + dy
+                            if 0 <= x < image_width and 0 <= y < image_height:
+                                mask[y, x] = mask_class
         return mask

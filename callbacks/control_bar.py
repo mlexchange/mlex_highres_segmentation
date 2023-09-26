@@ -236,18 +236,6 @@ def annotation_mode(
 
 @callback(
     Output("image-viewer", "figure", allow_duplicate=True),
-    Input("paintbrush-width", "value"),
-    prevent_initial_call=True,
-)
-def annotation_width(width_value):
-    """This callback is responsible for changing the brush width"""
-    patched_figure = Patch()
-    patched_figure["layout"]["newshape"]["line"]["width"] = width_value
-    return patched_figure
-
-
-@callback(
-    Output("image-viewer", "figure", allow_duplicate=True),
     Input("current-class-selection", "data"),
     Input("image-selection-slider", "value"),
     prevent_initial_call=True,

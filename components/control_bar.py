@@ -399,21 +399,6 @@ def layout():
                                         ),
                                     ]
                                 ),
-                                dmc.Space(h=30),
-                                _control_item(
-                                    "Drawing width",
-                                    "paintbrush-text",
-                                    dmc.Slider(
-                                        id="paintbrush-width",
-                                        value=5,
-                                        min=1,
-                                        max=20,
-                                        step=1,
-                                        color="gray",
-                                        size="sm",
-                                        style={"width": "257px"},
-                                    ),
-                                ),
                                 dmc.Space(h=10),
                                 dmc.Modal(
                                     title="Warning",
