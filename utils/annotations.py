@@ -91,13 +91,6 @@ class Annotations:
                     shape_mask = ShapeConversion.closed_path_to_array(
                         shape["svg_data"], shape["image_shape"], shape["id"]
                     )
-                elif shape["type"] == "Freeform":
-                    shape_mask = ShapeConversion.opened_path_to_array(
-                        shape["svg_data"],
-                        shape["image_shape"],
-                        shape["id"],
-                        shape["line_width"],
-                    )
                 elif shape["type"] == "Rectangle":
                     shape_mask = ShapeConversion.rectangle_to_array(
                         shape["svg_data"], shape["image_shape"], shape["id"]
@@ -105,13 +98,6 @@ class Annotations:
                 elif shape["type"] == "Ellipse":
                     shape_mask = ShapeConversion.ellipse_to_array(
                         shape["svg_data"], shape["image_shape"], shape["id"]
-                    )
-                elif shape["type"] == "Line":
-                    shape_mask = ShapeConversion.line_to_array(
-                        shape["svg_data"],
-                        shape["image_shape"],
-                        shape["id"],
-                        shape["line_width"],
                     )
                 else:
                     continue
@@ -131,14 +117,10 @@ class Annotations:
 
         if annotation_type == "path" and "fillrule" in annotation:
             annot = "Closed Freeform"
-        elif annotation_type == "path":
-            annot = "Freeform"
         elif annotation_type == "rect":
             annot = "Rectangle"
         elif annotation_type == "circle":
             annot = "Ellipse"
-        elif annotation_type == "line":
-            annot = "Line"
         else:
             annot = "Unknown"
 
@@ -211,25 +193,6 @@ class ShapeConversion:
         return mask
 
     @classmethod
-    def line_to_array(self, svg_data, image_shape, mask_class):
-        image_height, image_width = image_shape
-        x0 = svg_data["x0"]
-        y0 = svg_data["y0"]
-        x1 = svg_data["x1"]
-        y1 = svg_data["y1"]
-
-        # Adjust coordinates to fit within the image bounds
-        x0 = max(min(int(x0), image_width - 1), 0)
-        y0 = max(min(int(y0), image_height - 1), 0)
-        x1 = max(min(int(x1), image_width - 1), 0)
-        y1 = max(min(int(y1), image_height - 1), 0)
-
-        mask = np.zeros((image_height, image_width), dtype=np.uint8)
-        rr, cc = draw.line(y0, x0, y1, x1)
-        mask[rr, cc] = mask_class
-        return mask
-
-    @classmethod
     def closed_path_to_array(self, svg_data, image_shape, mask_class):
         image_height, image_width = image_shape
 
@@ -259,39 +222,4 @@ class ShapeConversion:
 
         # Set the class value for the pixels inside the polygon
         mask[mask == 1] = mask_class
-        return mask
-
-    @classmethod
-    def opened_path_to_array(self, svg_data, image_shape, mask_class):
-        image_height, image_width = image_shape
-        path_data = svg_data["path"]
-        path = parse_path(path_data)
-
-        # Create an empty image
-        mask = np.zeros((image_height, image_width), dtype=np.uint8)
-
-        radius = 4
-
-        # Convert SVG path to points and draw on the image
-        for curve in path:
-            for t in np.linspace(
-                0, 1, 500
-            ):  # Reduced the number of points to decrease overlap
-                cx, cy = (
-                    curve.point(t).real,
-                    curve.point(t).imag,
-                )  # Center of the circle
-                cx, cy = max(min(int(cx), image_width - 1), 0), max(
-                    min(int(cy), image_height - 1), 0
-                )
-
-                # Draw a disk around (cx, cy) with the given radius
-                for dy in range(-radius, radius + 1):
-                    for dx in range(-radius, radius + 1):
-                        if (
-                            dx**2 + dy**2 <= radius**2
-                        ):  # Check if point is inside circle
-                            x, y = cx + dx, cy + dy
-                            if 0 <= x < image_width and 0 <= y < image_height:
-                                mask[y, x] = mask_class
         return mask
