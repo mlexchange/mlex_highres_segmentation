@@ -23,12 +23,14 @@ and
 pip install -r requirements-dev.txt
 ```
 
-2. Configure a connection to the Tiled server via a `.env` file with the following environment variables:
+2. Set environment variables via a `.env` file to configure a connection to the Tiled server, differentiate between local testing and development mode and set a user and password for basic autherization:
 
 ```
-TILED_URI='https://mlex-segmentation.als.lbl.gov'
+TILED_URI='https://tiled-seg.als.lbl.gov'
 TILED_API_KEY=<key-provided-on-request>
 MODE='dev'
+USER_NAME=<to-be-specified-per-deployment>
+USER_PASSWORD=<to-be-specified-per-deployment>
 ```
 
 3. Start a local server: 
