@@ -14,6 +14,7 @@ from dash import (
     State,
     callback,
     clientside_callback,
+    ClientsideFunction,
     ctx,
     dcc,
     html,
@@ -106,7 +107,6 @@ def update_selected_class_style(selected_class, all_annotation_classes):
     Output("line", "style"),
     Output("circle", "style"),
     Output("rectangle", "style"),
-    Output("eraser", "style"),
     Output("pan-and-zoom", "style"),
     Output("annotation-store", "data", allow_duplicate=True),
     Output("notifications-container", "children", allow_duplicate=True),
@@ -115,7 +115,6 @@ def update_selected_class_style(selected_class, all_annotation_classes):
     Input("circle", "n_clicks"),
     Input("rectangle", "n_clicks"),
     Input("line", "n_clicks"),
-    Input("eraser", "n_clicks"),
     Input("pan-and-zoom", "n_clicks"),
     Input("keybind-event-listener", "event"),
     State("annotation-store", "data"),
@@ -130,7 +129,6 @@ def annotation_mode(
     circle,
     rect,
     line,
-    erase_annotation,
     pan_and_zoom,
     keybind_event_listener,
     annotation_store,
@@ -173,7 +171,6 @@ def annotation_mode(
         "circle": inactive,
         "rectangle": inactive,
         "line": inactive,
-        "eraser": inactive,
         "pan-and-zoom": inactive,
     }
 
@@ -202,10 +199,6 @@ def annotation_mode(
             patched_figure["layout"]["dragmode"] = "drawrect"
             annotation_store["dragmode"] = "drawrect"
             styles[trigger] = active
-        elif trigger == "eraser" and erase_annotation > 0:
-            patched_figure["layout"]["dragmode"] = "eraseshape"
-            annotation_store["dragmode"] = "eraseshape"
-            styles[trigger] = active
         elif trigger == "pan-and-zoom" and pan_and_zoom > 0:
             patched_figure["layout"]["dragmode"] = "pan"
             annotation_store["dragmode"] = "pan"
@@ -227,7 +220,6 @@ def annotation_mode(
         styles["line"],
         styles["circle"],
         styles["rectangle"],
-        styles["eraser"],
         styles["pan-and-zoom"],
         annotation_store,
         notification,
@@ -638,15 +630,9 @@ def reset_filters(n_clicks):
 
 # TODO: check this when plotly is updated
 clientside_callback(
-    """
-    function deleteShape(_, graph_id) {
-        var gd = document.getElementsByClassName('js-plotly-plot')[0];
-        Plotly.deleteActiveShape(gd)
-        return dash_clientside.no_update
-    }
-    """,
+    ClientsideFunction(namespace="clientside", function_name="delete_active_shape"),
     Output("image-viewer", "id", allow_duplicate=True),
-    Input("eraser", "n_clicks"),
+    Input("keybind-event-listener", "event"),
     State("image-viewer", "id"),
     prevent_initial_call=True,
 )

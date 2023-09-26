@@ -374,19 +374,6 @@ def layout():
                                                         size="lg",
                                                     ),
                                                 ),
-                                                _tooltip(
-                                                    "Eraser (S)",
-                                                    dmc.ActionIcon(
-                                                        id="eraser",
-                                                        variant="subtle",
-                                                        color="gray",
-                                                        children=DashIconify(
-                                                            icon=ANNOT_ICONS["eraser"],
-                                                            width=20,
-                                                        ),
-                                                        size="lg",
-                                                    ),
-                                                ),
                                             ],
                                             className="flex-row",
                                             style={
