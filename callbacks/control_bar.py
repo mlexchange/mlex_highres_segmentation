@@ -101,20 +101,16 @@ def update_selected_class_style(selected_class, all_annotation_classes):
 
 @callback(
     Output("image-viewer", "figure", allow_duplicate=True),
-    Output("open-freeform", "style"),
     Output("closed-freeform", "style"),
-    Output("line", "style"),
     Output("circle", "style"),
     Output("rectangle", "style"),
     Output("eraser", "style"),
     Output("pan-and-zoom", "style"),
     Output("annotation-store", "data", allow_duplicate=True),
     Output("notifications-container", "children", allow_duplicate=True),
-    Input("open-freeform", "n_clicks"),
     Input("closed-freeform", "n_clicks"),
     Input("circle", "n_clicks"),
     Input("rectangle", "n_clicks"),
-    Input("line", "n_clicks"),
     Input("eraser", "n_clicks"),
     Input("pan-and-zoom", "n_clicks"),
     Input("keybind-event-listener", "event"),
@@ -125,11 +121,9 @@ def update_selected_class_style(selected_class, all_annotation_classes):
     prevent_initial_call=True,
 )
 def annotation_mode(
-    open,
     closed,
     circle,
     rect,
-    line,
     erase_annotation,
     pan_and_zoom,
     keybind_event_listener,
@@ -168,11 +162,9 @@ def annotation_mode(
 
     # Define a dictionary to store the styles
     styles = {
-        "open-freeform": inactive,
         "closed-freeform": inactive,
         "circle": inactive,
         "rectangle": inactive,
-        "line": inactive,
         "eraser": inactive,
         "pan-and-zoom": inactive,
     }
@@ -182,17 +174,9 @@ def annotation_mode(
         annotation_store["dragmode"] = mode
         styles[trigger] = active
     else:
-        if trigger == "open-freeform" and open > 0:
-            patched_figure["layout"]["dragmode"] = "drawopenpath"
-            annotation_store["dragmode"] = "drawopenpath"
-            styles[trigger] = active
-        elif trigger == "closed-freeform" and closed > 0:
+        if trigger == "closed-freeform" and closed > 0:
             patched_figure["layout"]["dragmode"] = "drawclosedpath"
             annotation_store["dragmode"] = "drawclosedpath"
-            styles[trigger] = active
-        elif trigger == "line" and line > 0:
-            patched_figure["layout"]["dragmode"] = "drawline"
-            annotation_store["dragmode"] = "drawline"
             styles[trigger] = active
         elif trigger == "circle" and circle > 0:
             patched_figure["layout"]["dragmode"] = "drawcircle"
@@ -222,9 +206,7 @@ def annotation_mode(
     )
     return (
         patched_figure,
-        styles["open-freeform"],
         styles["closed-freeform"],
-        styles["line"],
         styles["circle"],
         styles["rectangle"],
         styles["eraser"],

@@ -1,9 +1,7 @@
 KEYBINDS = {
-    "open-freeform": "q",
-    "closed-freeform": "w",
-    "line": "e",
-    "circle": "r",
-    "rectangle": "t",
+    "closed-freeform": "q",
+    "circle": "w",
+    "rectangle": "e",
     "pan-and-zoom": "a",
     "erase": "s",
     "slice-right": "ArrowRight",
@@ -11,9 +9,7 @@ KEYBINDS = {
 }
 
 ANNOT_ICONS = {
-    "open-freeform": "mdi:draw",
     "closed-freeform": "fluent:draw-shape-20-filled",
-    "line": "pepicons-pop:line-y",
     "circle": "gg:shape-circle",
     "rectangle": "gg:shape-square",
     "eraser": "ph:eraser",
@@ -23,9 +19,7 @@ ANNOT_ICONS = {
 }
 
 ANNOT_NOTIFICATION_MSGS = {
-    "open-freeform": "Open freeform annotation mode",
     "closed-freeform": "Closed freeform annotation mode",
-    "line": "Line annotation mode",
     "circle": "Circle annotation mode",
     "rectangle": "Rectangle annotation mode",
     "eraser": "Eraser annotation mode",
@@ -35,11 +29,9 @@ ANNOT_NOTIFICATION_MSGS = {
 }
 
 KEY_MODES = {
-    KEYBINDS["open-freeform"]: ("drawopenpath", "open-freeform"),
     KEYBINDS["closed-freeform"]: ("drawclosedpath", "closed-freeform"),
     KEYBINDS["circle"]: ("drawcircle", "circle"),
     KEYBINDS["rectangle"]: ("drawrect", "rectangle"),
-    KEYBINDS["line"]: ("drawline", "line"),
     KEYBINDS["pan-and-zoom"]: ("pan", "pan-and-zoom"),
     KEYBINDS["erase"]: ("eraseshape", "eraser"),
 }
