@@ -268,7 +268,7 @@ def layout():
                                         html.Div(
                                             children=[
                                                 _tooltip(
-                                                    "Pan and zoom (A)",
+                                                    f"Pan and zoom ({KEYBINDS['pan-and-zoom'].upper()})",
                                                     dmc.ActionIcon(
                                                         id="pan-and-zoom",
                                                         variant="subtle",
@@ -295,25 +295,7 @@ def layout():
                                         html.Div(
                                             children=[
                                                 _tooltip(
-                                                    "Open freeform (Q)",
-                                                    dmc.ActionIcon(
-                                                        id="open-freeform",
-                                                        variant="subtle",
-                                                        color="gray",
-                                                        children=DashIconify(
-                                                            icon=ANNOT_ICONS[
-                                                                "open-freeform"
-                                                            ],
-                                                            width=20,
-                                                        ),
-                                                        style={
-                                                            "backgroundColor": "#EAECEF"
-                                                        },
-                                                        size="lg",
-                                                    ),
-                                                ),
-                                                _tooltip(
-                                                    "Closed freeform (W)",
+                                                    f"Closed freeform ({KEYBINDS['closed-freeform'].upper()})",
                                                     dmc.ActionIcon(
                                                         id="closed-freeform",
                                                         variant="subtle",
@@ -324,23 +306,14 @@ def layout():
                                                             ],
                                                             width=20,
                                                         ),
+                                                        style={
+                                                            "backgroundColor": "#EAECEF"
+                                                        },
                                                         size="lg",
                                                     ),
                                                 ),
                                                 _tooltip(
-                                                    "Line (E)",
-                                                    dmc.ActionIcon(
-                                                        id="line",
-                                                        variant="subtle",
-                                                        color="gray",
-                                                        children=DashIconify(
-                                                            icon="ci:line-l", width=20
-                                                        ),
-                                                        size="lg",
-                                                    ),
-                                                ),
-                                                _tooltip(
-                                                    "Circle (R)",
+                                                    f"Circle ({KEYBINDS['circle'].upper()})",
                                                     dmc.ActionIcon(
                                                         id="circle",
                                                         variant="subtle",
@@ -353,7 +326,7 @@ def layout():
                                                     ),
                                                 ),
                                                 _tooltip(
-                                                    "Rectangle (T)",
+                                                    f"Rectangle ({KEYBINDS['rectangle'].upper()})",
                                                     dmc.ActionIcon(
                                                         id="rectangle",
                                                         variant="subtle",
@@ -368,7 +341,7 @@ def layout():
                                                     ),
                                                 ),
                                                 _tooltip(
-                                                    "Eraser (S)",
+                                                    f"Eraser ({KEYBINDS['erase'].upper()})",
                                                     dmc.ActionIcon(
                                                         id="eraser",
                                                         variant="subtle",
@@ -391,21 +364,6 @@ def layout():
                                             },
                                         ),
                                     ]
-                                ),
-                                dmc.Space(h=30),
-                                _control_item(
-                                    "Drawing width",
-                                    "paintbrush-text",
-                                    dmc.Slider(
-                                        id="paintbrush-width",
-                                        value=5,
-                                        min=1,
-                                        max=20,
-                                        step=1,
-                                        color="gray",
-                                        size="sm",
-                                        style={"width": "257px"},
-                                    ),
                                 ),
                                 dmc.Space(h=10),
                                 dmc.Modal(
@@ -680,7 +638,7 @@ def drawer_section(children):
             dcc.Store(
                 id="annotation-store",
                 data={
-                    "dragmode": "drawopenpath",
+                    "dragmode": "drawclosedpath",
                     "visible": True,
                     "view": {},
                     "active_img_shape": [],
@@ -779,16 +737,8 @@ def create_info_card_affix():
                                 ),
                                 dmc.Divider(variant="solid", color="gray"),
                                 create_keybind_row(
-                                    KEYBINDS["open-freeform"].upper(),
-                                    "Open Freeform",
-                                ),
-                                create_keybind_row(
                                     KEYBINDS["closed-freeform"].upper(),
                                     "Closed Freeform",
-                                ),
-                                create_keybind_row(
-                                    KEYBINDS["line"].upper(),
-                                    "Line Annotation Mode",
                                 ),
                                 create_keybind_row(
                                     KEYBINDS["circle"].upper(),
