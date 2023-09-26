@@ -10,6 +10,7 @@ services:
       TILED_API_KEY: '${TILED_API_KEY}'
     volumes:
       - ./app.py:/app/app.py
+      - ./constants.py:/app/constants.py
       - ./callbacks:/app/callbacks
       - ./components:/app/components
       - ./utils:/app/utils
