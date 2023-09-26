@@ -31,8 +31,8 @@ from utils.data_utils import (
 )
 
 # TODO - temporary local file path and user for annotation saving and exporting
-EXPORT_FILE_PATH = "data/exported_annotation_data.json"
 USER_NAME = "user1"
+EXPORT_FILE_PATH = os.getenv("EXPORT_FILE_PATH", "data/exported_annotation_data.json")
 
 # Create an empty file if it doesn't exist
 if not os.path.exists(EXPORT_FILE_PATH):
