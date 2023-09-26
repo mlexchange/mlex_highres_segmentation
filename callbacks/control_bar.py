@@ -633,6 +633,7 @@ clientside_callback(
     ClientsideFunction(namespace="clientside", function_name="delete_active_shape"),
     Output("image-viewer", "id", allow_duplicate=True),
     Input("keybind-event-listener", "event"),
+    Input("keybind-event-listener", "n_events"),
     State("image-viewer", "id"),
     prevent_initial_call=True,
 )
