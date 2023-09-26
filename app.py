@@ -1,3 +1,6 @@
+import os
+
+import dash_auth
 import dash_mantine_components as dmc
 from dash import Dash, dcc
 
@@ -7,8 +10,15 @@ from callbacks.segmentation import *
 from components.control_bar import layout as control_bar_layout
 from components.image_viewer import layout as image_viewer_layout
 
+USER_NAME = os.getenv("USER_NAME")
+USER_PASSWORD = os.getenv("USER_PASSWORD")
+
+VALID_USER_NAME_PASSWORD_PAIRS = {USER_NAME: USER_PASSWORD}
+
 app = Dash(__name__)
 server = app.server
+
+auth = dash_auth.BasicAuth(app, VALID_USER_NAME_PASSWORD_PAIRS)
 
 app.layout = dmc.MantineProvider(
     theme={"colorScheme": "light"},
