@@ -38,7 +38,7 @@ def DEV_download_google_sample_data():
         "seg-clay_testZMQ": [
             "https://drive.google.com/uc?export=download&id=15MwMHHLR6jWSE8uV2iS3AqkDQWnP-R3d",  # slice 200
             "https://drive.google.com/uc?export=download&id=1XyIzbKXBud8kmUrSxPnFFmTfUMfI9wQo",  # slice 201        ],
-        ]
+        ],
     }
     base_directory = "data"
 
