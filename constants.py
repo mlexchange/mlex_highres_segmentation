@@ -16,6 +16,7 @@ ANNOT_ICONS = {
     "pan-and-zoom": "material-symbols:drag-pan-rounded",
     "slice-right": "line-md:arrow-right",
     "slice-left": "line-md:arrow-left",
+    "jump-to-slice": "mdi:arrow",
 }
 
 ANNOT_NOTIFICATION_MSGS = {

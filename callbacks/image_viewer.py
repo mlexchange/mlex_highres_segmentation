@@ -42,6 +42,7 @@ clientside_callback(
     Output("image-metadata", "data"),
     Output("annotated-slices-selector", "value"),
     Output("image-selection-slider", "value", allow_duplicate=True),
+    Output("notifications-container", "children", allow_duplicate=True),
     Input("image-selection-slider", "value"),
     Input("annotated-slices-selector", "value"),
     State({"type": "annotation-class-store", "index": ALL}, "data"),
@@ -64,10 +65,21 @@ def render_image(
 ):
     reset_slice_selection = dash.no_update
     update_slider_value = dash.no_update
+    notification = dash.no_update
     if ctx.triggered_id == "annotated-slices-selector":
         image_idx = slice_selection
         reset_slice_selection = None
         update_slider_value = slice_selection
+
+        notification = dmc.Notification(
+            title=f"Jumped to slice {image_idx}",
+            message="",
+            color="indigo",
+            id=f"notification-{random.randint(0, 10000)}",
+            action="show",
+            icon=DashIconify(icon=ANNOT_ICONS["jump-to-slice"], width=40),
+            styles={"icon": {"height": "50px", "width": "50px"}},
+        )
     if image_idx:
         image_idx -= 1  # slider starts at 1, so subtract 1 to get the correct index
         tf = get_data_sequence_by_name(project_name)[image_idx]
@@ -140,6 +152,7 @@ def render_image(
         curr_image_metadata,
         reset_slice_selection,
         update_slider_value,
+        notification,
     )
 
 
