@@ -7,7 +7,7 @@ from callbacks.segmentation import *
 from components.control_bar import layout as control_bar_layout
 from components.image_viewer import layout as image_viewer_layout
 
-app = Dash(__name__)
+app = Dash(__name__, update_title=None)
 server = app.server
 
 app.layout = dmc.MantineProvider(
