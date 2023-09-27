@@ -151,7 +151,7 @@ def layout():
                                 ),
                                 dmc.Space(h=25),
                                 _control_item(
-                                    "Annotated Slices",
+                                    "Annotated slices",
                                     "current-annotated-slice",
                                     dmc.Select(
                                         id="annotated-slices-selector",

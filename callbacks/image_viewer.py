@@ -68,6 +68,8 @@ def render_image(
     update_slider_value = dash.no_update
     notification = dash.no_update
     if ctx.triggered_id == "annotated-slices-selector":
+        if image_idx == slice_selection:
+            raise PreventUpdate
         image_idx = slice_selection
         reset_slice_selection = None
         update_slider_value = slice_selection
