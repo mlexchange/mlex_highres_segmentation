@@ -62,7 +62,7 @@ def hide_show_segmentation_overlay(toggle_seg_result, opacity):
     Output("image-viewer-loading", "zIndex", allow_duplicate=True),
     Output("image-metadata", "data"),
     Input("image-selection-slider", "value"),
-    State("show-result-overlay-toggle", "checked"),
+    Input("show-result-overlay-toggle", "checked"),
     State({"type": "annotation-class-store", "index": ALL}, "data"),
     State("project-name-src", "value"),
     State("annotation-store", "data"),
@@ -71,6 +71,7 @@ def hide_show_segmentation_overlay(toggle_seg_result, opacity):
     State("current-class-selection", "data"),
     State("result-selector", "value"),
     State("seg-result-opacity-slider", "value"),
+    State("image-viewer", "figure"),
     prevent_initial_call=True,
 )
 def render_image(
@@ -84,11 +85,17 @@ def render_image(
     current_color,
     seg_result_selection,
     opacity,
+    fig,
 ):
+    print(len(fig["data"]))
     if image_idx:
         image_idx -= 1  # slider starts at 1, so subtract 1 to get the correct index
         tf = get_data_sequence_by_name(project_name)[image_idx]
         if toggle_seg_result:
+            # if toggle is true and overlay exists already (2 images in data) this will
+            # be handled in hide_show_segmentation_overlay callback
+            if len(fig["data"]) == 2:
+                raise PreventUpdate
             result = get_data_sequence_by_name(seg_result_selection)[image_idx]
     else:
         tf = np.zeros((500, 500))

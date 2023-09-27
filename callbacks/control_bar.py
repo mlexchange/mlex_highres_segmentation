@@ -828,9 +828,9 @@ def populate_classification_results(
         results = no_update
         value = no_update
         checked = no_update
-        disabled_dropdown = not dropdown_enabled
+        disabled_dropdown = dropdown_enabled
         disabled_toggle = False
-        disabled_slider = not slider_enabled
+        disabled_slider = slider_enabled
     else:
         results = [
             item
@@ -840,7 +840,7 @@ def populate_classification_results(
         if results:
             value = results[0]
             disabled_dropdown = False
-            checked = True
+            checked = False
             disabled_toggle = False
             disabled_slider = False
 
