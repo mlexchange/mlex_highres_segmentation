@@ -570,7 +570,16 @@ def layout():
                             "run-model",
                             id="model-configuration",
                             children=[
-                                dmc.Space(h=10),
+                                dmc.Center(
+                                    dmc.Button(
+                                        "Run model",
+                                        id="run-model",
+                                        variant="light",
+                                        style={"width": "160px", "margin": "5px"},
+                                    )
+                                ),
+                                html.Div(id="output-details"),
+                                dmc.Space(h=25),
                                 dmc.Switch(
                                     id="show-result-overlay-toggle",
                                     size="sm",
@@ -583,7 +592,7 @@ def layout():
                                 ),
                                 dmc.Space(h=25),
                                 _control_item(
-                                    "Segment",
+                                    "Results",
                                     "",
                                     dmc.Select(
                                         id="result-selector",
@@ -605,16 +614,6 @@ def layout():
                                         style={"width": "225px"},
                                     ),
                                 ),
-                                dmc.Space(h=25),
-                                dmc.Center(
-                                    dmc.Button(
-                                        "Run model",
-                                        id="run-model",
-                                        variant="light",
-                                        style={"width": "160px", "margin": "5px"},
-                                    )
-                                ),
-                                html.Div(id="output-details"),
                             ],
                         ),
                     ],

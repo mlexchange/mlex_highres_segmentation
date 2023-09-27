@@ -32,8 +32,12 @@ def DEV_download_google_sample_data():
             "https://drive.google.com/u/0/uc?id=1Glio8R-ur65iESK8cvjg7uUHXWnY1odx&export=download",
         ],
         "clay_testZMQ": [
-            "https://drive.google.com/u/0/uc?id=1TnVfWOUZNu4aYsoaJYvOB6lP0KW6fEou&export=download",
-            "https://drive.google.com/u/0/uc?id=19Y37JxpUwXlWCC2O5mJNsZftzpy_E8te&export=download",
+            "https://drive.google.com/uc?export=download&id=1GCkK65bBAU79M6grHDKeTUJaeHl-bNgT",  # slice 200
+            "https://drive.google.com/file/d/1Jp1TEdl2tkerqIaDIR4CCL1tKDM3Tc5G/view?usp=drive_link",  # slice 201
+        ],
+        "seg-clay_testZMQ": [
+            "https://drive.google.com/uc?export=download&id=15MwMHHLR6jWSE8uV2iS3AqkDQWnP-R3d",  # slice 200
+            "https://drive.google.com/uc?export=download&id=1XyIzbKXBud8kmUrSxPnFFmTfUMfI9wQo",  # slice 201        ],
         ],
     }
     base_directory = "data"
