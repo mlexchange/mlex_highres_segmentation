@@ -24,12 +24,15 @@ def _control_item(title, title_id, item):
     """
     return dmc.Grid(
         [
-            dmc.Text(
-                title,
-                id=title_id,
-                size="sm",
-                style={"width": "100px", "margin": "auto", "paddingRight": "5px"},
-                align="right",
+            _tooltip(
+                "Jump to your annotated slices",
+                dmc.Text(
+                    title,
+                    id=title_id,
+                    size="sm",
+                    style={"width": "100px", "margin": "auto", "paddingRight": "5px"},
+                    align="right",
+                ),
             ),
             html.Div(item, style={"width": "265px", "margin": "auto"}),
         ]
