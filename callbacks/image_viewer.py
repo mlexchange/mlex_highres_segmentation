@@ -23,9 +23,9 @@ from utils.data_utils import get_data_sequence_by_name, get_data_shape_by_name
 from utils.plot_utils import (
     create_viewfinder,
     downscale_view,
+    generate_notification,
     get_view_finder_max_min,
     resize_canvas,
-    generate_notification,
 )
 
 clientside_callback(

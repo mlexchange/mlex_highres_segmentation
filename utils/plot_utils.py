@@ -1,9 +1,11 @@
+import random
+
+import dash_mantine_components as dmc
 import plotly.express as px
 import plotly.graph_objects as go
-from skimage.transform import resize
-import dash_mantine_components as dmc
-import random
 from dash_iconify import DashIconify
+from skimage.transform import resize
+
 from constants import ANNOT_ICONS
 
 

@@ -29,7 +29,6 @@ from utils.data_utils import (
     DEV_filter_json_data_by_timestamp,
     DEV_load_exported_json_data,
 )
-
 from utils.plot_utils import generate_notification
 
 # TODO - temporary local file path and user for annotation saving and exporting
