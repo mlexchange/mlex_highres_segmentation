@@ -72,7 +72,9 @@ def render_image(
         reset_slice_selection = None
         update_slider_value = slice_selection
         notification = generate_notification(
-            f"Jumped to slice {image_idx}", "indigo", "jump-to-slice"
+            f"{ANNOT_NOTIFICATION_MSGS['slice-jump']} {image_idx}",
+            "indigo",
+            ANNOT_ICONS["jump-to-slice"],
         )
 
     if image_idx:
@@ -187,20 +189,20 @@ def keybind_image_slider(
         if current_slice == 1:
             title = "No more images to the left"
             new_slice = dash.no_update
-            icon = "no-more-slices"
+            icon = ANNOT_ICONS["no-more-slices"]
         else:
             new_slice = current_slice - 1
             title = f"{ANNOT_NOTIFICATION_MSGS['slice-left']} ({new_slice}) selected"
-            icon = "slice-left"
+            icon = ANNOT_ICONS["slice-left"]
     elif pressed_key == KEYBINDS["slice-right"]:
         if current_slice == max_slice:
             title = "No more images to the right"
             new_slice = dash.no_update
-            icon = "no-more-slices"
+            icon = ANNOT_ICONS["no-more-slices"]
         else:
             new_slice = current_slice + 1
             title = f"{ANNOT_NOTIFICATION_MSGS['slice-right']} ({new_slice}) selected"
-            icon = "slice-right"
+            icon = ANNOT_ICONS["slice-right"]
     notification = generate_notification(title, None, icon)
 
     return new_slice, notification

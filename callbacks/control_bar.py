@@ -197,7 +197,7 @@ def annotation_mode(
             annotation_store["dragmode"] = "pan"
             styles[trigger] = active
     notification = generate_notification(
-        ANNOT_NOTIFICATION_MSGS[trigger], "indigo", trigger
+        ANNOT_NOTIFICATION_MSGS[trigger], "indigo", ANNOT_ICONS[trigger]
     )
 
     return (
@@ -650,18 +650,19 @@ def export_annotation(n_clicks, all_annotations, global_store):
         mask_data = annotations.get_annotation_mask_as_bytes()
         mask_file = dcc.send_bytes(mask_data, filename="annotation_masks.zip")
 
-        notification_title = "Annotation Exported!"
-        notification_message = "Succesfully exported in .json format."
+        notification_title = ANNOT_NOTIFICATION_MSGS["export"]
+        notification_message = ANNOT_NOTIFICATION_MSGS["export-msg"]
         notification_color = "green"
     else:
         metadata_file, mask_file = no_update, no_update
-        notification_title = "No Annotations to Export!"
-        notification_message = "Please annotate an image before exporting."
+        notification_title = ANNOT_NOTIFICATION_MSGS["export-fail"]
+        notification_message = ANNOT_NOTIFICATION_MSGS["export-fail-msg"]
         notification_color = "red"
+    notification_icon = ANNOT_ICONS["export"]
     notification = generate_notification(
         notification_title,
         notification_color,
-        "export-annotation",
+        notification_icon,
         notification_message,
     )
     return notification, metadata_file, mask_file

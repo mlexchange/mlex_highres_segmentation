@@ -174,8 +174,8 @@ def generate_notification(title, color, icon, message=""):
         title=title,
         message=message,
         color=color,
+        icon=DashIconify(icon=icon, width=40),
         id=f"notification-{random.randint(0, 10000)}",
         action="show",
-        icon=DashIconify(icon=ANNOT_ICONS[icon], width=40),
         styles={"icon": {"height": "50px", "width": "50px"}},
     )
