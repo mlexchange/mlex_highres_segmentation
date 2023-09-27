@@ -17,6 +17,8 @@ ANNOT_ICONS = {
     "slice-right": "line-md:arrow-right",
     "slice-left": "line-md:arrow-left",
     "jump-to-slice": "mdi:arrow",
+    "export-annotation": "entypo:export",
+    "no-more-slices": "pajamas:warning-solid",
 }
 
 ANNOT_NOTIFICATION_MSGS = {

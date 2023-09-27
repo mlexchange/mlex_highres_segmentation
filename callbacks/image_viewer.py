@@ -25,6 +25,7 @@ from utils.plot_utils import (
     downscale_view,
     get_view_finder_max_min,
     resize_canvas,
+    generate_notification,
 )
 
 clientside_callback(
@@ -70,16 +71,10 @@ def render_image(
         image_idx = slice_selection
         reset_slice_selection = None
         update_slider_value = slice_selection
-
-        notification = dmc.Notification(
-            title=f"Jumped to slice {image_idx}",
-            message="",
-            color="indigo",
-            id=f"notification-{random.randint(0, 10000)}",
-            action="show",
-            icon=DashIconify(icon=ANNOT_ICONS["jump-to-slice"], width=40),
-            styles={"icon": {"height": "50px", "width": "50px"}},
+        notification = generate_notification(
+            f"Jumped to slice {image_idx}", "indigo", "jump-to-slice"
         )
+
     if image_idx:
         image_idx -= 1  # slider starts at 1, so subtract 1 to get the correct index
         tf = get_data_sequence_by_name(project_name)[image_idx]
@@ -190,36 +185,23 @@ def keybind_image_slider(
 
     if pressed_key == KEYBINDS["slice-left"]:
         if current_slice == 1:
-            message = "No more images to the left"
+            title = "No more images to the left"
             new_slice = dash.no_update
-            icon = "pajamas:warning-solid"
+            icon = "no-more-slices"
         else:
             new_slice = current_slice - 1
-            message = f"{ANNOT_NOTIFICATION_MSGS['slice-left']} ({new_slice}) selected"
-            icon = ANNOT_ICONS["slice-left"]
+            title = f"{ANNOT_NOTIFICATION_MSGS['slice-left']} ({new_slice}) selected"
+            icon = "slice-left"
     elif pressed_key == KEYBINDS["slice-right"]:
         if current_slice == max_slice:
-            message = "No more images to the right"
+            title = "No more images to the right"
             new_slice = dash.no_update
-            icon = "pajamas:warning-solid"
+            icon = "no-more-slices"
         else:
             new_slice = current_slice + 1
-            message = f"{ANNOT_NOTIFICATION_MSGS['slice-right']} ({new_slice}) selected"
-            icon = ANNOT_ICONS["slice-right"]
-
-    notification = dmc.Notification(
-        title=message,
-        message="",
-        id=f"notification-{random.randint(0, 10000)}",
-        action="show",
-        icon=DashIconify(icon=icon, width=30),
-        styles={
-            "icon": {
-                "height": "50px",
-                "width": "50px",
-            }
-        },
-    )
+            title = f"{ANNOT_NOTIFICATION_MSGS['slice-right']} ({new_slice}) selected"
+            icon = "slice-right"
+    notification = generate_notification(title, None, icon)
 
     return new_slice, notification
 

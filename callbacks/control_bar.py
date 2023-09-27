@@ -30,6 +30,8 @@ from utils.data_utils import (
     DEV_load_exported_json_data,
 )
 
+from utils.plot_utils import generate_notification
+
 # TODO - temporary local file path and user for annotation saving and exporting
 EXPORT_FILE_PATH = "data/exported_annotation_data.json"
 USER_NAME = "user1"
@@ -194,16 +196,10 @@ def annotation_mode(
             patched_figure["layout"]["dragmode"] = "pan"
             annotation_store["dragmode"] = "pan"
             styles[trigger] = active
-
-    notification = dmc.Notification(
-        title=ANNOT_NOTIFICATION_MSGS[trigger],
-        message="",
-        color="indigo",
-        id=f"notification-{random.randint(0, 10000)}",
-        action="show",
-        icon=DashIconify(icon=ANNOT_ICONS[trigger], width=40),
-        styles={"icon": {"height": "50px", "width": "50px"}},
+    notification = generate_notification(
+        ANNOT_NOTIFICATION_MSGS[trigger], "indigo", trigger
     )
+
     return (
         patched_figure,
         styles["closed-freeform"],
@@ -662,14 +658,11 @@ def export_annotation(n_clicks, all_annotations, global_store):
         notification_title = "No Annotations to Export!"
         notification_message = "Please annotate an image before exporting."
         notification_color = "red"
-
-    notification = dmc.Notification(
-        title=notification_title,
-        message=notification_message,
-        color=notification_color,
-        id=f"notification-{random.randint(0, 10000)}",
-        action="show",
-        icon=DashIconify(icon="entypo:export"),
+    notification = generate_notification(
+        notification_title,
+        notification_color,
+        "export-annotation",
+        notification_message,
     )
     return notification, metadata_file, mask_file
 
