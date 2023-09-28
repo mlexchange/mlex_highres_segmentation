@@ -24,15 +24,12 @@ def _control_item(title, title_id, item):
     """
     return dmc.Grid(
         [
-            _tooltip(
-                "Jump to your annotated slices",
-                dmc.Text(
-                    title,
-                    id=title_id,
-                    size="sm",
-                    style={"width": "100px", "margin": "auto", "paddingRight": "5px"},
-                    align="right",
-                ),
+            dmc.Text(
+                title,
+                id=title_id,
+                size="sm",
+                style={"width": "100px", "margin": "auto", "paddingRight": "5px"},
+                align="right",
             ),
             html.Div(item, style={"width": "265px", "margin": "auto"}),
         ]
@@ -154,7 +151,10 @@ def layout():
                                 ),
                                 dmc.Space(h=25),
                                 _control_item(
-                                    "Annotated slices",
+                                    _tooltip(
+                                        "Jump to your annotated slices",
+                                        "Annotated slices",
+                                    ),
                                     "current-annotated-slice",
                                     dmc.Select(
                                         id="annotated-slices-selector",
