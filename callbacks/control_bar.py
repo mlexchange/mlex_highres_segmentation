@@ -48,6 +48,7 @@ if not os.path.exists(EXPORT_FILE_PATH):
     State({"type": "annotation-class-store", "index": ALL}, "data"),
     State("generate-annotation-class-modal", "opened"),
     State("current-class-selection", "data"),
+    State({"type": "edit-annotation-class-modal", "index": ALL}, "opened"),
     prevent_initial_call=True,
 )
 def update_current_class_selection(
@@ -56,6 +57,7 @@ def update_current_class_selection(
     all_annotation_classes,
     generate_modal_opened,
     previous_current_selection,
+    edit_modal_opened,
 ):
     """
     This callback is responsible for updating the current class selection when a class is clicked on, or when a keybind is pressed.
@@ -63,8 +65,8 @@ def update_current_class_selection(
     current_selection = None
     label_name = None
     if ctx.triggered_id == "keybind-event-listener":
-        # user is going to type on this page and we don't want to trigger this callback using keys
-        if generate_modal_opened:
+        # user is going to type in the class creation/edit modals and we don't want to trigger this callback using keys
+        if generate_modal_opened or any(edit_modal_opened):
             raise PreventUpdate
         pressed_key = (
             keybind_event_listener.get("key", None) if keybind_event_listener else None
