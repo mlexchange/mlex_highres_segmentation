@@ -1,6 +1,12 @@
+import random
+
+import dash_mantine_components as dmc
 import plotly.express as px
 import plotly.graph_objects as go
+from dash_iconify import DashIconify
 from skimage.transform import resize
+
+from constants import ANNOT_ICONS
 
 
 def blank_fig():
@@ -163,3 +169,15 @@ def resize_canvas(h, w, H, W, figure):
 
     image_center_coor = {"y1": y1, "y0": y0, "x0": x0, "x1": x1}
     return figure, image_center_coor
+
+
+def generate_notification(title, color, icon, message=""):
+    return dmc.Notification(
+        title=title,
+        message=message,
+        color=color,
+        icon=DashIconify(icon=icon, width=40),
+        id=f"notification-{random.randint(0, 10000)}",
+        action="show",
+        styles={"icon": {"height": "50px", "width": "50px"}},
+    )
