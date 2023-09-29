@@ -230,7 +230,17 @@ def annotation_mode(
         patched_figure["layout"]["dragmode"] = mode
         annotation_store["dragmode"] = mode
         styles[trigger] = active
+        notification = dmc.Notification(
+            title=ANNOT_NOTIFICATION_MSGS[trigger],
+            message="",
+            color="indigo",
+            id=f"notification-{random.randint(0, 10000)}",
+            action="show",
+            icon=DashIconify(icon=ANNOT_ICONS[trigger], width=40),
+            styles={"icon": {"height": "50px", "width": "50px"}},
+        )
     else:
+        notification = no_update
         if trigger == "closed-freeform" and closed > 0:
             patched_figure["layout"]["dragmode"] = "drawclosedpath"
             annotation_store["dragmode"] = "drawclosedpath"
@@ -252,15 +262,6 @@ def annotation_mode(
             annotation_store["dragmode"] = "pan"
             styles[trigger] = active
 
-    notification = dmc.Notification(
-        title=ANNOT_NOTIFICATION_MSGS[trigger],
-        message="",
-        color="indigo",
-        id=f"notification-{random.randint(0, 10000)}",
-        action="show",
-        icon=DashIconify(icon=ANNOT_ICONS[trigger], width=40),
-        styles={"icon": {"height": "50px", "width": "50px"}},
-    )
     return (
         patched_figure,
         styles["closed-freeform"],
