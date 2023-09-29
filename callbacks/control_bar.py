@@ -84,37 +84,36 @@ def update_current_class_selection(
 
         current_selection = all_annotation_classes[selected_color_idx]["color"]
         label_name = all_annotation_classes[selected_color_idx]["label"]
+        notification = dmc.Notification(
+            title=f"{label_name} class selected",
+            message="",
+            id=f"notification-{random.randint(0, 10000)}",
+            action="show",
+            icon=DashIconify(icon="mdi:color", width=30),
+            styles={
+                "icon": {
+                    "height": "50px",
+                    "width": "50px",
+                    "background-color": f"{current_selection} !important",
+                }
+            },
+        )
     else:
         if ctx.triggered_id:
             if len(ctx.triggered) == 1:
                 for c in all_annotation_classes:
                     if c["class_id"] == ctx.triggered_id["index"]:
                         current_selection = c["color"]
-                        label_name = c["label"]
             # More than one item in the trigger means the trigger comes from adding/deleting a new class
             # make the selected class the last one in the UI
             elif len(all_annotation_classes) > 0:
                 current_selection = all_annotation_classes[-1]["color"]
-                label_name = all_annotation_classes[-1]["label"]
+        notification = no_update
 
     # if the key pressed corresponds to the currently selected class, do nothing
     if previous_current_selection == current_selection:
         raise PreventUpdate
 
-    notification = dmc.Notification(
-        title=f"{label_name} class selected",
-        message="",
-        id=f"notification-{random.randint(0, 10000)}",
-        action="show",
-        icon=DashIconify(icon="mdi:color", width=30),
-        styles={
-            "icon": {
-                "height": "50px",
-                "width": "50px",
-                "background-color": f"{current_selection} !important",
-            }
-        },
-    )
     return current_selection, notification
 
 
