@@ -43,9 +43,9 @@ python app.py
 Developers may also choose to set up a local Tiled server with access to minimal datasets (eg. in the case that the remote server is down).
 
 To start local tiled connection:
-1. Add `SERVE_LOCALLY=True` flag to `.env` file (or to your environmental variables)
+1. Add `TILED_DEPLOYMENT_LOC="Local"` flag to `.env` file (or to your environmental variables)
 2. Start the app once, which will create `data/` directory and download 2 sample projects with 2 images each.
-3. Open a second terminal and run `tiled serve directory --public data`.
+3. Open a second terminal and run `/tiled_serve_dir.sh`.
 
 The app will now connect to the local tiled server.
 

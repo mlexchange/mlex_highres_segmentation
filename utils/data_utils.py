@@ -128,8 +128,8 @@ load_dotenv()
 TILED_URI = os.getenv("TILED_URI")
 TILED_API_KEY = os.getenv("TILED_API_KEY")
 
-if os.getenv("SERVE_LOCALLY", False):
-    print("To run a Tiled server locally run `tiled serve directory --public data`.")
+if os.getenv("TILED_DEPLOYMENT_LOC", "") == "Local":
+    print("To run a Tiled server locally run the bash script `./tiled_serve_dir.sh`.")
     print("This requires to additionally install the server components of Tiled with:")
     print('`pip install "tiled[server]"`')
     DEV_download_google_sample_data()
