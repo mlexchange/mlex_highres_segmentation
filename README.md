@@ -28,9 +28,8 @@ pip install -r requirements-dev.txt
 ```
 TILED_URI='https://tiled-seg.als.lbl.gov'
 TILED_API_KEY=<key-provided-on-request>
+DASH_DEPLOYMENT_LOC='Local'
 MODE='dev'
-USER_NAME=<to-be-specified-per-deployment>
-USER_PASSWORD=<to-be-specified-per-deployment>
 ```
 
 3. Start a local server: 
@@ -49,6 +48,15 @@ To start local tiled connection:
 3. Open a second terminal and run `tiled serve directory --public data`.
 
 The app will now connect to the local tiled server.
+
+### Deployment elsewhere
+
+For deployment elsewhere add a user name and password to the environment file and remove `DASH_DEPLOYMENT_LOC = "Local"`. This protect access to the application with basic authentication:
+
+```
+USER_NAME=<to-be-specified-per-deployment>
+USER_PASSWORD=<to-be-specified-per-deployment>
+```
 
 # Copyright
 MLExchange Copyright (c) 2023, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Dept. of Energy). All rights reserved.
