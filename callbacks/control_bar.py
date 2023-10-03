@@ -23,13 +23,13 @@ from dash.exceptions import PreventUpdate
 from dash_iconify import DashIconify
 
 from components.annotation_class import annotation_class_item
-from constants import ANNOT_ICONS, ANNOT_NOTIFICATION_MSGS, KEY_MODES
+from constants import ANNOT_ICONS, ANNOT_NOTIFICATION_MSGS, KEY_MODES, KEYBINDS
 from utils.annotations import Annotations
 from utils.data_utils import (
     DEV_filter_json_data_by_timestamp,
     DEV_load_exported_json_data,
 )
-from utils.plot_utils import generate_notification
+from utils.plot_utils import generate_notification, generate_notification_bg_icon_col
 
 # TODO - temporary local file path and user for annotation saving and exporting
 EXPORT_FILE_PATH = "data/exported_annotation_data.json"
@@ -43,22 +43,68 @@ if not os.path.exists(EXPORT_FILE_PATH):
 
 @callback(
     Output("current-class-selection", "data", allow_duplicate=True),
+    Output("notifications-container", "children", allow_duplicate=True),
     Input({"type": "annotation-class", "index": ALL}, "n_clicks"),
+    Input("keybind-event-listener", "event"),
     State({"type": "annotation-class-store", "index": ALL}, "data"),
+    State("generate-annotation-class-modal", "opened"),
+    State("current-class-selection", "data"),
+    State({"type": "edit-annotation-class-modal", "index": ALL}, "opened"),
     prevent_initial_call=True,
 )
-def update_current_class_selection(class_selected, all_annotation_classes):
+def update_current_class_selection(
+    class_selected,
+    keybind_event_listener,
+    all_annotation_classes,
+    generate_modal_opened,
+    previous_current_selection,
+    edit_modal_opened,
+):
+    """
+    This callback is responsible for updating the current class selection when a class is clicked on, or when a keybind is pressed.
+    """
     current_selection = None
-    if ctx.triggered_id:
-        if len(ctx.triggered) == 1:
-            for c in all_annotation_classes:
-                if c["class_id"] == ctx.triggered_id["index"]:
-                    current_selection = c["color"]
-        # More than one item in the trigger means the trigger comes from adding/deleting a new class
-        # make the selected class the last one in the UI
-        elif len(all_annotation_classes) > 0:
-            current_selection = all_annotation_classes[-1]["color"]
-    return current_selection
+    label_name = None
+    if ctx.triggered_id == "keybind-event-listener":
+        # user is going to type in the class creation/edit modals and we don't want to trigger this callback using keys
+        if generate_modal_opened or any(edit_modal_opened):
+            raise PreventUpdate
+        pressed_key = (
+            keybind_event_listener.get("key", None) if keybind_event_listener else None
+        )
+        if not pressed_key:
+            raise PreventUpdate
+        # if key pressed is not a valid keybind for class selection
+        if pressed_key not in KEYBINDS["classes"]:
+            raise PreventUpdate
+        selected_color_idx = KEYBINDS["classes"].index(pressed_key)
+
+        # if the key pressed corresponds to a class that doesn't exist
+        if selected_color_idx >= len(all_annotation_classes):
+            raise PreventUpdate
+
+        current_selection = all_annotation_classes[selected_color_idx]["color"]
+        label_name = all_annotation_classes[selected_color_idx]["label"]
+        notification = generate_notification_bg_icon_col(
+            f"{label_name} class selected", current_selection, "mdi:color"
+        )
+    else:
+        if ctx.triggered_id:
+            if len(ctx.triggered) == 1:
+                for c in all_annotation_classes:
+                    if c["class_id"] == ctx.triggered_id["index"]:
+                        current_selection = c["color"]
+            # More than one item in the trigger means the trigger comes from adding/deleting a new class
+            # make the selected class the last one in the UI
+            elif len(all_annotation_classes) > 0:
+                current_selection = all_annotation_classes[-1]["color"]
+        notification = no_update
+
+    # if the key pressed corresponds to the currently selected class, do nothing
+    if previous_current_selection == current_selection:
+        raise PreventUpdate
+
+    return current_selection, notification
 
 
 @callback(
@@ -174,7 +220,11 @@ def annotation_mode(
         patched_figure["layout"]["dragmode"] = mode
         annotation_store["dragmode"] = mode
         styles[trigger] = active
+        notification = generate_notification(
+            ANNOT_NOTIFICATION_MSGS[trigger], "indigo", ANNOT_ICONS[trigger]
+        )
     else:
+        notification = no_update
         if trigger == "closed-freeform" and closed > 0:
             patched_figure["layout"]["dragmode"] = "drawclosedpath"
             annotation_store["dragmode"] = "drawclosedpath"
@@ -195,9 +245,6 @@ def annotation_mode(
             patched_figure["layout"]["dragmode"] = "pan"
             annotation_store["dragmode"] = "pan"
             styles[trigger] = active
-    notification = generate_notification(
-        ANNOT_NOTIFICATION_MSGS[trigger], "indigo", ANNOT_ICONS[trigger]
-    )
 
     return (
         patched_figure,
@@ -481,6 +528,7 @@ def edit_annotation_class(
     Output("annotation-class-label", "value"),
     Output("annotation-class-container", "children", allow_duplicate=True),
     Output("current-class-selection", "data"),
+    Output("notifications-container", "children", allow_duplicate=True),
     Input("create-annotation-class", "n_clicks"),
     State("annotation-class-container", "children"),
     State("annotation-class-label", "value"),
@@ -491,12 +539,16 @@ def edit_annotation_class(
 def add_annotation_class(
     create, current_classes, new_class_label, new_class_color, all_annotations_data
 ):
-    """This callback adds a new annotation class with the same chosen color and label"""
+    """This callback adds a new annotation class with the same chosen color and label, and creates notification"""
     existing_ids = [annotation["class_id"] for annotation in all_annotations_data]
     current_classes.append(
         annotation_class_item(new_class_color, new_class_label, existing_ids)
     )
-    return "", current_classes, new_class_color
+
+    notification = generate_notification_bg_icon_col(
+        f"{new_class_label} class created & selected", new_class_color, "mdi:color"
+    )
+    return "", current_classes, new_class_color, notification
 
 
 @callback(

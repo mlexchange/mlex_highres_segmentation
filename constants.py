@@ -6,6 +6,17 @@ KEYBINDS = {
     "erase": "s",
     "slice-right": "ArrowRight",
     "slice-left": "ArrowLeft",
+    "classes": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+    ],
 }
 
 ANNOT_ICONS = {
