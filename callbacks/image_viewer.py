@@ -295,7 +295,7 @@ def update_viewfinder(relayout_data, annotation_store):
 
 clientside_callback(
     """
-    function EnableImageLoadingOverlay(zIndex-slider,zIndex-toggle) {
+    function EnableImageLoadingOverlay(zIndexSlider,zIndexToggle) {
         return 9999;
     }
     """,

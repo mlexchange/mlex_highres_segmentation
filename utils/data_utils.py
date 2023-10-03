@@ -161,7 +161,6 @@ def get_data_project_names():
         for project in list(data)
         if isinstance(data[project], (Container, ArrayClient))
     ]
-    print(project_names)
     return project_names
 
 
