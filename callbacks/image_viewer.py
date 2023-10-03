@@ -114,7 +114,10 @@ def render_image(
         if toggle_seg_result:
             # if toggle is true and overlay exists already (2 images in data) this will
             # be handled in hide_show_segmentation_overlay callback
-            if len(fig["data"]) == 2 and ctx.triggered_id != "image-selection-slider":
+            if (
+                len(fig["data"]) == 2
+                and ctx.triggered_id == "show-result-overlay-toggle"
+            ):
                 raise PreventUpdate
             result = get_data_sequence_by_name(seg_result_selection)[image_idx]
     else:
