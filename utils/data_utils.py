@@ -149,6 +149,7 @@ def get_data_project_names():
     Get available project names from the main Tiled container,
     filtered by types that can be processed (Container and ArrayClient)
     """
+    return ["clay_testZMQ", "check_handedness", "seg-clay_testZMQ"]
     project_names = [
         project
         for project in list(data)
