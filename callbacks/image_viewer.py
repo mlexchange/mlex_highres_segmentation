@@ -81,7 +81,6 @@ def hide_show_segmentation_overlay(toggle_seg_result, opacity):
 )
 def render_image(
     image_idx,
-    segementiation-overlay
     toggle_seg_result,
     slice_selection,
     all_annotation_class_store,
@@ -108,7 +107,6 @@ def render_image(
             "indigo",
             ANNOT_ICONS["jump-to-slice"],
         )
-
 
     if image_idx:
         image_idx -= 1  # slider starts at 1, so subtract 1 to get the correct index
