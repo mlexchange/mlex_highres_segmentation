@@ -149,6 +149,18 @@ def layout():
                                         )
                                     ],
                                 ),
+                                dmc.Space(h=25),
+                                _control_item(
+                                    _tooltip(
+                                        "Jump to your annotated slices",
+                                        "Annotated slices",
+                                    ),
+                                    "current-annotated-slice",
+                                    dmc.Select(
+                                        id="annotated-slices-selector",
+                                        placeholder="Select a slice to view...",
+                                    ),
+                                ),
                                 dmc.Space(h=10),
                             ],
                         ),

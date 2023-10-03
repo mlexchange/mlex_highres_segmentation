@@ -29,6 +29,7 @@ from utils.data_utils import (
     DEV_filter_json_data_by_timestamp,
     DEV_load_exported_json_data,
 )
+from utils.plot_utils import generate_notification
 
 # TODO - temporary local file path and user for annotation saving and exporting
 EXPORT_FILE_PATH = "data/exported_annotation_data.json"
@@ -728,22 +729,20 @@ def export_annotation(n_clicks, all_annotations, global_store):
         mask_data = annotations.get_annotation_mask_as_bytes()
         mask_file = dcc.send_bytes(mask_data, filename="annotation_masks.zip")
 
-        notification_title = "Annotation Exported!"
-        notification_message = "Succesfully exported in .json format."
+        notification_title = ANNOT_NOTIFICATION_MSGS["export"]
+        notification_message = ANNOT_NOTIFICATION_MSGS["export-msg"]
         notification_color = "green"
     else:
         metadata_file, mask_file = no_update, no_update
-        notification_title = "No Annotations to Export!"
-        notification_message = "Please annotate an image before exporting."
+        notification_title = ANNOT_NOTIFICATION_MSGS["export-fail"]
+        notification_message = ANNOT_NOTIFICATION_MSGS["export-fail-msg"]
         notification_color = "red"
-
-    notification = dmc.Notification(
-        title=notification_title,
-        message=notification_message,
-        color=notification_color,
-        id=f"notification-{random.randint(0, 10000)}",
-        action="show",
-        icon=DashIconify(icon="entypo:export"),
+    notification_icon = ANNOT_ICONS["export"]
+    notification = generate_notification(
+        notification_title,
+        notification_color,
+        notification_icon,
+        notification_message,
     )
     return notification, metadata_file, mask_file
 
@@ -874,3 +873,21 @@ def open_controls_drawer(n_clicks, is_opened):
             return no_update, {"display": "none"}
         return no_update, {}
     return no_update, no_update
+
+
+@callback(
+    Output("annotated-slices-selector", "data"),
+    Output("annotated-slices-selector", "disabled"),
+    Input({"type": "annotation-class-store", "index": ALL}, "data"),
+    # TODO check if erasing an annotation via the erase triggers this CB (it should)
+)
+def update_current_annotated_slices_values(all_classes):
+    all_annotated_slices = []
+    for a in all_classes:
+        all_annotated_slices += list(a["annotations"].keys())
+    dropdown_values = [
+        {"value": int(slice) + 1, "label": f"Slice {str(int(slice) + 1)}"}
+        for slice in all_annotated_slices
+    ]
+    disabled = True if len(dropdown_values) == 0 else False
+    return dropdown_values, disabled
