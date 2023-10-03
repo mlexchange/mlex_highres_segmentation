@@ -29,7 +29,7 @@ from utils.data_utils import (
     DEV_filter_json_data_by_timestamp,
     DEV_load_exported_json_data,
 )
-from utils.plot_utils import generate_notification
+from utils.plot_utils import generate_notification, generate_notification_bg_icon_col
 
 # TODO - temporary local file path and user for annotation saving and exporting
 EXPORT_FILE_PATH = "data/exported_annotation_data.json"
@@ -85,19 +85,8 @@ def update_current_class_selection(
 
         current_selection = all_annotation_classes[selected_color_idx]["color"]
         label_name = all_annotation_classes[selected_color_idx]["label"]
-        notification = dmc.Notification(
-            title=f"{label_name} class selected",
-            message="",
-            id=f"notification-{random.randint(0, 10000)}",
-            action="show",
-            icon=DashIconify(icon="mdi:color", width=30),
-            styles={
-                "icon": {
-                    "height": "50px",
-                    "width": "50px",
-                    "background-color": f"{current_selection} !important",
-                }
-            },
+        notification = generate_notification_bg_icon_col(
+            f"{label_name} class selected", current_selection, "mdi:color"
         )
     else:
         if ctx.triggered_id:
@@ -231,14 +220,8 @@ def annotation_mode(
         patched_figure["layout"]["dragmode"] = mode
         annotation_store["dragmode"] = mode
         styles[trigger] = active
-        notification = dmc.Notification(
-            title=ANNOT_NOTIFICATION_MSGS[trigger],
-            message="",
-            color="indigo",
-            id=f"notification-{random.randint(0, 10000)}",
-            action="show",
-            icon=DashIconify(icon=ANNOT_ICONS[trigger], width=40),
-            styles={"icon": {"height": "50px", "width": "50px"}},
+        notification = generate_notification(
+            ANNOT_NOTIFICATION_MSGS[trigger], "indigo", ANNOT_ICONS[trigger]
         )
     else:
         notification = no_update
@@ -562,19 +545,8 @@ def add_annotation_class(
         annotation_class_item(new_class_color, new_class_label, existing_ids)
     )
 
-    notification = dmc.Notification(
-        title=f"{new_class_label} class created & selected",
-        message="",
-        id=f"notification-{random.randint(0, 10000)}",
-        action="show",
-        icon=DashIconify(icon="mdi:color", width=30),
-        styles={
-            "icon": {
-                "height": "50px",
-                "width": "50px",
-                "background-color": f"{new_class_color} !important",
-            }
-        },
+    notification = generate_notification_bg_icon_col(
+        f"{new_class_label} class created & selected", new_class_color, "mdi:color"
     )
     return "", current_classes, new_class_color, notification
 

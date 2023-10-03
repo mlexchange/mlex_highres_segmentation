@@ -181,3 +181,23 @@ def generate_notification(title, color, icon, message=""):
         action="show",
         styles={"icon": {"height": "50px", "width": "50px"}},
     )
+
+
+def generate_notification_bg_icon_col(title, color, icon, message=""):
+    """
+    This function generates a notification with a background color and an icon and changes icon color too.
+    """
+    return dmc.Notification(
+        title=title,
+        message=message,
+        icon=DashIconify(icon, width=40),
+        id=f"notification-{random.randint(0, 10000)}",
+        action="show",
+        styles={
+            "icon": {
+                "height": "50px",
+                "width": "50px",
+                "background-color": f"{color} !important",
+            }
+        },
+    )
