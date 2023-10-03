@@ -190,7 +190,7 @@ def generate_notification_bg_icon_col(title, color, icon, message=""):
     return dmc.Notification(
         title=title,
         message=message,
-        icon=DashIconify(icon, width=40),
+        icon=DashIconify(icon=icon, width=40),
         id=f"notification-{random.randint(0, 10000)}",
         action="show",
         styles={
