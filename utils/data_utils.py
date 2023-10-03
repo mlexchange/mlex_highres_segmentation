@@ -33,7 +33,7 @@ def DEV_download_google_sample_data():
         ],
         "clay_testZMQ": [
             "https://drive.google.com/uc?export=download&id=1GCkK65bBAU79M6grHDKeTUJaeHl-bNgT",  # slice 200
-            "https://drive.google.com/file/d/1Jp1TEdl2tkerqIaDIR4CCL1tKDM3Tc5G/view?usp=drive_link",  # slice 201
+            "https://drive.google.com/uc?export=download&id=1Jp1TEdl2tkerqIaDIR4CCL1tKDM3Tc5G",  # slice 201
         ],
         "seg-clay_testZMQ": [
             "https://drive.google.com/uc?export=download&id=15MwMHHLR6jWSE8uV2iS3AqkDQWnP-R3d",  # slice 200
