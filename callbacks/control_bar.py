@@ -839,7 +839,7 @@ def populate_classification_results(
 
     return results, value, disabled_dropdown, checked, disabled_toggle, disabled_slider
 
-  
+
 @callback(
     Output("annotated-slices-selector", "data"),
     Output("annotated-slices-selector", "disabled"),
