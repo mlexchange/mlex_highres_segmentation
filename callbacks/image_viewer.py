@@ -25,6 +25,7 @@ from utils.data_utils import get_data_sequence_by_name, get_data_shape_by_name
 from utils.plot_utils import (
     create_viewfinder,
     downscale_view,
+    generate_notification,
     get_view_finder_max_min,
     resize_canvas,
 )
@@ -61,8 +62,12 @@ def hide_show_segmentation_overlay(toggle_seg_result, opacity):
     Output("annotation-store", "data", allow_duplicate=True),
     Output("image-viewer-loading", "zIndex", allow_duplicate=True),
     Output("image-metadata", "data"),
+    Output("annotated-slices-selector", "value"),
+    Output("image-selection-slider", "value", allow_duplicate=True),
+    Output("notifications-container", "children", allow_duplicate=True),
     Input("image-selection-slider", "value"),
     Input("show-result-overlay-toggle", "checked"),
+    Input("annotated-slices-selector", "value"),
     State({"type": "annotation-class-store", "index": ALL}, "data"),
     State("project-name-src", "value"),
     State("annotation-store", "data"),
@@ -76,7 +81,9 @@ def hide_show_segmentation_overlay(toggle_seg_result, opacity):
 )
 def render_image(
     image_idx,
+    segementiation-overlay
     toggle_seg_result,
+    slice_selection,
     all_annotation_class_store,
     project_name,
     annotation_store,
@@ -87,7 +94,22 @@ def render_image(
     opacity,
     fig,
 ):
-    print(len(fig["data"]))
+    reset_slice_selection = dash.no_update
+    update_slider_value = dash.no_update
+    notification = dash.no_update
+    if ctx.triggered_id == "annotated-slices-selector":
+        if image_idx == slice_selection:
+            raise PreventUpdate
+        image_idx = slice_selection
+        reset_slice_selection = None
+        update_slider_value = slice_selection
+        notification = generate_notification(
+            f"{ANNOT_NOTIFICATION_MSGS['slice-jump']} {image_idx}",
+            "indigo",
+            ANNOT_ICONS["jump-to-slice"],
+        )
+
+
     if image_idx:
         image_idx -= 1  # slider starts at 1, so subtract 1 to get the correct index
         tf = get_data_sequence_by_name(project_name)[image_idx]
@@ -167,6 +189,9 @@ def render_image(
         patched_annotation_store,
         fig_loading_overlay,
         curr_image_metadata,
+        reset_slice_selection,
+        update_slider_value,
+        notification,
     )
 
 
@@ -204,36 +229,23 @@ def keybind_image_slider(
 
     if pressed_key == KEYBINDS["slice-left"]:
         if current_slice == 1:
-            message = "No more images to the left"
+            title = "No more images to the left"
             new_slice = dash.no_update
-            icon = "pajamas:warning-solid"
+            icon = ANNOT_ICONS["no-more-slices"]
         else:
             new_slice = current_slice - 1
-            message = f"{ANNOT_NOTIFICATION_MSGS['slice-left']} ({new_slice}) selected"
+            title = f"{ANNOT_NOTIFICATION_MSGS['slice-left']} ({new_slice}) selected"
             icon = ANNOT_ICONS["slice-left"]
     elif pressed_key == KEYBINDS["slice-right"]:
         if current_slice == max_slice:
-            message = "No more images to the right"
+            title = "No more images to the right"
             new_slice = dash.no_update
-            icon = "pajamas:warning-solid"
+            icon = ANNOT_ICONS["no-more-slices"]
         else:
             new_slice = current_slice + 1
-            message = f"{ANNOT_NOTIFICATION_MSGS['slice-right']} ({new_slice}) selected"
+            title = f"{ANNOT_NOTIFICATION_MSGS['slice-right']} ({new_slice}) selected"
             icon = ANNOT_ICONS["slice-right"]
-
-    notification = dmc.Notification(
-        title=message,
-        message="",
-        id=f"notification-{random.randint(0, 10000)}",
-        action="show",
-        icon=DashIconify(icon=icon, width=30),
-        styles={
-            "icon": {
-                "height": "50px",
-                "width": "50px",
-            }
-        },
-    )
+    notification = generate_notification(title, None, icon)
 
     return new_slice, notification
 
