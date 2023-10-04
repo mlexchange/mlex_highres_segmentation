@@ -23,11 +23,12 @@ and
 pip install -r requirements-dev.txt
 ```
 
-2. Configure a connection to the Tiled server via a `.env` file with the following environment variables:
+2. Set environment variables via a `.env` file to configure a connection to the Tiled server, differentiate between local testing and development mode and set a user and password for basic autherization:
 
 ```
-TILED_URI='https://mlex-segmentation.als.lbl.gov'
-API_KEY=<key-provided-on-request>
+TILED_URI='https://tiled-seg.als.lbl.gov'
+TILED_API_KEY=<key-provided-on-request>
+DASH_DEPLOYMENT_LOC='Local'
 MODE='dev'
 ```
 
@@ -42,11 +43,20 @@ python app.py
 Developers may also choose to set up a local Tiled server with access to minimal datasets (eg. in the case that the remote server is down).
 
 To start local tiled connection:
-1. Add `SERVE_LOCALLY=True` flag to `.env` file (or to your environmental variables)
+1. Add `TILED_DEPLOYMENT_LOC="Local"` flag to `.env` file (or to your environmental variables)
 2. Start the app once, which will create `data/` directory and download 2 sample projects with 2 images each.
-3. Open a second terminal and run `tiled serve directory --public data`.
+3. Open a second terminal and run `/tiled_serve_dir.sh`.
 
 The app will now connect to the local tiled server.
+
+### Deployment elsewhere
+
+For deployment elsewhere add a user name and password to the environment file and remove `DASH_DEPLOYMENT_LOC = "Local"`. This protect access to the application with basic authentication:
+
+```
+USER_NAME=<to-be-specified-per-deployment>
+USER_PASSWORD=<to-be-specified-per-deployment>
+```
 
 # Copyright
 MLExchange Copyright (c) 2023, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Dept. of Energy). All rights reserved.
