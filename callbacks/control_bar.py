@@ -509,7 +509,7 @@ def edit_annotation_class(
     class_color_identifier = {
         "width": "25px",
         "height": "25px",
-        "background-color": new_color + "50",
+        "backgroundColor": new_color + "50",
         "margin": "5px",
         "borderRadius": "3px",
         "border": f"2px solid {new_color}",
@@ -640,7 +640,6 @@ def clear_annotation_class(
 clientside_callback(
     """
     function dash_filters_clientside(brightness, contrast) {
-    console.log(brightness, contrast)
         js_path = "#image-viewer > div.js-plotly-plot > div > div > svg:nth-child(1)"
         changeFilters(js_path, brightness, contrast)
         return ""

@@ -37,7 +37,7 @@ def layout():
                             "width": "100vw",
                             "height": "100vh",
                             "position": "fixed",
-                            "z-index": 1,
+                            "zIndex": 1,
                         },
                     ),
                 ],

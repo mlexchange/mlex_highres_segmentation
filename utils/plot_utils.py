@@ -197,7 +197,7 @@ def generate_notification_bg_icon_col(title, color, icon, message=""):
             "icon": {
                 "height": "50px",
                 "width": "50px",
-                "background-color": f"{color} !important",
+                "backgroundColor": f"{color} !important",
             }
         },
     )
