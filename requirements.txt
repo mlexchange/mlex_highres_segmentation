@@ -32,3 +32,4 @@ matplotlib
 scipy
 dash-extensions==1.0.1
 dash-bootstrap-components==1.5.0
+dash_auth==2.0.0
