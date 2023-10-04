@@ -70,7 +70,7 @@ def annotation_class_item(class_color, class_label, existing_ids, data=None):
                         style={
                             "width": "25px",
                             "height": "25px",
-                            "background-color": class_color_transparent,
+                            "backgroundColor": class_color_transparent,
                             "margin": "5px",
                             "borderRadius": "3px",
                             "border": f"2px solid {class_color}",
@@ -90,8 +90,8 @@ def annotation_class_item(class_color, class_label, existing_ids, data=None):
                 ],
                 style={
                     "display": "flex",
-                    "justify-content": "flex-row",
-                    "align-items": "center",
+                    "justifyContent": "flex-row",
+                    "alignItems": "center",
                     "color": "#9EA4AB",
                 },
             ),
@@ -105,8 +105,8 @@ def annotation_class_item(class_color, class_label, existing_ids, data=None):
                 ],
                 style={
                     "display": "flex",
-                    "justify-content": "flex-row",
-                    "align-items": "center",
+                    "justifyContent": "flex-row",
+                    "alignItems": "center",
                     "padding": "3px",
                 },
             ),
@@ -150,8 +150,8 @@ def annotation_class_item(class_color, class_label, existing_ids, data=None):
                         ],
                         style={
                             "display": "flex",
-                            "justify-content": "flex-row",
-                            "align-items": "center",
+                            "justifyContent": "flex-row",
+                            "alignItems": "center",
                         },
                     ),
                     html.Div(
@@ -166,7 +166,7 @@ def annotation_class_item(class_color, class_label, existing_ids, data=None):
                         ],
                         style={
                             "display": "flex",
-                            "justify-content": "flex-end",
+                            "justifyContent": "flex-end",
                         },
                     ),
                 ],
@@ -202,7 +202,7 @@ def annotation_class_item(class_color, class_label, existing_ids, data=None):
                         ],
                         style={
                             "display": "flex",
-                            "justify-content": "flex-end",
+                            "justifyContent": "flex-end",
                         },
                     ),
                 ],
@@ -228,7 +228,7 @@ def annotation_class_item(class_color, class_label, existing_ids, data=None):
                         ],
                         style={
                             "display": "flex",
-                            "justify-content": "flex-end",
+                            "justifyContent": "flex-end",
                         },
                     ),
                 ],

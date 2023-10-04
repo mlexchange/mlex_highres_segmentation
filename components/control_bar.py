@@ -297,10 +297,10 @@ def layout():
                                             ],
                                             className="flex-row",
                                             style={
-                                                "justify-content": "space-evenly",
+                                                "justifyContent": "space-evenly",
                                                 "padding": "2.5px",
                                                 "border": "1px solid #EAECEF",
-                                                "border-radius": "5px",
+                                                "borderRadius": "5px",
                                             },
                                         ),
                                         dmc.Space(w=10),
@@ -369,10 +369,10 @@ def layout():
                                             className="flex-row",
                                             style={
                                                 "width": "301px",
-                                                "justify-content": "space-evenly",
+                                                "justifyContent": "space-evenly",
                                                 "padding": "2.5px",
                                                 "border": "1px solid #EAECEF",
-                                                "border-radius": "5px",
+                                                "borderRadius": "5px",
                                             },
                                         ),
                                     ]
@@ -464,8 +464,8 @@ def layout():
                                             ],
                                             style={
                                                 "display": "flex",
-                                                "justify-content": "flex-row",
-                                                "align-items": "center",
+                                                "justifyContent": "flex-row",
+                                                "alignItems": "center",
                                             },
                                         ),
                                         html.Div(
@@ -477,7 +477,7 @@ def layout():
                                             ],
                                             style={
                                                 "display": "flex",
-                                                "justify-content": "flex-end",
+                                                "justifyContent": "flex-end",
                                             },
                                         ),
                                     ],
