@@ -152,14 +152,12 @@ def update_selected_class_style(selected_class, all_annotation_classes):
     Output("closed-freeform", "style"),
     Output("circle", "style"),
     Output("rectangle", "style"),
-    Output("eraser", "style"),
     Output("pan-and-zoom", "style"),
     Output("annotation-store", "data", allow_duplicate=True),
     Output("notifications-container", "children", allow_duplicate=True),
     Input("closed-freeform", "n_clicks"),
     Input("circle", "n_clicks"),
     Input("rectangle", "n_clicks"),
-    Input("eraser", "n_clicks"),
     Input("pan-and-zoom", "n_clicks"),
     Input("keybind-event-listener", "event"),
     State("annotation-store", "data"),
@@ -172,7 +170,6 @@ def annotation_mode(
     closed,
     circle,
     rect,
-    erase_annotation,
     pan_and_zoom,
     keybind_event_listener,
     annotation_store,
@@ -213,7 +210,6 @@ def annotation_mode(
         "closed-freeform": inactive,
         "circle": inactive,
         "rectangle": inactive,
-        "eraser": inactive,
         "pan-and-zoom": inactive,
     }
 
@@ -238,10 +234,7 @@ def annotation_mode(
             patched_figure["layout"]["dragmode"] = "drawrect"
             annotation_store["dragmode"] = "drawrect"
             styles[trigger] = active
-        elif trigger == "eraser" and erase_annotation > 0:
-            patched_figure["layout"]["dragmode"] = "eraseshape"
-            annotation_store["dragmode"] = "eraseshape"
-            styles[trigger] = active
+
         elif trigger == "pan-and-zoom" and pan_and_zoom > 0:
             patched_figure["layout"]["dragmode"] = "pan"
             annotation_store["dragmode"] = "pan"
@@ -252,7 +245,6 @@ def annotation_mode(
         styles["closed-freeform"],
         styles["circle"],
         styles["rectangle"],
-        styles["eraser"],
         styles["pan-and-zoom"],
         annotation_store,
         notification,

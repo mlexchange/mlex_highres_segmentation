@@ -352,19 +352,6 @@ def layout():
                                                         size="lg",
                                                     ),
                                                 ),
-                                                _tooltip(
-                                                    f"Eraser ({KEYBINDS['erase'].upper()})",
-                                                    dmc.ActionIcon(
-                                                        id="eraser",
-                                                        variant="subtle",
-                                                        color="gray",
-                                                        children=DashIconify(
-                                                            icon=ANNOT_ICONS["eraser"],
-                                                            width=20,
-                                                        ),
-                                                        size="lg",
-                                                    ),
-                                                ),
                                             ],
                                             className="flex-row",
                                             style={
@@ -764,10 +751,6 @@ def create_info_card_affix():
                                 create_keybind_row(
                                     KEYBINDS["pan-and-zoom"].upper(),
                                     "Pan and Zoom Mode",
-                                ),
-                                create_keybind_row(
-                                    KEYBINDS["erase"].upper(),
-                                    "Erase Annotation Mode",
                                 ),
                                 dmc.Divider(variant="solid", color="gray"),
                                 create_keybind_row(
