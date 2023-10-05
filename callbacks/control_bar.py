@@ -14,6 +14,7 @@ from dash import (
     State,
     callback,
     clientside_callback,
+    ClientsideFunction,
     ctx,
     dcc,
     html,
@@ -663,14 +664,10 @@ def reset_filters(n_clicks):
 
 # TODO: check this when plotly is updated
 clientside_callback(
-    """
-    function eraseShape(_, graph_id) {
-        Plotly.eraseActiveShape(graph_id)
-        return dash_clientside.no_update
-    }
-    """,
+    ClientsideFunction(namespace="clientside", function_name="delete_active_shape"),
     Output("image-viewer", "id", allow_duplicate=True),
-    Input("eraser", "n_clicks"),
+    Input("keybind-event-listener", "event"),
+    Input("keybind-event-listener", "n_events"),
     State("image-viewer", "id"),
     prevent_initial_call=True,
 )
