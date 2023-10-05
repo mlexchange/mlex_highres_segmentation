@@ -298,14 +298,13 @@ def update_viewfinder(relayout_data, annotation_store):
 
 clientside_callback(
     """
-    function EnableImageLoadingOverlay(zIndexSlider,zIndexToggle,zIndexSelector) {
+    function EnableImageLoadingOverlay(zIndexSlider,zIndexToggle) {
         return 9999;
     }
     """,
     Output("image-viewer-loading", "zIndex"),
     Input("image-selection-slider", "value"),
     Input("show-result-overlay-toggle", "checked"),
-    Input("annotated-slices-selector", "value"),
 )
 
 
