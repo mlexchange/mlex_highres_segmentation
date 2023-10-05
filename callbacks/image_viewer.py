@@ -287,8 +287,10 @@ def locally_store_annotations(
     appropriate class-annotation-store, or the image pan/zoom position to the anntations-store.
     """
     img_idx = str(img_idx - 1)
-    # Clear all annotation from the stores at the current slice
+    # Clear all annotation from the stores at the current slice, except for the hidden shapes
     for a_class in all_annotation_class_store:
+        if not a_class["is_visible"]:
+            continue
         if img_idx in a_class["annotations"]:
             a_class["annotations"][img_idx] = []
     # Add back each annotation on the current slice in each respective store
