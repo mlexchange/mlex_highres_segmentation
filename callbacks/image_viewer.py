@@ -211,19 +211,35 @@ def keybind_image_slider(
 
 
 @callback(
+    Output("image-viewfinder", "className", allow_duplicate=True),
+    Input("toggle-viewfinder", "checked"),
+    prevent_initial_call=True,
+)
+def toggle_viewdinfer(viewfinder_enabled):
+    if viewfinder_enabled:
+        return "visible"
+    return "hidden"
+
+
+@callback(
     Output("image-viewfinder", "figure", allow_duplicate=True),
     Input("image-viewer", "relayoutData"),
     State("annotation-store", "data"),
+    State("toggle-viewfinder", "checked"),
     prevent_initial_call=True,
 )
-def update_viewfinder(relayout_data, annotation_store):
+def update_viewfinder(relayout_data, annotation_store, viewfinder_enabled):
     """
     When relayoutData is triggered, update the viewfinder box to match the
     new view position of the image (including zooming). The viewfinder box is
     downsampled to match the size of the viewfinder. The viewfinder box is
     contained within the figure layout, so that if the user zooms out/pans away,
     they will still be able to see the viewfinder box.
+
+    If the viewfinder is disabled, this callback will not be triggered.
     """
+    if not viewfinder_enabled:
+        raise PreventUpdate
     # Callback is triggered when the image is first loaded, but the annotation_store is not yet populated so we need to prevent the update
     if not annotation_store["active_img_shape"]:
         raise PreventUpdate

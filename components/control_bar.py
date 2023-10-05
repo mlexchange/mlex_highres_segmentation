@@ -257,6 +257,26 @@ def layout():
                                             style={"margin": "0px"},
                                         ),
                                     ),
+                                    dmc.Space(h=20),
+                                    _control_item(
+                                        "Viewfinder",
+                                        "viewfinder-text",
+                                        dmc.Center(
+                                            dmc.Switch(
+                                                id="toggle-viewfinder",
+                                                offLabel=DashIconify(
+                                                    icon="iconamoon:eye-off-thin",
+                                                    width=20,
+                                                ),
+                                                onLabel=DashIconify(
+                                                    icon="iconamoon:eye-thin", width=20
+                                                ),
+                                                size="md",
+                                                radius="lg",
+                                                checked=True,
+                                            )
+                                        ),
+                                    ),
                                     dmc.Space(h=10),
                                 ]
                             ),

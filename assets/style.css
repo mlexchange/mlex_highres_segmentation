@@ -133,3 +133,11 @@ body {
     font-weight: 700 !important;
 
 }
+
+.visible {
+    display: block;
+}
+
+.hidden {
+    display: none;
+}
