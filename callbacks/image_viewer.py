@@ -296,9 +296,10 @@ def locally_store_annotations(
         for shape in relayout_data["shapes"]:
             for a_class in all_annotation_class_store:
                 if a_class["color"] == shape["line"]["color"]:
-                    # if img_idx in a_class["annotations"]:
-                    a_class["annotations"][img_idx].append(shape)
-
+                    if img_idx in a_class["annotations"]:
+                        a_class["annotations"][img_idx].append(shape)
+                    else:
+                        a_class["annotations"][img_idx] = [shape]
                     break
     if "xaxis.range[0]" in relayout_data:
         annotation_store["view"]["xaxis_range_0"] = relayout_data["xaxis.range[0]"]
