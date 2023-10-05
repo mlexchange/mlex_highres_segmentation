@@ -310,7 +310,7 @@ def locally_store_annotations(
         if not a_class["is_visible"]:
             continue
         if img_idx in a_class["annotations"]:
-            a_class["annotations"][img_idx] = []
+            del a_class["annotations"][img_idx]
     # Add back each annotation on the current slice in each respective store
     for shape in shapes:
         for a_class in all_annotation_class_store:
