@@ -212,7 +212,7 @@ def keybind_image_slider(
 
 @callback(
     Output("image-viewfinder", "className", allow_duplicate=True),
-    Input("toggle-viewfinder", "checked"),
+    Input("toggle-viewfinder", "opened"),
     prevent_initial_call=True,
 )
 def toggle_viewdinfer(viewfinder_enabled):
@@ -225,7 +225,7 @@ def toggle_viewdinfer(viewfinder_enabled):
     Output("image-viewfinder", "figure", allow_duplicate=True),
     Input("image-viewer", "relayoutData"),
     State("annotation-store", "data"),
-    State("toggle-viewfinder", "checked"),
+    State("toggle-viewfinder", "opened"),
     prevent_initial_call=True,
 )
 def update_viewfinder(relayout_data, annotation_store, viewfinder_enabled):

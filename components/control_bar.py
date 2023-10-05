@@ -257,26 +257,6 @@ def layout():
                                             style={"margin": "0px"},
                                         ),
                                     ),
-                                    dmc.Space(h=20),
-                                    _control_item(
-                                        "Viewfinder",
-                                        "viewfinder-text",
-                                        dmc.Center(
-                                            dmc.Switch(
-                                                id="toggle-viewfinder",
-                                                offLabel=DashIconify(
-                                                    icon="iconamoon:eye-off-thin",
-                                                    width=20,
-                                                ),
-                                                onLabel=DashIconify(
-                                                    icon="iconamoon:eye-thin", width=20
-                                                ),
-                                                size="md",
-                                                radius="lg",
-                                                checked=True,
-                                            )
-                                        ),
-                                    ),
                                     dmc.Space(h=10),
                                 ]
                             ),
@@ -679,6 +659,7 @@ def drawer_section(children):
             ),
             create_reset_view_affix(),
             create_info_card_affix(),
+            create_viewfinder_affix(),
             dmc.NotificationsProvider(html.Div(id="notifications-container")),
             dcc.Download(id="export-annotation-metadata"),
             dcc.Download(id="export-annotation-mask"),
@@ -726,6 +707,23 @@ def create_reset_view_affix():
                 radius="lg",
                 variant="filled",
                 mb=10,
+            ),
+        ),
+    )
+
+
+def create_viewfinder_affix():
+    return dmc.Affix(
+        position={"top": 0, "right": 0},
+        zIndex=9999999,
+        children=dmc.Tooltip(
+            label="Toggle viewfinder",
+            position="bottom-start",
+            offset=3,
+            children=dmc.Burger(
+                id="toggle-viewfinder",
+                opened=True,
+                color="#00313C",
             ),
         ),
     )
