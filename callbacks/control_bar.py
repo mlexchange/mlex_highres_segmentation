@@ -845,7 +845,7 @@ def update_current_annotated_slices_values(all_classes):
     all_annotated_slices = []
     for a in all_classes:
         all_annotated_slices += list(a["annotations"].keys())
-    all_annotated_slices = list(set(all_annotated_slices))
+    all_annotated_slices = sorted(list(set(all_annotated_slices)))
     dropdown_values = [
         {"value": int(slice) + 1, "label": f"Slice {str(int(slice) + 1)}"}
         for slice in all_annotated_slices
