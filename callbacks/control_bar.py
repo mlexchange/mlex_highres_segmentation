@@ -844,7 +844,9 @@ def open_controls_drawer(n_clicks, is_opened):
 def update_current_annotated_slices_values(all_classes):
     all_annotated_slices = []
     for a in all_classes:
-        all_annotated_slices += list(a["annotations"].keys())
+        for key, value in a["annotations"].items():
+            if len(value) > 0:
+                all_annotated_slices += key
     dropdown_values = [
         {"value": int(slice) + 1, "label": f"Slice {str(int(slice) + 1)}"}
         for slice in all_annotated_slices
