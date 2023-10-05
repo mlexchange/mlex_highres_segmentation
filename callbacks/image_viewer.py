@@ -287,14 +287,19 @@ def locally_store_annotations(
     appropriate class-annotation-store, or the image pan/zoom position to the anntations-store.
     """
     img_idx = str(img_idx - 1)
+    # Clear all annotation from the stores at the current slice
+    for a_class in all_annotation_class_store:
+        if img_idx in a_class["annotations"]:
+            a_class["annotations"][img_idx] = []
+    # Add back each annotation on the current slice in each respective store
     if "shapes" in relayout_data:
-        last_shape = relayout_data["shapes"][-1]
-        for a_class in all_annotation_class_store:
-            if a_class["color"] == current_color:
-                if img_idx in a_class["annotations"]:
-                    a_class["annotations"][img_idx].append(last_shape)
-                else:
-                    a_class["annotations"][img_idx] = [last_shape]
+        for shape in relayout_data["shapes"]:
+            for a_class in all_annotation_class_store:
+                if a_class["color"] == shape["line"]["color"]:
+                    # if img_idx in a_class["annotations"]:
+                    a_class["annotations"][img_idx].append(shape)
+
+                    break
     if "xaxis.range[0]" in relayout_data:
         annotation_store["view"]["xaxis_range_0"] = relayout_data["xaxis.range[0]"]
         annotation_store["view"]["xaxis_range_1"] = relayout_data["xaxis.range[1]"]
