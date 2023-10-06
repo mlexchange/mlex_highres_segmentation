@@ -4,6 +4,7 @@ import dash
 import dash_mantine_components as dmc
 import numpy as np
 import plotly.express as px
+import plotly.graph_objects as go
 from dash import (
     ALL,
     ClientsideFunction,
@@ -17,6 +18,7 @@ from dash import (
 )
 from dash.exceptions import PreventUpdate
 from dash_iconify import DashIconify
+from plotly.subplots import make_subplots
 
 from constants import ANNOT_ICONS, ANNOT_NOTIFICATION_MSGS, KEYBINDS
 from utils.data_utils import get_data_sequence_by_name, get_data_shape_by_name
@@ -36,6 +38,25 @@ clientside_callback(
 
 
 @callback(
+    Output("image-viewer", "figure", allow_duplicate=True),
+    Input("show-result-overlay-toggle", "checked"),
+    Input("seg-result-opacity-slider", "value"),
+    prevent_initial_call=True,
+)
+def hide_show_segmentation_overlay(toggle_seg_result, opacity):
+    """
+    This callback is responsible for hiding or showing the segmentation results overaly
+    by making the opacity 0 (given that this iamge has already been rendered in the render_image callback).
+    This callback also adjusts the opactiy of the results based on the opacity slider.
+    """
+    fig = Patch()
+    fig["data"][1]["opacity"] = opacity / 100
+    if ctx.triggered_id == "show-result-overlay-toggle" and not toggle_seg_result:
+        fig["data"][1]["opacity"] = 0
+    return fig
+
+
+@callback(
     Output("image-viewer", "figure"),
     Output("image-viewfinder", "figure"),
     Output("annotation-store", "data", allow_duplicate=True),
@@ -45,6 +66,7 @@ clientside_callback(
     Output("image-selection-slider", "value", allow_duplicate=True),
     Output("notifications-container", "children", allow_duplicate=True),
     Input("image-selection-slider", "value"),
+    Input("show-result-overlay-toggle", "checked"),
     Input("annotated-slices-selector", "value"),
     State({"type": "annotation-class-store", "index": ALL}, "data"),
     State("project-name-src", "value"),
@@ -52,10 +74,14 @@ clientside_callback(
     State("image-metadata", "data"),
     State("screen-size", "data"),
     State("current-class-selection", "data"),
+    State("result-selector", "value"),
+    State("seg-result-opacity-slider", "value"),
+    State("image-viewer", "figure"),
     prevent_initial_call=True,
 )
 def render_image(
     image_idx,
+    toggle_seg_result,
     slice_selection,
     all_annotation_class_store,
     project_name,
@@ -63,6 +89,9 @@ def render_image(
     image_metadata,
     screen_size,
     current_color,
+    seg_result_selection,
+    opacity,
+    fig,
 ):
     reset_slice_selection = dash.no_update
     update_slider_value = dash.no_update
@@ -82,10 +111,22 @@ def render_image(
     if image_idx:
         image_idx -= 1  # slider starts at 1, so subtract 1 to get the correct index
         tf = get_data_sequence_by_name(project_name)[image_idx]
+        if toggle_seg_result:
+            # if toggle is true and overlay exists already (2 images in data) this will
+            # be handled in hide_show_segmentation_overlay callback
+            if (
+                len(fig["data"]) == 2
+                and ctx.triggered_id == "show-result-overlay-toggle"
+            ):
+                raise PreventUpdate
+            result = get_data_sequence_by_name(seg_result_selection)[image_idx]
     else:
         tf = np.zeros((500, 500))
-
     fig = px.imshow(tf, binary_string=True)
+    if toggle_seg_result:
+        fig.add_trace(go.Heatmap(z=result, showscale=False, colorscale=None))
+        fig["data"][1]["opacity"] = opacity / 100
+
     fig.update_layout(
         margin=dict(l=0, r=0, t=0, b=0),
         xaxis=dict(visible=False),
@@ -257,12 +298,13 @@ def update_viewfinder(relayout_data, annotation_store):
 
 clientside_callback(
     """
-    function EnableImageLoadingOverlay(zIndex) {
+    function EnableImageLoadingOverlay(zIndexSlider,zIndexToggle) {
         return 9999;
     }
     """,
     Output("image-viewer-loading", "zIndex"),
     Input("image-selection-slider", "value"),
+    Input("show-result-overlay-toggle", "checked"),
 )
 
 

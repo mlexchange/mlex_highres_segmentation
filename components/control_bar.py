@@ -61,7 +61,9 @@ def layout():
     """
     Returns the layout for the control panel in the app UI
     """
-    DATA_OPTIONS = data_utils.get_data_project_names()
+    DATA_OPTIONS = [
+        item for item in data_utils.get_data_project_names() if "seg" not in item
+    ]
     return drawer_section(
         dmc.Stack(
             style={"width": "400px"},
@@ -567,13 +569,50 @@ def layout():
                             "run-model",
                             id="model-configuration",
                             children=[
-                                dmc.Button(
-                                    "Run model",
-                                    id="run-model",
-                                    variant="light",
-                                    style={"width": "160px", "margin": "5px"},
+                                dmc.Center(
+                                    dmc.Button(
+                                        "Run model",
+                                        id="run-model",
+                                        variant="light",
+                                        style={"width": "160px", "margin": "5px"},
+                                    )
                                 ),
                                 html.Div(id="output-details"),
+                                dmc.Space(h=25),
+                                dmc.Switch(
+                                    id="show-result-overlay-toggle",
+                                    size="sm",
+                                    radius="lg",
+                                    color="gray",
+                                    label="View segmentation overlay",
+                                    checked=False,
+                                    disabled=True,
+                                    styles={"trackLabel": {"cursor": "pointer"}},
+                                ),
+                                dmc.Space(h=25),
+                                _control_item(
+                                    "Results",
+                                    "",
+                                    dmc.Select(
+                                        id="result-selector",
+                                        placeholder="Select an ML result...",
+                                    ),
+                                ),
+                                dmc.Space(h=25),
+                                _control_item(
+                                    "Opacity",
+                                    "",
+                                    dmc.Slider(
+                                        id="seg-result-opacity-slider",
+                                        value=50,
+                                        min=0,
+                                        max=100,
+                                        step=1,
+                                        color="gray",
+                                        size="sm",
+                                        style={"width": "225px"},
+                                    ),
+                                ),
                             ],
                         ),
                     ],

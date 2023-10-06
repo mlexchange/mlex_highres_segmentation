@@ -15,7 +15,7 @@ USER_PASSWORD = os.getenv("USER_PASSWORD")
 
 VALID_USER_NAME_PASSWORD_PAIRS = {USER_NAME: USER_PASSWORD}
 
-app = Dash(__name__)
+app = Dash(__name__, update_title=None)
 server = app.server
 
 # Set single user name password pair if deployment isn't

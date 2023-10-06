@@ -32,8 +32,12 @@ def DEV_download_google_sample_data():
             "https://drive.google.com/u/0/uc?id=1Glio8R-ur65iESK8cvjg7uUHXWnY1odx&export=download",
         ],
         "clay_testZMQ": [
-            "https://drive.google.com/u/0/uc?id=1TnVfWOUZNu4aYsoaJYvOB6lP0KW6fEou&export=download",
-            "https://drive.google.com/u/0/uc?id=19Y37JxpUwXlWCC2O5mJNsZftzpy_E8te&export=download",
+            "https://drive.google.com/uc?export=download&id=1GCkK65bBAU79M6grHDKeTUJaeHl-bNgT",  # slice 200
+            "https://drive.google.com/uc?export=download&id=1Jp1TEdl2tkerqIaDIR4CCL1tKDM3Tc5G",  # slice 201
+        ],
+        "seg-clay_testZMQ": [
+            "https://drive.google.com/uc?export=download&id=15MwMHHLR6jWSE8uV2iS3AqkDQWnP-R3d",  # slice 200
+            "https://drive.google.com/uc?export=download&id=1XyIzbKXBud8kmUrSxPnFFmTfUMfI9wQo",  # slice 201        ],
         ],
     }
     base_directory = "data"
@@ -127,6 +131,7 @@ load_dotenv()
 
 TILED_URI = os.getenv("TILED_URI")
 TILED_API_KEY = os.getenv("TILED_API_KEY")
+LOCAL_MODE = os.getenv("TILED_DEPLOYMENT_LOC")
 
 if os.getenv("TILED_DEPLOYMENT_LOC", "") == "Local":
     print("To run a Tiled server locally run the bash script `./tiled_serve_dir.sh`.")
@@ -145,12 +150,22 @@ def get_data_project_names():
     Get available project names from the main Tiled container,
     filtered by types that can be processed (Container and ArrayClient)
     """
-    project_names = [
-        project
-        for project in list(data)
-        if isinstance(data[project], (Container, ArrayClient))
-    ]
-    return project_names
+    if LOCAL_MODE == "Local":
+        project_names = [
+            project
+            for project in list(data)
+            if isinstance(data[project], (Container, ArrayClient))
+        ]
+        return project_names
+    else:
+        # TODO: remove hard-coded names when caching is implemented
+        return [
+            "rec20191210_111800_lobster-claw_acid_vs_not_2_bin2",
+            "rec20190524_085542_clay_testZMQ_8bit",
+            "rec20221222_085501_looking_from_above_spiralUP_CounterClockwise_endPointAtDoor",
+            "seg-rec20190524_085542_clay_testZMQ_8bit",
+            "RECON_20180227_110041_bamboo_wet_bent_cropped",
+        ]
 
 
 def get_data_sequence_by_name(project_name):

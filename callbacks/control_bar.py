@@ -29,6 +29,7 @@ from utils.annotations import Annotations
 from utils.data_utils import (
     DEV_filter_json_data_by_timestamp,
     DEV_load_exported_json_data,
+    get_data_project_names,
 )
 from utils.plot_utils import generate_notification, generate_notification_bg_icon_col
 
@@ -833,6 +834,50 @@ def open_controls_drawer(n_clicks, is_opened):
             return no_update, {"display": "none"}
         return no_update, {}
     return no_update, no_update
+
+
+@callback(
+    Output("result-selector", "data"),
+    Output("result-selector", "value"),
+    Output("result-selector", "disabled"),
+    Output("show-result-overlay-toggle", "checked"),
+    Output("show-result-overlay-toggle", "disabled"),
+    Output("seg-result-opacity-slider", "disabled"),
+    Input("project-name-src", "value"),
+    Input("show-result-overlay-toggle", "checked"),
+    State("result-selector", "disabled"),
+    State("seg-result-opacity-slider", "disabled"),
+)
+def populate_classification_results(
+    image_src, toggle, dropdown_enabled, slider_enabled
+):
+    results = []
+    value = None
+    checked = False
+    disabled_dropdown = True
+    disabled_toggle = True
+    disabled_slider = True
+    if ctx.triggered_id == "show-result-overlay-toggle":
+        results = no_update
+        value = no_update
+        checked = no_update
+        disabled_dropdown = dropdown_enabled
+        disabled_toggle = False
+        disabled_slider = slider_enabled
+    else:
+        results = [
+            item
+            for item in get_data_project_names()
+            if ("seg" in item and image_src in item)
+        ]
+        if results:
+            value = results[0]
+            disabled_dropdown = False
+            checked = False
+            disabled_toggle = False
+            disabled_slider = False
+
+    return results, value, disabled_dropdown, checked, disabled_toggle, disabled_slider
 
 
 @callback(

@@ -132,14 +132,6 @@ def check_job(job_id, n_intervals):
             f"Workflow {job_id} completed successfully. Click button below to view segmentation results.",
             size="sm",
         ),
-        dmc.Space(h=20),
-        dmc.Switch(
-            size="sm",
-            radius="lg",
-            label="Show output results",
-            id="show-results",
-            checked=False,
-        ),
     ]
 
     if MODE == "dev":
