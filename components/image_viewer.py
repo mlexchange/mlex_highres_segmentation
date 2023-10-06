@@ -48,7 +48,7 @@ def layout():
                 config={"displayModeBar": False},
                 style={
                     "position": "absolute",
-                    "top": "15px",
+                    "top": "35px",
                     "right": "15px",
                 },
             ),

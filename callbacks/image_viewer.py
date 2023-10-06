@@ -212,7 +212,7 @@ def keybind_image_slider(
 
 @callback(
     Output("image-viewfinder", "className", allow_duplicate=True),
-    Input("toggle-viewfinder", "opened"),
+    Input("toggle-viewfinder", "checked"),
     prevent_initial_call=True,
 )
 def toggle_viewdinfer(viewfinder_enabled):

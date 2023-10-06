@@ -714,16 +714,18 @@ def create_reset_view_affix():
 
 def create_viewfinder_affix():
     return dmc.Affix(
-        position={"top": 0, "right": 0},
+        position={"top": 10, "right": 10},
         zIndex=9999999,
-        children=dmc.Tooltip(
-            label="Toggle viewfinder",
-            position="bottom-start",
-            offset=3,
-            children=dmc.Burger(
+        children=_tooltip(
+            "Toggle viewfinder",
+            dmc.Switch(
+                size="md",
+                radius="lg",
                 id="toggle-viewfinder",
-                opened=True,
-                color="#00313C",
+                checked=True,
+                onLabel="ON",
+                offLabel="OFF",
+                color="gray",
             ),
         ),
     )
