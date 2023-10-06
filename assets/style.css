@@ -133,3 +133,13 @@ body {
     font-weight: 700 !important;
 
 }
+
+/* used to display viewfinder */
+.visible {
+    display: block;
+}
+
+/* used to hide viewfinder */
+.hidden {
+    display: none;
+}

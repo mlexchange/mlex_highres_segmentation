@@ -252,6 +252,17 @@ def keybind_image_slider(
 
 
 @callback(
+    Output("image-viewfinder", "className", allow_duplicate=True),
+    Input("toggle-viewfinder", "checked"),
+    prevent_initial_call=True,
+)
+def toggle_viewdinfer(viewfinder_enabled):
+    if viewfinder_enabled:
+        return "visible"
+    return "hidden"
+
+
+@callback(
     Output("image-viewfinder", "figure", allow_duplicate=True),
     Input("image-viewer", "relayoutData"),
     State("annotation-store", "data"),

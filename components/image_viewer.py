@@ -37,7 +37,6 @@ def layout():
                             "width": "100vw",
                             "height": "100vh",
                             "position": "fixed",
-                            "zIndex": 1,
                         },
                     ),
                 ],
@@ -49,8 +48,8 @@ def layout():
                 config={"displayModeBar": False},
                 style={
                     "position": "absolute",
-                    "top": "30px",
-                    "right": "10px",
+                    "top": "35px",
+                    "right": "15px",
                 },
             ),
         ],

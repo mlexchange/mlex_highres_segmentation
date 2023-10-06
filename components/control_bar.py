@@ -685,6 +685,7 @@ def drawer_section(children):
             ),
             create_reset_view_affix(),
             create_info_card_affix(),
+            create_viewfinder_affix(),
             dmc.NotificationsProvider(html.Div(id="notifications-container")),
             dcc.Download(id="export-annotation-metadata"),
             dcc.Download(id="export-annotation-mask"),
@@ -732,6 +733,25 @@ def create_reset_view_affix():
                 radius="lg",
                 variant="filled",
                 mb=10,
+            ),
+        ),
+    )
+
+
+def create_viewfinder_affix():
+    return dmc.Affix(
+        position={"top": 10, "right": 10},
+        zIndex=9999999,
+        children=_tooltip(
+            "Toggle viewfinder",
+            dmc.Switch(
+                size="md",
+                radius="lg",
+                id="toggle-viewfinder",
+                checked=True,
+                onLabel="ON",
+                offLabel="OFF",
+                color="gray",
             ),
         ),
     )
