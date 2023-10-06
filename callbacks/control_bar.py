@@ -8,6 +8,7 @@ import plotly.express as px
 from dash import (
     ALL,
     MATCH,
+    ClientsideFunction,
     Input,
     Output,
     Patch,
@@ -151,14 +152,12 @@ def update_selected_class_style(selected_class, all_annotation_classes):
     Output("closed-freeform", "style"),
     Output("circle", "style"),
     Output("rectangle", "style"),
-    Output("eraser", "style"),
     Output("pan-and-zoom", "style"),
     Output("annotation-store", "data", allow_duplicate=True),
     Output("notifications-container", "children", allow_duplicate=True),
     Input("closed-freeform", "n_clicks"),
     Input("circle", "n_clicks"),
     Input("rectangle", "n_clicks"),
-    Input("eraser", "n_clicks"),
     Input("pan-and-zoom", "n_clicks"),
     Input("keybind-event-listener", "event"),
     State("annotation-store", "data"),
@@ -171,7 +170,6 @@ def annotation_mode(
     closed,
     circle,
     rect,
-    erase_annotation,
     pan_and_zoom,
     keybind_event_listener,
     annotation_store,
@@ -212,7 +210,6 @@ def annotation_mode(
         "closed-freeform": inactive,
         "circle": inactive,
         "rectangle": inactive,
-        "eraser": inactive,
         "pan-and-zoom": inactive,
     }
 
@@ -237,10 +234,7 @@ def annotation_mode(
             patched_figure["layout"]["dragmode"] = "drawrect"
             annotation_store["dragmode"] = "drawrect"
             styles[trigger] = active
-        elif trigger == "eraser" and erase_annotation > 0:
-            patched_figure["layout"]["dragmode"] = "eraseshape"
-            annotation_store["dragmode"] = "eraseshape"
-            styles[trigger] = active
+
         elif trigger == "pan-and-zoom" and pan_and_zoom > 0:
             patched_figure["layout"]["dragmode"] = "pan"
             annotation_store["dragmode"] = "pan"
@@ -251,7 +245,6 @@ def annotation_mode(
         styles["closed-freeform"],
         styles["circle"],
         styles["rectangle"],
-        styles["eraser"],
         styles["pan-and-zoom"],
         annotation_store,
         notification,
@@ -663,14 +656,10 @@ def reset_filters(n_clicks):
 
 # TODO: check this when plotly is updated
 clientside_callback(
-    """
-    function eraseShape(_, graph_id) {
-        Plotly.eraseActiveShape(graph_id)
-        return dash_clientside.no_update
-    }
-    """,
+    ClientsideFunction(namespace="clientside", function_name="delete_active_shape"),
     Output("image-viewer", "id", allow_duplicate=True),
-    Input("eraser", "n_clicks"),
+    Input("keybind-event-listener", "event"),
+    Input("keybind-event-listener", "n_events"),
     State("image-viewer", "id"),
     prevent_initial_call=True,
 )
@@ -856,6 +845,7 @@ def update_current_annotated_slices_values(all_classes):
     all_annotated_slices = []
     for a in all_classes:
         all_annotated_slices += list(a["annotations"].keys())
+    all_annotated_slices = sorted(list(set(all_annotated_slices)))
     dropdown_values = [
         {"value": int(slice) + 1, "label": f"Slice {str(int(slice) + 1)}"}
         for slice in all_annotated_slices

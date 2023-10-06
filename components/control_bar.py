@@ -352,19 +352,6 @@ def layout():
                                                         size="lg",
                                                     ),
                                                 ),
-                                                _tooltip(
-                                                    f"Eraser ({KEYBINDS['erase'].upper()})",
-                                                    dmc.ActionIcon(
-                                                        id="eraser",
-                                                        variant="subtle",
-                                                        color="gray",
-                                                        children=DashIconify(
-                                                            icon=ANNOT_ICONS["eraser"],
-                                                            width=20,
-                                                        ),
-                                                        size="lg",
-                                                    ),
-                                                ),
                                             ],
                                             className="flex-row",
                                             style={
@@ -765,14 +752,15 @@ def create_info_card_affix():
                                     KEYBINDS["pan-and-zoom"].upper(),
                                     "Pan and Zoom Mode",
                                 ),
-                                create_keybind_row(
-                                    KEYBINDS["erase"].upper(),
-                                    "Erase Annotation Mode",
-                                ),
                                 dmc.Divider(variant="solid", color="gray"),
                                 create_keybind_row(
                                     ["1-9"],
                                     "Select annotation class 1-9",
+                                ),
+                                dmc.Divider(variant="solid", color="gray"),
+                                create_keybind_row(
+                                    ["del"],
+                                    "Delete an annotation",
                                 ),
                             ],
                             p=0,

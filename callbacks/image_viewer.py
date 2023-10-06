@@ -275,31 +275,51 @@ clientside_callback(
     State("image-selection-slider", "value"),
     State("annotation-store", "data"),
     State({"type": "annotation-class-store", "index": ALL}, "data"),
-    State("current-class-selection", "data"),
+    State("image-viewer", "figure"),
     prevent_initial_call=True,
 )
 def locally_store_annotations(
-    relayout_data, img_idx, annotation_store, all_annotation_class_store, current_color
+    relayout_data, img_idx, annotation_store, all_annotation_class_store, fig
 ):
     """
-    Upon finishing a relayout event (drawing, panning or zooming), this function takes the
+    Upon finishing a relayout event (drawing, modifying, panning or zooming), this function takes the
     currently drawn shapes or zoom/pan data, and stores the lastest added shape to the
     appropriate class-annotation-store, or the image pan/zoom position to the anntations-store.
     """
     img_idx = str(img_idx - 1)
-    if "shapes" in relayout_data:
-        last_shape = relayout_data["shapes"][-1]
-        for a_class in all_annotation_class_store:
-            if a_class["color"] == current_color:
-                if img_idx in a_class["annotations"]:
-                    a_class["annotations"][img_idx].append(last_shape)
-                else:
-                    a_class["annotations"][img_idx] = [last_shape]
+    shapes = []
+    # Case 1: panning/zooming, no need to update all the class annotation stores
     if "xaxis.range[0]" in relayout_data:
         annotation_store["view"]["xaxis_range_0"] = relayout_data["xaxis.range[0]"]
         annotation_store["view"]["xaxis_range_1"] = relayout_data["xaxis.range[1]"]
         annotation_store["view"]["yaxis_range_0"] = relayout_data["yaxis.range[0]"]
         annotation_store["view"]["yaxis_range_1"] = relayout_data["yaxis.range[1]"]
+        return all_annotation_class_store, annotation_store
+    # Case 2: a shape is modified, the relayoutData will have the format "shape[_].path", with the new path (not very useful)
+    # we can instead take all the shapes from the fig layout directly and reset them in the store
+    if (
+        any(["shapes" in key for key in relayout_data])
+        and "shapes" in fig["layout"].keys()
+    ):
+        shapes = fig["layout"]["shapes"]
+    # Case 3: a new shape is drawn, we have access to all this data directly from the relayoutData under the 'shapes' key
+    elif "shapes" in relayout_data:
+        shapes = relayout_data["shapes"]
+    # Clear all annotation from the stores at the current slice, except for the hidden shapes
+    for a_class in all_annotation_class_store:
+        if not a_class["is_visible"]:
+            continue
+        if img_idx in a_class["annotations"]:
+            del a_class["annotations"][img_idx]
+    # Add back each annotation on the current slice in each respective store
+    for shape in shapes:
+        for a_class in all_annotation_class_store:
+            if a_class["color"] == shape["line"]["color"]:
+                if img_idx in a_class["annotations"]:
+                    a_class["annotations"][img_idx].append(shape)
+                else:
+                    a_class["annotations"][img_idx] = [shape]
+                break
 
     return all_annotation_class_store, annotation_store
 

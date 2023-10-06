@@ -11,16 +11,24 @@ function changeFilters(js_path, brightness, contrast) {
 
 window.dash_clientside = Object.assign({}, window.dash_clientside, {
     clientside: {
-        get_container_size: function(url) {
+        get_container_size: function (url) {
             let W = window.innerWidth;
             let H = window.innerHeight;
-            if(W == 0 || H == 0){
+            if (W == 0 || H == 0) {
                 return dash_clientside.no_update
             }
             // keep `remove_focus()` here or add it to a separate callback if necessary
             // so that it executes ONCE at when the app loads
             remove_focus();
-            return {'W': W, 'H':H}
+            return { 'W': W, 'H': H }
+        },
+        delete_active_shape: function (pressed_key, n_events, graph_id) {
+            if (pressed_key["key"] == "Backspace") {
+                var gd = document.querySelector('#' + graph_id + ' .js-plotly-plot');
+                Plotly.deleteActiveShape(gd);
+
+            }
+            return dash_clientside.no_update
         }
 
     }
@@ -33,11 +41,11 @@ window.dash_clientside = Object.assign({}, window.dash_clientside, {
  */
 function remove_focus() {
     const sliderContainer = document.getElementById('image-selection-slider');
-    
+
     sliderContainer.addEventListener('focus', () => {
         sliderContainer.blur();
     });
-    
+
     sliderContainer.addEventListener('blur', () => {
         sliderContainer.blur();
     });
