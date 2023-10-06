@@ -757,6 +757,11 @@ def create_info_card_affix():
                                     ["1-9"],
                                     "Select annotation class 1-9",
                                 ),
+                                dmc.Divider(variant="solid", color="gray"),
+                                create_keybind_row(
+                                    ["del"],
+                                    "Delete an annotation",
+                                ),
                             ],
                             p=0,
                         ),
