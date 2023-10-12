@@ -97,10 +97,12 @@ def render_image(
     update_slider_value = dash.no_update
     notification = dash.no_update
     if ctx.triggered_id == "annotated-slices-selector":
-        if image_idx == slice_selection:
-            raise PreventUpdate
-        image_idx = slice_selection
         reset_slice_selection = None
+        if image_idx == slice_selection:
+            ret_values = [dash.no_update] * 8
+            ret_values[5] = reset_slice_selection
+            return ret_values
+        image_idx = slice_selection
         update_slider_value = slice_selection
         notification = generate_notification(
             f"{ANNOT_NOTIFICATION_MSGS['slice-jump']} {image_idx}",
@@ -309,13 +311,14 @@ def update_viewfinder(relayout_data, annotation_store):
 
 clientside_callback(
     """
-    function EnableImageLoadingOverlay(zIndexSlider,zIndexToggle) {
+    function EnableImageLoadingOverlay(zIndexSlider,zIndexToggle,zIndexSliceSelector) {
         return 9999;
     }
     """,
     Output("image-viewer-loading", "zIndex"),
     Input("image-selection-slider", "value"),
     Input("show-result-overlay-toggle", "checked"),
+    Input("annotated-slices-selector", "value"),
 )
 
 
