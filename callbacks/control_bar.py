@@ -474,7 +474,6 @@ def re_draw_annotations_after_editing_class_color(
     for a in all_annotation_class_store:
         if a["is_visible"] and "annotations" in a and image_idx in a["annotations"]:
             all_annotations += a["annotations"][image_idx]
-    all_annotations.reverse()
     fig["layout"]["shapes"] = all_annotations
     return fig, relayout
 
@@ -507,6 +506,7 @@ def edit_annotation_class(edit_clicked, new_label, new_color, annotation_class_s
         "borderRadius": "3px",
         "border": f"2px solid {new_color}",
     }
+    # update color in previous annotation data
     for img_idx, annots in annotation_class_store["annotations"].items():
         for annots in annotation_class_store["annotations"][img_idx]:
             annots["line"]["color"] = new_color
