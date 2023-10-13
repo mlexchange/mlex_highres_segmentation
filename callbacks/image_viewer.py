@@ -348,7 +348,7 @@ def locally_store_annotations(
         annotation_store["view"]["xaxis_range_1"] = relayout_data["xaxis.range[1]"]
         annotation_store["view"]["yaxis_range_0"] = relayout_data["yaxis.range[0]"]
         annotation_store["view"]["yaxis_range_1"] = relayout_data["yaxis.range[1]"]
-        return all_annotation_class_store, annotation_store
+        return all_annotation_class_store, annotation_store, dash.no_update
     # Case 2: A shape is modified, drawn or deleted. Save all the current shapes on the fig layout, which includes new
     # modified, and deleted shapes.
     if (
