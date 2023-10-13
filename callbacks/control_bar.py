@@ -454,13 +454,15 @@ def open_delete_class_modal(
 
 @callback(
     Output("image-viewer", "figure", allow_duplicate=True),
+    Output("image-viewer", "relayoutData", allow_duplicate=True),
     Input({"type": "edit-class-store", "index": ALL}, "data"),
     State({"type": "annotation-class-store", "index": ALL}, "data"),
     State("image-selection-slider", "value"),
+    State("image-viewer", "relayoutData"),
     prevent_initial_call=True,
 )
 def re_draw_annotations_after_editing_class_color(
-    hide_show_click, all_annotation_class_store, image_idx
+    hide_show_click, all_annotation_class_store, image_idx, relayout
 ):
     """
     After editing a class color, the color is changed in the class-store, but the color change is not reflected
@@ -472,8 +474,9 @@ def re_draw_annotations_after_editing_class_color(
     for a in all_annotation_class_store:
         if a["is_visible"] and "annotations" in a and image_idx in a["annotations"]:
             all_annotations += a["annotations"][image_idx]
+    all_annotations.reverse()
     fig["layout"]["shapes"] = all_annotations
-    return fig
+    return fig, relayout
 
 
 @callback(
