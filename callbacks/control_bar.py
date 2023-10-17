@@ -462,7 +462,7 @@ def open_delete_class_modal(
     prevent_initial_call=True,
 )
 def re_draw_annotations_after_editing_class_color(
-    hide_show_click, all_annotation_class_store, image_idx, relayout
+    edit_store, all_annotation_class_store, image_idx, relayout
 ):
     """
     After editing a class color, the color is changed in the class-store, but the color change is not reflected
@@ -474,11 +474,8 @@ def re_draw_annotations_after_editing_class_color(
     for a in all_annotation_class_store:
         if a["is_visible"] and "annotations" in a and image_idx in a["annotations"]:
             all_annotations += a["annotations"][image_idx]
-    print(relayout)
-    all_annotations.reverse()
     fig["layout"]["shapes"] = all_annotations
-
-    return fig, {"shapes": all_annotations}
+    return fig, relayout
 
 
 @callback(
@@ -515,7 +512,7 @@ def edit_annotation_class(edit_clicked, new_label, new_color, annotation_class_s
             annots["line"]["color"] = new_color
             if "fillcolor" in annots:
                 annots["fillcolor"] = new_color
-
+    print(ctx.triggered_id)
     return new_label, class_color_identifier, annotation_class_store, 1, True
 
 
