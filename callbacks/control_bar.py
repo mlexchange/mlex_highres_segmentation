@@ -474,8 +474,11 @@ def re_draw_annotations_after_editing_class_color(
     for a in all_annotation_class_store:
         if a["is_visible"] and "annotations" in a and image_idx in a["annotations"]:
             all_annotations += a["annotations"][image_idx]
+    print(relayout)
+    all_annotations.reverse()
     fig["layout"]["shapes"] = all_annotations
-    return fig, relayout
+
+    return fig, {"shapes": all_annotations}
 
 
 @callback(
