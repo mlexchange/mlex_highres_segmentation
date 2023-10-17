@@ -454,7 +454,6 @@ def open_delete_class_modal(
 
 @callback(
     Output("image-viewer", "figure", allow_duplicate=True),
-    Output("image-viewer", "relayoutData", allow_duplicate=True),
     Input({"type": "edit-class-store", "index": ALL}, "data"),
     State({"type": "annotation-class-store", "index": ALL}, "data"),
     State("image-selection-slider", "value"),
@@ -475,7 +474,7 @@ def re_draw_annotations_after_editing_class_color(
         if a["is_visible"] and "annotations" in a and image_idx in a["annotations"]:
             all_annotations += a["annotations"][image_idx]
     fig["layout"]["shapes"] = all_annotations
-    return fig, relayout
+    return fig
 
 
 @callback(
