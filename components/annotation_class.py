@@ -61,7 +61,7 @@ def annotation_class_item(class_color, class_label, existing_ids, data=None):
             ),
             dcc.Store(
                 id={"type": "edit-class-store", "index": class_id},
-                data={"is_visible": True},
+                data=False,
             ),
             html.Div(
                 [

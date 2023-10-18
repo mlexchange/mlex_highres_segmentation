@@ -324,6 +324,7 @@ clientside_callback(
         {"type": "annotation-class-store", "index": ALL}, "data", allow_duplicate=True
     ),
     Output("annotation-store", "data", allow_duplicate=True),
+    Output("image-viewer", "figure", allow_duplicate=True),
     Input("image-viewer", "relayoutData"),
     State("image-selection-slider", "value"),
     State("annotation-store", "data"),
@@ -347,24 +348,23 @@ def locally_store_annotations(
         annotation_store["view"]["xaxis_range_1"] = relayout_data["xaxis.range[1]"]
         annotation_store["view"]["yaxis_range_0"] = relayout_data["yaxis.range[0]"]
         annotation_store["view"]["yaxis_range_1"] = relayout_data["yaxis.range[1]"]
-        return all_annotation_class_store, annotation_store
-    # Case 2: a shape is modified, the relayoutData will have the format "shape[_].path", with the new path (not very useful)
-    # we can instead take all the shapes from the fig layout directly and reset them in the store
+        return all_annotation_class_store, annotation_store, dash.no_update
+    # Case 2: A shape is modified, drawn or deleted. Save all the current shapes on the fig layout, which includes new
+    # modified, and deleted shapes.
     if (
         any(["shapes" in key for key in relayout_data])
         and "shapes" in fig["layout"].keys()
     ):
         shapes = fig["layout"]["shapes"]
-    # Case 3: a new shape is drawn, we have access to all this data directly from the relayoutData under the 'shapes' key
-    elif "shapes" in relayout_data:
-        shapes = relayout_data["shapes"]
-    # Clear all annotation from the stores at the current slice, except for the hidden shapes
+
+    # Clear all annotation from the stores at the current slice,
+    # except for the hidden shapes (hidden shapes cannot be modified or deleted)
     for a_class in all_annotation_class_store:
         if not a_class["is_visible"]:
             continue
         if img_idx in a_class["annotations"]:
             del a_class["annotations"][img_idx]
-    # Add back each annotation on the current slice in each respective store
+    # Add back each annotation on the current slice in each respective store.
     for shape in shapes:
         for a_class in all_annotation_class_store:
             if a_class["color"] == shape["line"]["color"]:
@@ -373,8 +373,16 @@ def locally_store_annotations(
                 else:
                     a_class["annotations"][img_idx] = [shape]
                 break
-
-    return all_annotation_class_store, annotation_store
+    # redraw all annotations on the fig so the store is aligned with whats on the app
+    # ie: drawing with a hidden class hides the shape immediately
+    # ie: drawing with the first class pushes the shape to the back of the image imdediately
+    fig = Patch()
+    all_annotations = []
+    for a in all_annotation_class_store:
+        if a["is_visible"] and "annotations" in a and img_idx in a["annotations"]:
+            all_annotations += a["annotations"][img_idx]
+    fig["layout"]["shapes"] = all_annotations
+    return all_annotation_class_store, annotation_store, fig
 
 
 @callback(
