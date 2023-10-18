@@ -39,8 +39,7 @@ USER_NAME = os.getenv("USER_NAME", "user1")
 
 # Create an empty file if it doesn't exist
 if not os.path.exists(EXPORT_FILE_PATH):
-    with open(EXPORT_FILE_PATH, "w") as f:
-        pass
+    open(EXPORT_FILE_PATH, "w")
 
 
 @callback(
@@ -454,11 +453,10 @@ def open_delete_class_modal(
     Input({"type": "edit-class-store", "index": ALL}, "data"),
     State({"type": "annotation-class-store", "index": ALL}, "data"),
     State("image-selection-slider", "value"),
-    State("image-viewer", "relayoutData"),
     prevent_initial_call=True,
 )
 def re_draw_annotations_after_editing_class_color(
-    edit_store, all_annotation_class_store, image_idx, relayout
+    hide_show_click, all_annotation_class_store, image_idx
 ):
     """
     After editing a class color, the color is changed in the class-store, but the color change is not reflected
@@ -484,13 +482,17 @@ def re_draw_annotations_after_editing_class_color(
     State({"type": "edit-annotation-class-text-input", "index": MATCH}, "value"),
     State({"type": "edit-annotation-class-colorpicker", "index": MATCH}, "value"),
     State({"type": "annotation-class-store", "index": MATCH}, "data"),
+    State("image-selection-slider", "value"),
     prevent_initial_call=True,
 )
-def edit_annotation_class(edit_clicked, new_label, new_color, annotation_class_store):
+def edit_annotation_class(
+    edit_clicked, new_label, new_color, annotation_class_store, img_idx
+):
     """
     This callback edits the name and color of an annotation class by updating class-store metadata. We also trigger
     edit-class-store so we can then redraw the annotations in re_draw_annotations_after_editing_class_color().
     """
+    img_idx = str(img_idx - 1)
     # update store meta data
     annotation_class_store["label"] = new_label
     annotation_class_store["color"] = new_color
@@ -503,12 +505,12 @@ def edit_annotation_class(edit_clicked, new_label, new_color, annotation_class_s
         "border": f"2px solid {new_color}",
     }
     # update color in previous annotation data
-    for img_idx, annots in annotation_class_store["annotations"].items():
-        for annots in annotation_class_store["annotations"][img_idx]:
-            annots["line"]["color"] = new_color
-            if "fillcolor" in annots:
-                annots["fillcolor"] = new_color
-    print(ctx.triggered_id)
+    if img_idx in annotation_class_store["annotations"]:
+        for a in annotation_class_store["annotations"][img_idx]:
+            a["line"]["color"] = new_color
+            if "fillcolor" in a:
+                a["fillcolor"] = new_color
+
     return new_label, class_color_identifier, annotation_class_store, 1, True
 
 
