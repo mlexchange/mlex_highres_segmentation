@@ -119,12 +119,30 @@ def render_image(
                 and ctx.triggered_id == "show-result-overlay-toggle"
             ):
                 raise PreventUpdate
+            print(seg_result_selection, image_idx)
             result = get_data_sequence_by_name(seg_result_selection)[image_idx]
     else:
         tf = np.zeros((500, 500))
     fig = px.imshow(tf, binary_string=True)
     if toggle_seg_result:
-        fig.add_trace(go.Heatmap(z=result, showscale=False, colorscale=None))
+        unique_segmentation_values = np.unique(result)
+        normalized_range = np.linspace(
+            0, 1, len(unique_segmentation_values)
+        )  # heatmap requires a normalized range
+        color_list = (
+            px.colors.qualitative.Plotly
+        )  # TODO placeholder - replace with user defined classess
+        colorscale = [
+            [normalized_range[i], color_list[i % len(color_list)]]
+            for i in range(len(unique_segmentation_values))
+        ]
+        fig.add_trace(
+            go.Heatmap(
+                z=result,
+                colorscale=colorscale,
+                showscale=False,
+            )
+        )
         fig["data"][1]["opacity"] = opacity / 100
 
     fig.update_layout(
