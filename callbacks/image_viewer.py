@@ -60,7 +60,6 @@ def hide_show_segmentation_overlay(toggle_seg_result, opacity):
     Output("image-viewer", "figure"),
     Output("image-viewfinder", "figure"),
     Output("annotation-store", "data", allow_duplicate=True),
-    Output("image-viewer-loading", "zIndex", allow_duplicate=True),
     Output("image-metadata", "data"),
     Output("annotated-slices-selector", "value"),
     Output("image-selection-slider", "value", allow_duplicate=True),
@@ -97,10 +96,12 @@ def render_image(
     update_slider_value = dash.no_update
     notification = dash.no_update
     if ctx.triggered_id == "annotated-slices-selector":
-        if image_idx == slice_selection:
-            raise PreventUpdate
-        image_idx = slice_selection
         reset_slice_selection = None
+        if image_idx == slice_selection:
+            ret_values = [dash.no_update] * 7
+            ret_values[4] = reset_slice_selection
+            return ret_values
+        image_idx = slice_selection
         update_slider_value = slice_selection
         notification = generate_notification(
             f"{ANNOT_NOTIFICATION_MSGS['slice-jump']} {image_idx}",
@@ -167,7 +168,6 @@ def render_image(
     patched_annotation_store = Patch()
     patched_annotation_store["image_center_coor"] = image_center_coor
     patched_annotation_store["active_img_shape"] = list(tf.shape)
-    fig_loading_overlay = -1
 
     image_ratio = round(tf.shape[1] / tf.shape[0], 2)
     patched_annotation_store["image_ratio"] = image_ratio
@@ -188,7 +188,6 @@ def render_image(
         fig,
         fig_viewfinder,
         patched_annotation_store,
-        fig_loading_overlay,
         curr_image_metadata,
         reset_slice_selection,
         update_slider_value,
@@ -309,13 +308,14 @@ def update_viewfinder(relayout_data, annotation_store):
 
 clientside_callback(
     """
-    function EnableImageLoadingOverlay(zIndexSlider,zIndexToggle) {
+    function EnableImageLoadingOverlay(zIndexSlider,zIndexToggle,zIndexSliceSelector) {
         return 9999;
     }
     """,
     Output("image-viewer-loading", "zIndex"),
     Input("image-selection-slider", "value"),
     Input("show-result-overlay-toggle", "checked"),
+    Input("annotated-slices-selector", "value"),
 )
 
 

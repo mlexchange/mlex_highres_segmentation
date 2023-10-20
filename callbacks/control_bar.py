@@ -185,9 +185,6 @@ def annotation_mode(
     if generate_modal_opened or any(edit_modal_opened):
         # user is going to type on this page (on a modal) and we don't want to trigger this callback using keys
         raise PreventUpdate
-    # if the image is loading stop the callback when keybinds are pressed
-    if figure_overlay_z_index != -1:
-        raise PreventUpdate
 
     trigger = ctx.triggered_id
     pressed_key = (
