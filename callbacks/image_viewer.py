@@ -509,8 +509,8 @@ def reset_figure_view(n_clicks, annotation_store):
 
     relayout_data = {
         "xaxis.range[0]": image_center_coor["x0"],
-        "yaxis.range[0]": image_center_coor["y0"],
+        "yaxis.range[0]": image_center_coor["y1"],
         "xaxis.range[1]": image_center_coor["x1"],
-        "yaxis.range[1]": image_center_coor["y1"],
+        "yaxis.range[1]": image_center_coor["y0"],
     }
     return new_figure, relayout_data
