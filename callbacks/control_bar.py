@@ -39,7 +39,7 @@ USER_NAME = os.getenv("USER_NAME", "user1")
 
 # Create an empty file if it doesn't exist
 if not os.path.exists(EXPORT_FILE_PATH):
-    open(EXPORT_FILE_PATH, "w")
+    open(EXPORT_FILE_PATH, "w").close()
 
 
 @callback(

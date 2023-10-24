@@ -120,7 +120,6 @@ def render_image(
                 and ctx.triggered_id == "show-result-overlay-toggle"
             ):
                 raise PreventUpdate
-            print(seg_result_selection, image_idx)
             result = get_data_sequence_by_name(seg_result_selection)[image_idx]
     else:
         tf = np.zeros((500, 500))
