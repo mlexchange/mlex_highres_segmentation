@@ -21,7 +21,11 @@ from dash_iconify import DashIconify
 from plotly.subplots import make_subplots
 
 from constants import ANNOT_ICONS, ANNOT_NOTIFICATION_MSGS, KEYBINDS
-from utils.data_utils import get_data_sequence_by_name, get_data_shape_by_name
+from utils.data_utils import (
+    get_data_sequence_by_name,
+    get_data_shape_by_name,
+    get_annotated_segmented_results,
+)
 from utils.plot_utils import (
     create_viewfinder,
     downscale_view,
@@ -120,11 +124,14 @@ def render_image(
                 and ctx.triggered_id == "show-result-overlay-toggle"
             ):
                 raise PreventUpdate
-            result = get_data_sequence_by_name(seg_result_selection)[image_idx]
+            if str(image_idx + 1) in get_annotated_segmented_results():
+                result = get_data_sequence_by_name(seg_result_selection)[image_idx]
+            else:
+                result = None
     else:
         tf = np.zeros((500, 500))
     fig = px.imshow(tf, binary_string=True)
-    if toggle_seg_result:
+    if toggle_seg_result and result is not None:
         unique_segmentation_values = np.unique(result)
         normalized_range = np.linspace(
             0, 1, len(unique_segmentation_values)
