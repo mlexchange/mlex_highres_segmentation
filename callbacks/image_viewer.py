@@ -22,9 +22,9 @@ from plotly.subplots import make_subplots
 
 from constants import ANNOT_ICONS, ANNOT_NOTIFICATION_MSGS, KEYBINDS
 from utils.data_utils import (
+    get_annotated_segmented_results,
     get_data_sequence_by_name,
     get_data_shape_by_name,
-    get_annotated_segmented_results,
 )
 from utils.plot_utils import (
     create_viewfinder,
