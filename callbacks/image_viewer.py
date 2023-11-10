@@ -22,9 +22,9 @@ from plotly.subplots import make_subplots
 
 from constants import ANNOT_ICONS, ANNOT_NOTIFICATION_MSGS, KEYBINDS
 from utils.data_utils import (
-    get_annotated_segmented_results,
     get_data_sequence_by_name,
     get_data_shape_by_name,
+    get_annotated_segmented_results,
 )
 from utils.plot_utils import (
     create_viewfinder,
@@ -49,8 +49,8 @@ clientside_callback(
 )
 def hide_show_segmentation_overlay(toggle_seg_result, opacity):
     """
-    This callback is responsible for hiding or showing the segmentation results overaly
-    by making the opacity 0 (given that this iamge has already been rendered in the render_image callback).
+    This callback is responsible for hiding or showing the segmentation results overlay
+    by making the opacity 0 (given that this image has already been rendered in the render_image callback).
     This callback also adjusts the opactiy of the results based on the opacity slider.
     """
     fig = Patch()
