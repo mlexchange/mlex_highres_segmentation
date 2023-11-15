@@ -68,6 +68,7 @@ def hide_show_segmentation_overlay(toggle_seg_result, opacity):
     Output("annotated-slices-selector", "value"),
     Output("image-selection-slider", "value", allow_duplicate=True),
     Output("notifications-container", "children", allow_duplicate=True),
+    Output("image-viewer-loading", "className"),
     Input("image-selection-slider", "value"),
     Input("show-result-overlay-toggle", "checked"),
     Input("annotated-slices-selector", "value"),
@@ -102,8 +103,9 @@ def render_image(
     if ctx.triggered_id == "annotated-slices-selector":
         reset_slice_selection = None
         if image_idx == slice_selection:
-            ret_values = [dash.no_update] * 7
+            ret_values = [dash.no_update] * 8
             ret_values[4] = reset_slice_selection
+            ret_values[7] = "hidden"
             return ret_values
         image_idx = slice_selection
         update_slider_value = slice_selection
@@ -123,7 +125,7 @@ def render_image(
                 len(fig["data"]) == 2
                 and ctx.triggered_id == "show-result-overlay-toggle"
             ):
-                raise PreventUpdate
+                return [dash.no_update] * 7 + ["hidden"]
             if str(image_idx + 1) in get_annotated_segmented_results():
                 result = get_data_sequence_by_name(seg_result_selection)[image_idx]
             else:
@@ -216,6 +218,7 @@ def render_image(
         reset_slice_selection,
         update_slider_value,
         notification,
+        "hidden",
     )
 
 
@@ -332,14 +335,59 @@ def update_viewfinder(relayout_data, annotation_store):
 
 clientside_callback(
     """
-    function EnableImageLoadingOverlay(zIndexSlider,zIndexToggle,zIndexSliceSelector) {
-        return 9999;
+    function EnableImageLoadingOverlay(a) {
+        const ctx = window.dash_clientside.callback_context;
+        console.log(ctx)
+        if (a == null){return "hidden"}
+        return "visible";
     }
     """,
-    Output("image-viewer-loading", "zIndex"),
+    Output("image-viewer-loading", "className", allow_duplicate=True),
     Input("image-selection-slider", "value"),
+    prevent_initial_call=True,
+)
+clientside_callback(
+    """
+    function EnableImageLoadingOverlay(a) {
+        if (a == null){return "hidden"}
+        return "visible";
+    }
+    """,
+    Output("image-viewer-loading", "className", allow_duplicate=True),
     Input("show-result-overlay-toggle", "checked"),
+    prevent_initial_call=True,
+)
+clientside_callback(
+    """
+    function EnableImageLoadingOverlay(a) {
+        if (a == null){return "hidden"}
+        return "visible";
+    }
+    """,
+    Output("image-viewer-loading", "className", allow_duplicate=True),
     Input("annotated-slices-selector", "value"),
+    prevent_initial_call=True,
+)
+clientside_callback(
+    """
+    function EnableImageLoadingOverlay(a) {
+        if (a == null){return "hidden"}
+        return "visible";
+    }
+    """,
+    Output("image-viewer-loading", "className", allow_duplicate=True),
+    Input("project-name-src", "value"),
+    prevent_initial_call=True,
+)
+clientside_callback(
+    """
+    function DisableImageLoadingOverlay(fig) {
+        return "hidden";
+    }
+    """,
+    Output("image-viewer-loading", "className", allow_duplicate=True),
+    Input("image-viewer", "figure"),
+    prevent_initial_call=True,
 )
 
 

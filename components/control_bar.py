@@ -3,7 +3,7 @@ import dash_mantine_components as dmc
 from dash import dcc, html
 from dash_extensions import EventListener
 from dash_iconify import DashIconify
-
+import dash_core_components as dcc
 from components.annotation_class import annotation_class_item
 from constants import ANNOT_ICONS, KEYBINDS
 from utils import data_utils
@@ -164,6 +164,14 @@ def layout():
                                     ),
                                 ),
                                 dmc.Space(h=10),
+                                dmc.Center(
+                                    dmc.Loader(
+                                        id="image-viewer-loading",
+                                        style={"height": "20px", "width": "90px"},
+                                        className="hidden",
+                                    ),
+                                    pt=20,
+                                ),
                             ],
                         ),
                         _accordion_item(
