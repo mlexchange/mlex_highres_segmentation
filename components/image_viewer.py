@@ -22,13 +22,6 @@ def layout():
             dcc.Store("image-metadata", data={"name": None}),
             dcc.Store("screen-size"),
             dcc.Location("url"),
-            # dmc.LoadingOverlay(
-            #     id="image-viewer-loading",
-            #     overlayOpacity=0,
-            #     loaderProps=dict(
-            #         color=dmc.theme.DEFAULT_COLORS["blue"][6], variant="bars"
-            #     ),
-            #     children=[
             dcc.Graph(
                 id="image-viewer",
                 config=FIGURE_CONFIG,
@@ -39,9 +32,6 @@ def layout():
                     "position": "fixed",
                 },
             ),
-            #     ],
-            #     style={"height": "100vh", "width": "100vw"},
-            # ),
             dcc.Graph(
                 id="image-viewfinder",
                 figure=blank_fig(),
