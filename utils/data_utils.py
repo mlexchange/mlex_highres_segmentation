@@ -195,3 +195,14 @@ def get_data_shape_by_name(project_name):
     if project_container:
         return project_container.shape
     return None
+
+
+def get_annotated_segmented_results(json_file_path="exported_annotation_data.json"):
+    annotated_slices = []
+    with open(json_file_path, "r") as f:
+        for line in f:
+            if line.strip():
+                json_data = json.loads(line)
+                json_data["data"] = json.loads(json_data["data"])
+                annotated_slices = list(json_data["data"][0]["annotations"].keys())
+    return annotated_slices

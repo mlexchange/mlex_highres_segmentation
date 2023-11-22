@@ -161,7 +161,6 @@ def update_selected_class_style(selected_class, all_annotation_classes):
     Input("pan-and-zoom", "n_clicks"),
     Input("keybind-event-listener", "event"),
     State("annotation-store", "data"),
-    State("image-viewer-loading", "zIndex"),
     State("generate-annotation-class-modal", "opened"),
     State({"type": "edit-annotation-class-modal", "index": ALL}, "opened"),
     prevent_initial_call=True,
@@ -173,7 +172,6 @@ def annotation_mode(
     pan_and_zoom,
     keybind_event_listener,
     annotation_store,
-    figure_overlay_z_index,
     generate_modal_opened,
     edit_modal_opened,
 ):
