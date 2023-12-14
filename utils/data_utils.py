@@ -1,5 +1,6 @@
 import json
 import os
+import uuid
 
 import httpx
 import numpy as np
@@ -102,6 +103,7 @@ load_dotenv()
 TILED_URI = os.getenv("TILED_URI")
 TILED_API_KEY = os.getenv("TILED_API_KEY")
 LOCAL_MODE = os.getenv("TILED_DEPLOYMENT_LOC")
+USER_NAME = os.getenv("USER_NAME", "user1")
 
 if os.getenv("TILED_DEPLOYMENT_LOC", "") == "Local":
     print("To run a Tiled server locally run the bash script `./tiled_serve_dir.sh`.")
@@ -180,11 +182,11 @@ def get_annotated_segmented_results(json_file_path="exported_annotation_data.jso
 
 def save_annotations_data(global_store, all_annotations, project_name):
     """
-    Transforms annotations data to a pixelated mask and outputs to
-    the Tiled server
+    Transforms annotations data to a pixelated mask and outputs to the Tiled server
     """
     annotations = Annotations(all_annotations, global_store)
-    annotations.create_annotation_mask(sparse=True)  # TODO: Check sparse status
+    # TODO: Check sparse status
+    annotations.create_annotation_mask(sparse=False)
 
     # Get metadata and annotation data
     metadata = annotations.get_annotations()
@@ -192,15 +194,20 @@ def save_annotations_data(global_store, all_annotations, project_name):
 
     # Get raw images associated with each annotated slice
     img_idx = list(metadata.keys())
-    img = get_data_sequence_by_name(project_name)
-    raw = []
-    for idx in img_idx:
-        ar = img[int(idx)]
-        raw.append(ar)
+    metadata["indices"] = img_idx
     try:
-        raw = np.stack(raw)
         mask = np.stack(mask)
     except ValueError:
         return "No annotations to process."
 
-    return
+    "Store the mask in the Tiled server under mlex_store/username/project_name/uid/mask"
+    container_keys = ["mlex_store", USER_NAME, project_name, str(uuid.uuid4())]
+    last_container = client
+    for key in container_keys:
+        if key not in last_container.keys():
+            last_container = last_container.create_container(key=key)
+        else:
+            last_container = last_container[key]
+    mask = last_container.write_array(key="mask", array=mask, metadata=metadata)
+    # print("Created a mask array with the following uri: ", mask.uri)
+    return mask.uri
