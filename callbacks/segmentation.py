@@ -8,9 +8,8 @@ import requests
 from dash import ALL, Input, Output, State, callback, no_update
 from dash.exceptions import PreventUpdate
 
-from utils import data_utils
 from utils.annotations import Annotations
-from utils.data_utils import get_data_sequence_by_name
+from utils.data_utils import get_data_sequence_by_name, save_annotations_data
 
 MODE = os.getenv("MODE", "")
 
@@ -77,6 +76,7 @@ def run_job(n_clicks, global_store, all_annotations, project_name):
     """
     if n_clicks:
         if MODE == "dev":
+            save_annotations_data(global_store, all_annotations, project_name)
             job_uid = str(uuid.uuid4())
             return (
                 dmc.Text(
@@ -86,9 +86,7 @@ def run_job(n_clicks, global_store, all_annotations, project_name):
                 job_uid,
             )
         else:
-            data_utils.save_annotations_data(
-                global_store, all_annotations, project_name
-            )
+            save_annotations_data(global_store, all_annotations, project_name)
             job_submitted = requests.post(
                 "http://job-service:8080/api/v0/workflows", json=DEMO_WORKFLOW
             )
