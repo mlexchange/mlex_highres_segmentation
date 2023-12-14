@@ -97,36 +97,6 @@ def DEV_filter_json_data_by_timestamp(data, timestamp):
     return [data for data in data if data["time"] == timestamp]
 
 
-def save_annotations_data(global_store, all_annotations, project_name):
-    """
-    Transforms annotations data to a pixelated mask and outputs to
-    the Tiled server
-
-    # TODO: Save data to Tiled server after transformation
-    """
-    annotations = Annotations(all_annotations, global_store)
-    annotations.create_annotation_mask(sparse=True)  # TODO: Check sparse status
-
-    # Get metadata and annotation data
-    metadata = annotations.get_annotations()
-    mask = annotations.get_annotation_mask()
-
-    # Get raw images associated with each annotated slice
-    img_idx = list(metadata.keys())
-    img = data[project_name]
-    raw = []
-    for idx in img_idx:
-        ar = img[int(idx)]
-        raw.append(ar)
-    try:
-        raw = np.stack(raw)
-        mask = np.stack(mask)
-    except ValueError:
-        return "No annotations to process."
-
-    return
-
-
 load_dotenv()
 
 TILED_URI = os.getenv("TILED_URI")
@@ -206,3 +176,31 @@ def get_annotated_segmented_results(json_file_path="exported_annotation_data.jso
                 json_data["data"] = json.loads(json_data["data"])
                 annotated_slices = list(json_data["data"][0]["annotations"].keys())
     return annotated_slices
+
+
+def save_annotations_data(global_store, all_annotations, project_name):
+    """
+    Transforms annotations data to a pixelated mask and outputs to
+    the Tiled server
+    """
+    annotations = Annotations(all_annotations, global_store)
+    annotations.create_annotation_mask(sparse=True)  # TODO: Check sparse status
+
+    # Get metadata and annotation data
+    metadata = annotations.get_annotations()
+    mask = annotations.get_annotation_mask()
+
+    # Get raw images associated with each annotated slice
+    img_idx = list(metadata.keys())
+    img = get_data_sequence_by_name(project_name)
+    raw = []
+    for idx in img_idx:
+        ar = img[int(idx)]
+        raw.append(ar)
+    try:
+        raw = np.stack(raw)
+        mask = np.stack(mask)
+    except ValueError:
+        return "No annotations to process."
+
+    return
