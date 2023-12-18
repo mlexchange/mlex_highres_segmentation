@@ -1,6 +1,5 @@
 import json
 import os
-import uuid
 
 import httpx
 import numpy as np
@@ -194,6 +193,7 @@ def save_annotations_data(global_store, all_annotations, project_name):
 
     # Get raw images associated with each annotated slice
     img_idx = list(metadata.keys())
+    # TODO: In principle redundant, consider removing?
     metadata["indices"] = img_idx
     try:
         mask = np.stack(mask)
@@ -201,13 +201,16 @@ def save_annotations_data(global_store, all_annotations, project_name):
         return "No annotations to process."
 
     "Store the mask in the Tiled server under mlex_store/username/project_name/uid/mask"
-    container_keys = ["mlex_store", USER_NAME, project_name, str(uuid.uuid4())]
+    container_keys = ["mlex_store", USER_NAME, project_name]
     last_container = client
     for key in container_keys:
         if key not in last_container.keys():
             last_container = last_container.create_container(key=key)
         else:
             last_container = last_container[key]
-    mask = last_container.write_array(key="mask", array=mask, metadata=metadata)
+    # Add json metadata to a container with a uuid as key
+    # (uuid will be created by Tiled, since no key is given)
+    last_container = last_container.create_container(metadata=metadata)
+    mask = last_container.write_array(key="mask", array=mask)
     # print("Created a mask array with the following uri: ", mask.uri)
     return mask.uri
