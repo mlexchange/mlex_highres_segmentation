@@ -99,13 +99,11 @@ def DEV_filter_json_data_by_timestamp(data, timestamp):
 
 def save_annotations_data(global_store, all_annotations, project_name):
     """
-    Transforms annotations data to a pixelated mask and outputs to
-    the Tiled server
-
-    # TODO: Save data to Tiled server after transformation
+    Transforms annotations data to a pixelated mask and outputs to the Tiled server
     """
     annotations = Annotations(all_annotations, global_store)
-    annotations.create_annotation_mask(sparse=True)  # TODO: Check sparse status
+    # TODO: Check sparse status
+    annotations.create_annotation_mask(sparse=False)
 
     # Get metadata and annotation data
     metadata = annotations.get_annotations()
@@ -113,18 +111,27 @@ def save_annotations_data(global_store, all_annotations, project_name):
 
     # Get raw images associated with each annotated slice
     img_idx = list(metadata.keys())
-    img = data[project_name]
-    raw = []
-    for idx in img_idx:
-        ar = img[int(idx)]
-        raw.append(ar)
+    # TODO: In principle redundant, consider removing?
+    metadata["indices"] = img_idx
     try:
-        raw = np.stack(raw)
         mask = np.stack(mask)
     except ValueError:
         return "No annotations to process."
 
-    return
+    "Store the mask in the Tiled server under mlex_store/username/project_name/uid/mask"
+    container_keys = ["mlex_store", USER_NAME, project_name]
+    last_container = client
+    for key in container_keys:
+        if key not in last_container.keys():
+            last_container = last_container.create_container(key=key)
+        else:
+            last_container = last_container[key]
+    # Add json metadata to a container with a uuid as key
+    # (uuid will be created by Tiled, since no key is given)
+    last_container = last_container.create_container(metadata=metadata)
+    mask = last_container.write_array(key="mask", array=mask)
+    # print("Created a mask array with the following uri: ", mask.uri)
+    return mask.uri
 
 
 load_dotenv()
@@ -132,6 +139,7 @@ load_dotenv()
 TILED_URI = os.getenv("TILED_URI")
 TILED_API_KEY = os.getenv("TILED_API_KEY")
 LOCAL_MODE = os.getenv("TILED_DEPLOYMENT_LOC")
+USER_NAME = os.getenv("USER_NAME", "user1")
 
 if os.getenv("TILED_DEPLOYMENT_LOC", "") == "Local":
     print("To run a Tiled server locally run the bash script `./tiled_serve_dir.sh`.")
@@ -142,6 +150,7 @@ if os.getenv("TILED_DEPLOYMENT_LOC", "") == "Local":
     data = client
 else:
     client = from_uri(TILED_URI, api_key=TILED_API_KEY, timeout=httpx.Timeout(30.0))
+    print(client)
     data = client["reconstruction"]
 
 

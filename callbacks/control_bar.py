@@ -30,6 +30,7 @@ from utils.data_utils import (
     DEV_filter_json_data_by_timestamp,
     DEV_load_exported_json_data,
     get_data_project_names,
+    save_annotations_data,
 )
 from utils.plot_utils import generate_notification, generate_notification_bg_icon_col
 
@@ -713,6 +714,8 @@ def save_data(n_clicks, global_store, all_annotations, image_src):
 
     if all_annotations:
         # TODO: save store to the server file-user system, this will be changed to DB later
+        save_annotations_data(global_store, all_annotations, image_src)
+
         export_data = {
             "user": USER_NAME,
             "source": image_src,
@@ -726,7 +729,9 @@ def save_data(n_clicks, global_store, all_annotations, image_src):
         if export_data["data"] != "{}":
             with open(EXPORT_FILE_PATH, "a+") as f:
                 f.write(export_data_json + "\n")
+
         return "Data saved!"
+
     return "No annotations to save!"
 
 
