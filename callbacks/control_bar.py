@@ -163,6 +163,7 @@ def update_selected_class_style(selected_class, all_annotation_classes):
     State("annotation-store", "data"),
     State("generate-annotation-class-modal", "opened"),
     State({"type": "edit-annotation-class-modal", "index": ALL}, "opened"),
+    State("image-viewer", "figure"),
     prevent_initial_call=True,
 )
 def annotation_mode(
@@ -174,6 +175,7 @@ def annotation_mode(
     annotation_store,
     generate_modal_opened,
     edit_modal_opened,
+    fig,
 ):
     """
     This callback is responsible for changing the annotation mode and the style of the buttons.
@@ -235,6 +237,10 @@ def annotation_mode(
             annotation_store["dragmode"] = "pan"
             styles[trigger] = active
 
+    # disable shape editing when in pan/zoom mode
+    for shape in fig["layout"]["shapes"]:
+        shape["editable"] = trigger != "pan-and-zoom" and pan_and_zoom > 0
+    patched_figure["layout"]["shapes"] = fig["layout"]["shapes"]
     return (
         patched_figure,
         styles["closed-freeform"],
