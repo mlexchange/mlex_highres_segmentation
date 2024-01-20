@@ -150,22 +150,12 @@ def get_data_project_names():
     Get available project names from the main Tiled container,
     filtered by types that can be processed (Container and ArrayClient)
     """
-    if LOCAL_MODE == "Local":
-        project_names = [
-            project
-            for project in list(data)
-            if isinstance(data[project], (Container, ArrayClient))
-        ]
-        return project_names
-    else:
-        # TODO: remove hard-coded names when caching is implemented
-        return [
-            "rec20191210_111800_lobster-claw_acid_vs_not_2_bin2",
-            "rec20190524_085542_clay_testZMQ_8bit",
-            "rec20221222_085501_looking_from_above_spiralUP_CounterClockwise_endPointAtDoor",
-            "seg-rec20190524_085542_clay_testZMQ_8bit",
-            "RECON_20180227_110041_bamboo_wet_bent_cropped",
-        ]
+    project_names = [
+        project
+        for project in list(data)
+        if isinstance(data[project], (Container, ArrayClient))
+    ]
+    return project_names
 
 
 def get_data_sequence_by_name(project_name):
