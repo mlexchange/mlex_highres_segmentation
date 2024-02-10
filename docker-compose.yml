@@ -6,8 +6,8 @@ services:
     build: .
     command: 'gunicorn -b 0.0.0.0:8075 --reload app:server'
     environment:
-      TILED_URI: '${TILED_URI}'
-      TILED_API_KEY: '${TILED_API_KEY}'
+      DATA_TILED_URI: '${DATA_TILED_URI}'
+      DATA_TILED_API_KEY: '${DATA_TILED_API_KEY}'
     volumes:
       - ./app.py:/app/app.py
       - ./constants.py:/app/constants.py

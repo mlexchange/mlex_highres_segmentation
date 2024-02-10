@@ -129,8 +129,8 @@ def save_annotations_data(global_store, all_annotations, project_name):
 
 load_dotenv()
 
-TILED_URI = os.getenv("TILED_URI")
-TILED_API_KEY = os.getenv("TILED_API_KEY")
+DATA_TILED_URI = os.getenv("DATA_TILED_URI")
+DATA_TILED_API_KEY = os.getenv("DATA_TILED_API_KEY")
 LOCAL_MODE = os.getenv("TILED_DEPLOYMENT_LOC")
 
 if os.getenv("TILED_DEPLOYMENT_LOC", "") == "Local":
@@ -138,11 +138,11 @@ if os.getenv("TILED_DEPLOYMENT_LOC", "") == "Local":
     print("This requires to additionally install the server components of Tiled with:")
     print('`pip install "tiled[server]"`')
     DEV_download_google_sample_data()
-    client = from_uri("http://localhost:8000")
-    data = client
+    data = from_uri("http://localhost:8000")
 else:
-    client = from_uri(TILED_URI, api_key=TILED_API_KEY, timeout=httpx.Timeout(30.0))
-    data = client["reconstruction"]
+    data = from_uri(
+        DATA_TILED_URI, api_key=DATA_TILED_API_KEY, timeout=httpx.Timeout(30.0)
+    )
 
 
 def get_data_project_names():

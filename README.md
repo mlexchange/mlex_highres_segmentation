@@ -26,8 +26,8 @@ pip install -r requirements-dev.txt
 2. Set environment variables via a `.env` file to configure a connection to the Tiled server, differentiate between local testing and development mode and set a user and password for basic autherization:
 
 ```
-TILED_URI='https://tiled-seg.als.lbl.gov'
-TILED_API_KEY=<key-provided-on-request>
+DATA_TILED_URI='https://tiled-seg.als.lbl.gov'
+DATA_TILED_API_KEY=<key-provided-on-request>
 DASH_DEPLOYMENT_LOC='Local'
 MODE='dev'
 ```
