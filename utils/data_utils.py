@@ -161,15 +161,22 @@ def get_data_project_names():
 def get_data_sequence_by_name(project_name):
     """
     Data sequences may be given directly inside the main client container,
-    but can also be additionally encapsulated in a folder.
+    but can also be additionally encapsulated in a folder, multiple container or in a .nxs file.
+    We make use of specs to figure out the path to the 3d data.
     """
     project_client = data[project_name]
-    # If the project directly points to an array
+    # If the project directly points to an array, directly return it
     if isinstance(project_client, ArrayClient):
         return project_client
     # If project_name points to a container
     elif isinstance(project_client, Container):
+        # Check if the specs gives us information about which sub-container to access
+        specs = project_client.specs
+        if any(spec.name == "NXtomoproc" for spec in specs):
+            # Placeholder for
+            return project_client["/NXtomoproc/entry/data/data"]
         # Enter the container and return first element
+        # if it represents an array
         if len(list(project_client)) == 1:
             sequence_client = project_client.values()[0]
             if isinstance(sequence_client, ArrayClient):
