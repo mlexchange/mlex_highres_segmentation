@@ -117,10 +117,13 @@ def get_data_sequence_by_name(project_name):
         return project_client
     # If project_name points to a container
     elif isinstance(project_client, Container):
-        # Check if the specs gives us information about which sub-container to access
+        # Check if the specs give us information about which sub-container to access
         specs = project_client.specs
         if any(spec.name == "NXtomoproc" for spec in specs):
-            # Placeholder for
+            # Example for how to access data if the project container corresponds to a
+            # nexus-file following the NXtomoproc definition
+            # TODO: This assumes that a validator has checked the file on ingestion
+            # Otherwise we should first test if the path holds data
             return project_client["/NXtomoproc/entry/data/data"]
         # Enter the container and return first element
         # if it represents an array
