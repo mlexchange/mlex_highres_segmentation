@@ -11,69 +11,6 @@ from tiled.client.container import Container
 from utils.annotations import Annotations
 
 
-def DEV_load_exported_json_data(file_path, USER_NAME, PROJECT_NAME):
-    """
-    This function is used to load the exported json, which was saved in a local file.
-    User name is used to filter the data by user.
-    Project name is used to filter the data by project.
-    It is sorted by timestamp with the latest timestamp first.
-
-    TODO: this function will be replaced with a database query in the future.
-    """
-    DATA_JSON = []
-
-    with open(file_path, "r") as f:
-        for line in f:
-            if line.strip():
-                json_data = json.loads(line)
-                json_data["data"] = json.loads(json_data["data"])
-                DATA_JSON.append(json_data)
-
-    data = [
-        data
-        for data in DATA_JSON
-        if data["user"] == USER_NAME and data["source"] == PROJECT_NAME
-    ]
-    if data:
-        data = sorted(data, key=lambda x: x["time"], reverse=True)
-
-    return data
-
-
-def DEV_filter_json_data_by_timestamp(data, timestamp):
-    return [data for data in data if data["time"] == timestamp]
-
-
-def save_annotations_data(global_store, all_annotations, project_name):
-    """
-    Transforms annotations data to a pixelated mask and outputs to
-    the Tiled server
-
-    # TODO: Save data to Tiled server after transformation
-    """
-    annotations = Annotations(all_annotations, global_store)
-    annotations.create_annotation_mask(sparse=True)  # TODO: Check sparse status
-
-    # Get metadata and annotation data
-    metadata = annotations.get_annotations()
-    mask = annotations.get_annotation_mask()
-
-    # Get raw images associated with each annotated slice
-    img_idx = list(metadata.keys())
-    img = data[project_name]
-    raw = []
-    for idx in img_idx:
-        ar = img[int(idx)]
-        raw.append(ar)
-    try:
-        raw = np.stack(raw)
-        mask = np.stack(mask)
-    except ValueError:
-        return "No annotations to process."
-
-    return
-
-
 load_dotenv()
 
 DATA_TILED_URI = os.getenv("DATA_TILED_URI")
@@ -153,3 +90,66 @@ def get_annotated_segmented_results(json_file_path="exported_annotation_data.jso
                 json_data["data"] = json.loads(json_data["data"])
                 annotated_slices = list(json_data["data"][0]["annotations"].keys())
     return annotated_slices
+
+
+def DEV_load_exported_json_data(file_path, USER_NAME, PROJECT_NAME):
+    """
+    This function is used to load the exported json, which was saved in a local file.
+    User name is used to filter the data by user.
+    Project name is used to filter the data by project.
+    It is sorted by timestamp with the latest timestamp first.
+
+    TODO: this function will be replaced with a database query in the future.
+    """
+    DATA_JSON = []
+
+    with open(file_path, "r") as f:
+        for line in f:
+            if line.strip():
+                json_data = json.loads(line)
+                json_data["data"] = json.loads(json_data["data"])
+                DATA_JSON.append(json_data)
+
+    data = [
+        data
+        for data in DATA_JSON
+        if data["user"] == USER_NAME and data["source"] == PROJECT_NAME
+    ]
+    if data:
+        data = sorted(data, key=lambda x: x["time"], reverse=True)
+
+    return data
+
+
+def DEV_filter_json_data_by_timestamp(data, timestamp):
+    return [data for data in data if data["time"] == timestamp]
+
+
+def save_annotations_data(global_store, all_annotations, project_name):
+    """
+    Transforms annotations data to a pixelated mask and outputs to
+    the Tiled server
+
+    # TODO: Save data to Tiled server after transformation
+    """
+    annotations = Annotations(all_annotations, global_store)
+    annotations.create_annotation_mask(sparse=True)  # TODO: Check sparse status
+
+    # Get metadata and annotation data
+    metadata = annotations.get_annotations()
+    mask = annotations.get_annotation_mask()
+
+    # Get raw images associated with each annotated slice
+    img_idx = list(metadata.keys())
+    img = data[project_name]
+    raw = []
+    for idx in img_idx:
+        ar = img[int(idx)]
+        raw.append(ar)
+    try:
+        raw = np.stack(raw)
+        mask = np.stack(mask)
+    except ValueError:
+        return "No annotations to process."
+
+    return
