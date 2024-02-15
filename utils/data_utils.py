@@ -51,7 +51,7 @@ def get_data_sequence_by_name(project_name):
             # nexus-file following the NXtomoproc definition
             # TODO: This assumes that a validator has checked the file on ingestion
             # Otherwise we should first test if the path holds data
-            return project_client["/NXtomoproc/entry/data/data"]
+            return project_client["entry/data/data"]
         # Enter the container and return first element
         # if it represents an array
         if len(list(project_client)) == 1:
