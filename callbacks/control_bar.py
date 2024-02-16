@@ -26,11 +26,7 @@ from dash_iconify import DashIconify
 from components.annotation_class import annotation_class_item
 from constants import ANNOT_ICONS, ANNOT_NOTIFICATION_MSGS, KEY_MODES, KEYBINDS
 from utils.annotations import Annotations
-from utils.data_utils import (
-    DEV_filter_json_data_by_timestamp,
-    DEV_load_exported_json_data,
-    get_data_project_names,
-)
+from utils.data_utils import data_tools
 from utils.plot_utils import generate_notification, generate_notification_bg_icon_col
 
 # TODO - temporary local file path and user for annotation saving and exporting
@@ -761,7 +757,7 @@ def populate_load_annotations_dropdown_menu_options(modal_opened, image_src):
     if not modal_opened:
         raise PreventUpdate
 
-    data = DEV_load_exported_json_data(EXPORT_FILE_PATH, USER_NAME, image_src)
+    data = data_tools.DEV_load_exported_json_data(EXPORT_FILE_PATH, USER_NAME, image_src)
     if not data:
         return "No annotations found for the selected data source."
 
@@ -805,8 +801,8 @@ def load_and_apply_selected_annotations(selected_annotation, image_src, img_idx)
     )["index"]
 
     # TODO : when quering from the server, load (data) for user, source, time
-    data = DEV_load_exported_json_data(EXPORT_FILE_PATH, USER_NAME, image_src)
-    data = DEV_filter_json_data_by_timestamp(data, str(selected_annotation_timestamp))
+    data = data_tools.DEV_load_exported_json_data(EXPORT_FILE_PATH, USER_NAME, image_src)
+    data = data_tools.DEV_filter_json_data_by_timestamp(data, str(selected_annotation_timestamp))
     data = data[0]["data"]
 
     annotations = []
@@ -839,14 +835,20 @@ def open_controls_drawer(n_clicks, is_opened):
     Output("show-result-overlay-toggle", "checked"),
     Output("show-result-overlay-toggle", "disabled"),
     Output("seg-result-opacity-slider", "disabled"),
+    Output("project-name-src", "data"),
     Input("project-name-src", "value"),
+    Input("refresh-tiled", "n_clicks"),
     Input("show-result-overlay-toggle", "checked"),
     State("result-selector", "disabled"),
     State("seg-result-opacity-slider", "disabled"),
 )
 def populate_classification_results(
-    image_src, toggle, dropdown_enabled, slider_enabled
+    image_src, refresh_tiled, toggle, dropdown_enabled, slider_enabled
 ):
+    if refresh_tiled:
+        data_tools.refresh_data()
+    
+    data_options = [ item for item in data_tools.get_data_project_names() if "seg" not in item] 
     results = []
     value = None
     checked = False
@@ -863,7 +865,7 @@ def populate_classification_results(
     else:
         results = [
             item
-            for item in get_data_project_names()
+            for item in data_tools.get_data_project_names()
             if ("seg" in item and image_src in item)
         ]
         if results:
@@ -873,7 +875,7 @@ def populate_classification_results(
             disabled_toggle = False
             disabled_slider = False
 
-    return results, value, disabled_dropdown, checked, disabled_toggle, disabled_slider
+    return results, value, disabled_dropdown, checked, disabled_toggle, disabled_slider, data_options
 
 
 @callback(

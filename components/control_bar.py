@@ -6,7 +6,7 @@ from dash_iconify import DashIconify
 
 from components.annotation_class import annotation_class_item
 from constants import ANNOT_ICONS, KEYBINDS
-from utils import data_utils
+from utils.data_utils import data_tools
 
 
 def _tooltip(text, children):
@@ -62,7 +62,7 @@ def layout():
     Returns the layout for the control panel in the app UI
     """
     DATA_OPTIONS = [
-        item for item in data_utils.get_data_project_names() if "seg" not in item
+        item for item in data_tools.get_data_project_names() if "seg" not in item
     ]
     return drawer_section(
         dmc.Stack(
@@ -76,16 +76,37 @@ def layout():
                             "majesticons:data-line",
                             "data-select",
                             id="data-selection-controls",
-                            children=[
+                            children=[ 
                                 dmc.Space(h=5),
                                 _control_item(
                                     "Dataset",
                                     "image-selector",
-                                    dmc.Select(
-                                        id="project-name-src",
-                                        data=DATA_OPTIONS,
-                                        value=DATA_OPTIONS[0] if DATA_OPTIONS else None,
-                                        placeholder="Select an image to view...",
+                                    dmc.Grid(
+                                        [
+                                            dmc.Select(
+                                                id="project-name-src",
+                                                data=DATA_OPTIONS,
+                                                value=DATA_OPTIONS[0] if DATA_OPTIONS else None,
+                                                placeholder="Select an image to view...",
+                                            ),
+                                            dmc.ActionIcon(
+                                                _tooltip(
+                                                    "Refresh dataset",
+                                                    children=[
+                                                        DashIconify(
+                                                            icon="mdi:refresh-circle",
+                                                            width=20,
+                                                        ),
+                                                    ],
+                                                ),
+                                                size="xs",
+                                                variant="subtle",
+                                                id="refresh-tiled",
+                                                n_clicks=0,
+                                                style={"margin": "auto"},
+                                            ),
+                                        ],
+                                        style={"margin": "0px"},
                                     ),
                                 ),
                                 dmc.Space(h=25),
