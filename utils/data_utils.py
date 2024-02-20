@@ -17,7 +17,7 @@ DATA_TILED_URI = os.getenv("DATA_TILED_URI")
 DATA_TILED_API_KEY = os.getenv("DATA_TILED_API_KEY")
 
 
-class DataUtils:
+class TiledDataLoader:
     def __init__(self, data_tiled_uri=DATA_TILED_URI, data_tiled_api_key=DATA_TILED_API_KEY):
         self.data_tiled_uri = data_tiled_uri
         self.data_tiled_api_key = data_tiled_api_key
@@ -157,5 +157,5 @@ class DataUtils:
         return
 
 
-data_tools = DataUtils()
+tiled_dataset = TiledDataLoader()
 

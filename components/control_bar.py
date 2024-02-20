@@ -6,7 +6,7 @@ from dash_iconify import DashIconify
 
 from components.annotation_class import annotation_class_item
 from constants import ANNOT_ICONS, KEYBINDS
-from utils.data_utils import data_tools
+from utils.data_utils import tiled_dataset
 
 
 def _tooltip(text, children):
@@ -62,7 +62,7 @@ def layout():
     Returns the layout for the control panel in the app UI
     """
     DATA_OPTIONS = [
-        item for item in data_tools.get_data_project_names() if "seg" not in item
+        item for item in tiled_dataset.get_data_project_names() if "seg" not in item
     ]
     return drawer_section(
         dmc.Stack(
