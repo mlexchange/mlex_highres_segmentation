@@ -58,7 +58,8 @@ def update_current_class_selection(
     edit_modal_opened,
 ):
     """
-    This callback is responsible for updating the current class selection when a class is clicked on, or when a keybind is pressed.
+    This callback is responsible for updating the current class selection when a class is clicked on,
+    or when a keybind is pressed.
     """
     current_selection = None
     label_name = None
@@ -757,7 +758,9 @@ def populate_load_annotations_dropdown_menu_options(modal_opened, image_src):
     if not modal_opened:
         raise PreventUpdate
 
-    data = tiled_dataset.DEV_load_exported_json_data(EXPORT_FILE_PATH, USER_NAME, image_src)
+    data = tiled_dataset.DEV_load_exported_json_data(
+        EXPORT_FILE_PATH, USER_NAME, image_src
+    )
     if not data:
         return "No annotations found for the selected data source."
 
@@ -801,8 +804,12 @@ def load_and_apply_selected_annotations(selected_annotation, image_src, img_idx)
     )["index"]
 
     # TODO : when quering from the server, load (data) for user, source, time
-    data = tiled_dataset.DEV_load_exported_json_data(EXPORT_FILE_PATH, USER_NAME, image_src)
-    data = tiled_dataset.DEV_filter_json_data_by_timestamp(data, str(selected_annotation_timestamp))
+    data = tiled_dataset.DEV_load_exported_json_data(
+        EXPORT_FILE_PATH, USER_NAME, image_src
+    )
+    data = tiled_dataset.DEV_filter_json_data_by_timestamp(
+        data, str(selected_annotation_timestamp)
+    )
     data = data[0]["data"]
 
     annotations = []
@@ -847,8 +854,10 @@ def populate_classification_results(
 ):
     if refresh_tiled:
         tiled_dataset.refresh_data()
-    
-    data_options = [ item for item in tiled_dataset.get_data_project_names() if "seg" not in item] 
+
+    data_options = [
+        item for item in tiled_dataset.get_data_project_names() if "seg" not in item
+    ]
     results = []
     value = None
     checked = False
@@ -875,7 +884,15 @@ def populate_classification_results(
             disabled_toggle = False
             disabled_slider = False
 
-    return results, value, disabled_dropdown, checked, disabled_toggle, disabled_slider, data_options
+    return (
+        results,
+        value,
+        disabled_dropdown,
+        checked,
+        disabled_toggle,
+        disabled_slider,
+        data_options,
+    )
 
 
 @callback(

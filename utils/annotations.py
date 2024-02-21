@@ -1,5 +1,4 @@
 import io
-import math
 import zipfile
 
 import numpy as np

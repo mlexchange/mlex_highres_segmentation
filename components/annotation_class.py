@@ -176,7 +176,8 @@ def annotation_class_item(class_color, class_label, existing_ids, data=None):
                 children=[
                     dmc.Center(
                         dmc.Text(
-                            "This action will permanently clear all annotations from this class. Are you sure you want to proceed?",
+                            "This action will permanently clear all annotations from this class."
+                            + " Are you sure you want to proceed?",
                         )
                     ),
                     dmc.Space(h=10),

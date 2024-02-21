@@ -76,7 +76,7 @@ def layout():
                             "majesticons:data-line",
                             "data-select",
                             id="data-selection-controls",
-                            children=[ 
+                            children=[
                                 dmc.Space(h=5),
                                 _control_item(
                                     "Dataset",
@@ -86,7 +86,11 @@ def layout():
                                             dmc.Select(
                                                 id="project-name-src",
                                                 data=DATA_OPTIONS,
-                                                value=DATA_OPTIONS[0] if DATA_OPTIONS else None,
+                                                value=(
+                                                    DATA_OPTIONS[0]
+                                                    if DATA_OPTIONS
+                                                    else None
+                                                ),
                                                 placeholder="Select an image to view...",
                                             ),
                                             dmc.ActionIcon(
@@ -401,7 +405,8 @@ def layout():
                                     id="delete-all-warning",
                                     children=[
                                         dmc.Text(
-                                            "This action will permanently clear all annotations on this image frame. Are you sure you want to proceed?"
+                                            "This action will permanently clear all annotations on this image frame."
+                                            + " Are you sure you want to proceed?"
                                         ),
                                         dmc.Space(h=20),
                                         dmc.Group(

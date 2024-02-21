@@ -3,13 +3,11 @@ import time
 import uuid
 
 import dash_mantine_components as dmc
-import numpy as np
 import requests
 from dash import ALL, Input, Output, State, callback, no_update
 from dash.exceptions import PreventUpdate
 
 from utils.data_utils import tiled_dataset
-from utils.annotations import Annotations
 
 MODE = os.getenv("MODE", "")
 

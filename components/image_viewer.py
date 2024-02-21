@@ -1,4 +1,3 @@
-import dash_mantine_components as dmc
 from dash import dcc, html
 
 from utils.plot_utils import blank_fig
