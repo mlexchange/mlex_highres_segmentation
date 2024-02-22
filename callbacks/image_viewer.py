@@ -1,7 +1,4 @@
-import random
-
 import dash
-import dash_mantine_components as dmc
 import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
@@ -17,8 +14,6 @@ from dash import (
     ctx,
 )
 from dash.exceptions import PreventUpdate
-from dash_iconify import DashIconify
-from plotly.subplots import make_subplots
 
 from constants import ANNOT_ICONS, ANNOT_NOTIFICATION_MSGS, KEYBINDS
 from utils.data_utils import tiled_dataset
@@ -123,7 +118,9 @@ def render_image(
             ):
                 return [dash.no_update] * 7 + ["hidden"]
             if str(image_idx + 1) in tiled_dataset.get_annotated_segmented_results():
-                result = tiled_dataset.get_data_sequence_by_name(seg_result_selection)[image_idx]
+                result = tiled_dataset.get_data_sequence_by_name(seg_result_selection)[
+                    image_idx
+                ]
             else:
                 result = None
     else:
@@ -298,7 +295,8 @@ def update_viewfinder(relayout_data, annotation_store):
     contained within the figure layout, so that if the user zooms out/pans away,
     they will still be able to see the viewfinder box.
     """
-    # Callback is triggered when the image is first loaded, but the annotation_store is not yet populated so we need to prevent the update
+    # Callback is triggered when the image is first loaded, but the annotation_store is not yet populated
+    # so we need to prevent the update
     if not annotation_store["active_img_shape"]:
         raise PreventUpdate
     patched_fig = Patch()
@@ -486,7 +484,9 @@ def update_slider_values(project_name, annotation_store):
     "update_selection_and_image" callback which will update image and slider selection component.
     """
     # Retrieve data shape if project_name is valid and points to a 3d array
-    data_shape = tiled_dataset.get_data_shape_by_name(project_name) if project_name else None
+    data_shape = (
+        tiled_dataset.get_data_shape_by_name(project_name) if project_name else None
+    )
     disable_slider = data_shape is None
     if not disable_slider:
         # TODO: Assuming that all slices have the same image shape

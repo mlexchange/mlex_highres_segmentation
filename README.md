@@ -1,9 +1,9 @@
 # Dash App for Segmentation of High-Resolution Images [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black) [![Imports: isort](https://img.shields.io/badge/%20imports-isort-%231674b1)](https://pycqa.github.io/isort/)
 
 
-This application is built using Plotly's [Dash](https://dash.plotly.com/) framework and provides a web-based interface for visualizing and annotating high resolution images output from [ALS](https://als.lbl.gov/) beamlines. 
+This application is built using Plotly's [Dash](https://dash.plotly.com/) framework and provides a web-based interface for visualizing and annotating high resolution images output from [ALS](https://als.lbl.gov/) beamlines.
 
-Image data is accessed via a [Tiled](https://github.com/bluesky/tiled) client, which provides chunkwise access to multidimensional TIFF sequences. 
+Image data is accessed via a [Tiled](https://github.com/bluesky/tiled) client, which provides chunkwise access to multidimensional TIFF sequences.
 
 ![plot](assets/preview.png)
 
@@ -17,7 +17,7 @@ Image data is accessed via a [Tiled](https://github.com/bluesky/tiled) client, w
 pip install -r requirements.txt
 ```
 
-and 
+and
 
 ```
 pip install -r requirements-dev.txt
@@ -32,7 +32,7 @@ DASH_DEPLOYMENT_LOC='Local'
 MODE='dev'
 ```
 
-3. Start a local server: 
+3. Start a local server:
 
 ```
 python app.py
@@ -43,7 +43,7 @@ python app.py
 For local testing of just the annotation functionality, developers may also choose to set up a local Tiled server with access to minimal datasets (eg. in the case that the remote server is down).
 
 To download some sample data and serve it with a local Tiled serve
-1. Additionally install the Tiled server components with `pip install "tiled[server]"`.
+1. Additionally install the Tiled server components with `pip install "tiled[server]==0.1.0a114"`.
 2. Set the input Tiled URI to localhost, e.g. set `DATA_TILED_URI`, to `http://localhost:8000/` within the `.env` file (or within your environmental variables), and use the result of a key generator (e.g. with `python3 -c "import secrets; print(secrets.token_hex(32))"`) for the key entry `DATA_TILED_API_KEY`
 2. Run the script `python3 utils/download_sample_data.py`. This will create a `data/` directory and download 2 sample projects with 2 images each.
 3. Run `/tiled_serve_dir.sh`.

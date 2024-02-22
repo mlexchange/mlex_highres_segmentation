@@ -6,8 +6,6 @@ import plotly.graph_objects as go
 from dash_iconify import DashIconify
 from skimage.transform import resize
 
-from constants import ANNOT_ICONS
-
 
 def blank_fig():
     """
@@ -32,7 +30,8 @@ def downscale_view(
     """
     This function takes pan+zoom location in the original image and downscales it relatively to viewfinder's lower resolution.
     params:
-        x0_original, y0_original, x1_original, y1_original: coordinates of the pan+zoom box in the original image - obtained from relayoutData
+        x0_original, y0_original, x1_original, y1_original: coordinates of the pan+zoom box in the original image
+            - obtained from relayoutData
         active_image_size: size of the original image (height, width) in pixels
         downscaled_image_size: size of the viewfinder (height, width) in pixels
     returns:

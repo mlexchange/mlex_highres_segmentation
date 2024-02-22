@@ -1,7 +1,7 @@
-black==22.10.0
-flake8==6.0.0
-tiled[all]
+black==24.2.0
+flake8==7.0.0
 pytest
 pytest-mock
-isort==5.12.0
+isort==5.13.2
 greenlet==2.0.2
+pre-commit==3.6.2

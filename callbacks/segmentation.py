@@ -3,13 +3,11 @@ import time
 import uuid
 
 import dash_mantine_components as dmc
-import numpy as np
 import requests
 from dash import ALL, Input, Output, State, callback, no_update
 from dash.exceptions import PreventUpdate
 
 from utils.data_utils import tiled_dataset
-from utils.annotations import Annotations
 
 MODE = os.getenv("MODE", "")
 
@@ -24,7 +22,7 @@ DEMO_WORKFLOW = {
             "job_kwargs": {
                 "uri": "mlexchange1/random-forest-dc:1.1",
                 "type": "docker",
-                "cmd": 'python random_forest.py data/seg-results/spiral/image-train data/seg-results-test/spiral/feature data/seg-results/spiral/mask data/seg-results-test/spiral/model \'{"n_estimators": 30, "oob_score": true, "max_depth": 8}\'',
+                "cmd": 'python random_forest.py data/seg-results/spiral/image-train data/seg-results-test/spiral/feature data/seg-results/spiral/mask data/seg-results-test/spiral/model \'{"n_estimators": 30, "oob_score": true, "max_depth": 8}\'',  # noqa: E501
                 "kwargs": {
                     "job_type": "train",
                     "experiment_id": "123",
@@ -41,7 +39,7 @@ DEMO_WORKFLOW = {
             "job_kwargs": {
                 "uri": "mlexchange1/random-forest-dc:1.1",
                 "type": "docker",
-                "cmd": "python segment.py data/data/20221222_085501_looking_from_above_spiralUP_CounterClockwise_endPointAtDoor_0-1000 data/seg-results-test/spiral/model/random-forest.model data/seg-results-test/spiral/output '{\"show_progress\": 1}'",
+                "cmd": "python segment.py data/data/20221222_085501_looking_from_above_spiralUP_CounterClockwise_endPointAtDoor_0-1000 data/seg-results-test/spiral/model/random-forest.model data/seg-results-test/spiral/output '{\"show_progress\": 1}'",  # noqa: E501
                 "kwargs": {
                     "job_type": "train",
                     "experiment_id": "124",

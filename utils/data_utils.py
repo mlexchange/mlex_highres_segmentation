@@ -10,7 +10,6 @@ from tiled.client.container import Container
 
 from utils.annotations import Annotations
 
-
 load_dotenv()
 
 DATA_TILED_URI = os.getenv("DATA_TILED_URI")
@@ -18,15 +17,23 @@ DATA_TILED_API_KEY = os.getenv("DATA_TILED_API_KEY")
 
 
 class TiledDataLoader:
-    def __init__(self, data_tiled_uri=DATA_TILED_URI, data_tiled_api_key=DATA_TILED_API_KEY):
+    def __init__(
+        self, data_tiled_uri=DATA_TILED_URI, data_tiled_api_key=DATA_TILED_API_KEY
+    ):
         self.data_tiled_uri = data_tiled_uri
         self.data_tiled_api_key = data_tiled_api_key
-        self.data = from_uri(self.data_tiled_uri, api_key=self.data_tiled_api_key, timeout=httpx.Timeout(30.0))
-    
-    
-    def refresh_data(self):
-        self.data = from_uri(self.data_tiled_uri, api_key=self.data_tiled_api_key, timeout=httpx.Timeout(30.0))
+        self.data = from_uri(
+            self.data_tiled_uri,
+            api_key=self.data_tiled_api_key,
+            timeout=httpx.Timeout(30.0),
+        )
 
+    def refresh_data(self):
+        self.data = from_uri(
+            self.data_tiled_uri,
+            api_key=self.data_tiled_api_key,
+            timeout=httpx.Timeout(30.0),
+        )
 
     def get_data_project_names(self):
         """
@@ -39,7 +46,6 @@ class TiledDataLoader:
             if isinstance(self.data[project], (Container, ArrayClient))
         ]
         return project_names
-
 
     def get_data_sequence_by_name(self, project_name):
         """
@@ -69,7 +75,6 @@ class TiledDataLoader:
                     return sequence_client
         return None
 
-
     def get_data_shape_by_name(self, project_name):
         """
         Retrieve shape of the data
@@ -79,7 +84,6 @@ class TiledDataLoader:
             return project_container.shape
         return None
 
-    
     @staticmethod
     def get_annotated_segmented_results(json_file_path="exported_annotation_data.json"):
         annotated_slices = []
@@ -91,7 +95,6 @@ class TiledDataLoader:
                     annotated_slices = list(json_data["data"][0]["annotations"].keys())
         return annotated_slices
 
-    
     @staticmethod
     def DEV_load_exported_json_data(file_path, USER_NAME, PROJECT_NAME):
         """
@@ -121,11 +124,9 @@ class TiledDataLoader:
 
         return data
 
-    
     @staticmethod
     def DEV_filter_json_data_by_timestamp(data, timestamp):
         return [data for data in data if data["time"] == timestamp]
-
 
     def save_annotations_data(self, global_store, all_annotations, project_name):
         """
@@ -158,4 +159,3 @@ class TiledDataLoader:
 
 
 tiled_dataset = TiledDataLoader()
-
