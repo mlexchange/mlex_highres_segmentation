@@ -43,7 +43,7 @@ python app.py
 For local testing of just the annotation functionality, developers may also choose to set up a local Tiled server with access to minimal datasets (eg. in the case that the remote server is down).
 
 To download some sample data and serve it with a local Tiled serve
-1. Additionally install the Tiled server components with `pip install "tiled[server]"`.
+1. Additionally install the Tiled server components with `pip install "tiled[server]==0.1.0a114"`.
 2. Set the input Tiled URI to localhost, e.g. set `DATA_TILED_URI`, to `http://localhost:8000/` within the `.env` file (or within your environmental variables), and use the result of a key generator (e.g. with `python3 -c "import secrets; print(secrets.token_hex(32))"`) for the key entry `DATA_TILED_API_KEY`
 2. Run the script `python3 utils/download_sample_data.py`. This will create a `data/` directory and download 2 sample projects with 2 images each.
 3. Run `/tiled_serve_dir.sh`.
