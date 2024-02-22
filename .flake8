@@ -1,5 +1,5 @@
 [flake8]
-# 127 is width of the Github code viewer, 
+# 127 is width of the Github code viewer,
 # black default is 88 so this will only warn about comments >127
 max-line-length = 127
 # Ignore errors due to incompatibility with black

@@ -1,9 +1,9 @@
 # Dash App for Segmentation of High-Resolution Images [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black) [![Imports: isort](https://img.shields.io/badge/%20imports-isort-%231674b1)](https://pycqa.github.io/isort/)
 
 
-This application is built using Plotly's [Dash](https://dash.plotly.com/) framework and provides a web-based interface for visualizing and annotating high resolution images output from [ALS](https://als.lbl.gov/) beamlines. 
+This application is built using Plotly's [Dash](https://dash.plotly.com/) framework and provides a web-based interface for visualizing and annotating high resolution images output from [ALS](https://als.lbl.gov/) beamlines.
 
-Image data is accessed via a [Tiled](https://github.com/bluesky/tiled) client, which provides chunkwise access to multidimensional TIFF sequences. 
+Image data is accessed via a [Tiled](https://github.com/bluesky/tiled) client, which provides chunkwise access to multidimensional TIFF sequences.
 
 ![plot](assets/preview.png)
 
@@ -17,7 +17,7 @@ Image data is accessed via a [Tiled](https://github.com/bluesky/tiled) client, w
 pip install -r requirements.txt
 ```
 
-and 
+and
 
 ```
 pip install -r requirements-dev.txt
@@ -32,7 +32,7 @@ DASH_DEPLOYMENT_LOC='Local'
 MODE='dev'
 ```
 
-3. Start a local server: 
+3. Start a local server:
 
 ```
 python app.py
