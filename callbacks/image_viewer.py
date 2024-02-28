@@ -21,6 +21,7 @@ from utils.plot_utils import (
     create_viewfinder,
     downscale_view,
     generate_notification,
+    generate_segmentation_colormap,
     get_view_finder_max_min,
     resize_canvas,
 )
@@ -127,20 +128,14 @@ def render_image(
         tf = np.zeros((500, 500))
     fig = px.imshow(tf, binary_string=True)
     if toggle_seg_result and result is not None:
-        unique_segmentation_values = np.unique(result)
-        normalized_range = np.linspace(
-            0, 1, len(unique_segmentation_values)
-        )  # heatmap requires a normalized range
-        color_list = (
-            px.colors.qualitative.Plotly
-        )  # TODO placeholder - replace with user defined classess
-        colorscale = [
-            [normalized_range[i], color_list[i % len(color_list)]]
-            for i in range(len(unique_segmentation_values))
-        ]
+        colorscale, max_class_id = generate_segmentation_colormap(
+            all_annotation_class_store
+        )
         fig.add_trace(
             go.Heatmap(
                 z=result,
+                zmin=-0.5,
+                zmax=max_class_id + 0.5,
                 colorscale=colorscale,
                 showscale=False,
             )

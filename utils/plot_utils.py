@@ -1,6 +1,7 @@
 import random
 
 import dash_mantine_components as dmc
+import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 from dash_iconify import DashIconify
@@ -168,6 +169,37 @@ def resize_canvas(h, w, H, W, figure):
 
     image_center_coor = {"y1": y1, "y0": y0, "x0": x0, "x1": x1}
     return figure, image_center_coor
+
+
+def generate_segmentation_colormap(all_annotations_data):
+    """
+    Generates a discrete colormap for the segmentation overlay
+    based on the color information per class.
+
+    The discrete colormap maps values from 0 to 1 to colors,
+    but is meant to be applied to images with class ids as values,
+    with these varying from 0 to the number of classes - 1.
+    To account for numerical inaccuracies, it is best to center the plot range
+    around the class ids, by setting cmin=-0.5 and cmax=max_class_id+0.5.
+    """
+    max_class_id = max(
+        [annotation_class["class_id"] for annotation_class in all_annotations_data]
+    )
+    # heatmap requires a normalized range from 0 to 1
+    # We need to specify color for at least the range limits (0 and 1)
+    # as well for every additional class
+    # due to using zero-based class ids, we need to add 2 to the max class id
+    normalized_range = np.linspace(0, 1, max_class_id + 2)
+    color_list = [
+        annotation_class["color"] for annotation_class in all_annotations_data
+    ]
+    colorscale = [
+        [normalized_range[i + j], color_list[i % len(color_list)]]
+        for i in range(0, normalized_range.size - 1)
+        for j in range(2)
+    ]
+
+    return colorscale, max_class_id
 
 
 def generate_notification(title, color, icon, message=""):
