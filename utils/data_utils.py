@@ -14,6 +14,10 @@ load_dotenv()
 
 DATA_TILED_URI = os.getenv("DATA_TILED_URI")
 DATA_TILED_API_KEY = os.getenv("DATA_TILED_API_KEY")
+MASK_TILED_URI = os.getenv("MASK_TILED_URI")
+MASK_TILED_API_KEY = os.getenv("MASK_TILED_API_KEY")
+SEG_TILED_URI = os.getenv("SEG_TILED_URI")
+SEG_TILED_API_KEY = os.getenv("SEG_TILED_API_KEY")
 
 
 class TiledDataLoader:
@@ -84,6 +88,23 @@ class TiledDataLoader:
             return project_container.shape
         return None
 
+
+class TiledMaskHandler:
+    """
+    This class is used to handle the masks that are generated from the annotations.
+    """
+
+    def __init__(
+        self, mask_tiled_uri=MASK_TILED_URI, mask_tiled_api_key=MASK_TILED_API_KEY
+    ):
+        self.mask_tiled_uri = mask_tiled_uri
+        self.mask_tiled_api_key = mask_tiled_api_key
+        self.mask_client = from_uri(
+            self.mask_tiled_uri,
+            api_key=self.mask_tiled_api_key,
+            timeout=httpx.Timeout(30.0),
+        )
+
     @staticmethod
     def get_annotated_segmented_results(json_file_path="exported_annotation_data.json"):
         annotated_slices = []
@@ -128,7 +149,8 @@ class TiledDataLoader:
     def DEV_filter_json_data_by_timestamp(data, timestamp):
         return [data for data in data if data["time"] == timestamp]
 
-    def save_annotations_data(self, global_store, all_annotations, project_name):
+    @staticmethod
+    def save_annotations_data(global_store, all_annotations, project_name):
         """
         Transforms annotations data to a pixelated mask and outputs to
         the Tiled server
@@ -144,13 +166,9 @@ class TiledDataLoader:
 
         # Get raw images associated with each annotated slice
         img_idx = list(metadata.keys())
-        img = self.data[project_name]
-        raw = []
-        for idx in img_idx:
-            ar = img[int(idx)]
-            raw.append(ar)
+        metadata["mask_idx"] = img_idx
+        metadata["project_name"] = project_name
         try:
-            raw = np.stack(raw)
             mask = np.stack(mask)
         except ValueError:
             return "No annotations to process."
@@ -158,4 +176,14 @@ class TiledDataLoader:
         return
 
 
-tiled_dataset = TiledDataLoader()
+tiled_datasets = TiledDataLoader(
+    data_tiled_uri=DATA_TILED_URI, data_tiled_api_key=DATA_TILED_API_KEY
+)
+
+tiled_masks = TiledMaskHandler(
+    mask_tiled_uri=MASK_TILED_URI, mask_tiled_api_key=MASK_TILED_API_KEY
+)
+
+tiled_results = TiledDataLoader(
+    data_tiled_uri=SEG_TILED_URI, data_tiled_api_key=SEG_TILED_API_KEY
+)

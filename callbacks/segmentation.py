@@ -7,7 +7,7 @@ import requests
 from dash import ALL, Input, Output, State, callback, no_update
 from dash.exceptions import PreventUpdate
 
-from utils.data_utils import tiled_dataset
+from utils.data_utils import tiled_masks
 
 MODE = os.getenv("MODE", "")
 
@@ -84,7 +84,7 @@ def run_job(n_clicks, global_store, all_annotations, project_name):
             )
         else:
 
-            tiled_dataset.save_annotations_data(
+            tiled_masks.save_annotations_data(
                 global_store, all_annotations, project_name
             )
             job_submitted = requests.post(

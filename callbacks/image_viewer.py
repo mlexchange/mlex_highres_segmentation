@@ -16,7 +16,7 @@ from dash import (
 from dash.exceptions import PreventUpdate
 
 from constants import ANNOT_ICONS, ANNOT_NOTIFICATION_MSGS, KEYBINDS
-from utils.data_utils import tiled_dataset
+from utils.data_utils import tiled_datasets, tiled_masks, tiled_results
 from utils.plot_utils import (
     create_viewfinder,
     downscale_view,
@@ -108,7 +108,7 @@ def render_image(
 
     if image_idx:
         image_idx -= 1  # slider starts at 1, so subtract 1 to get the correct index
-        tf = tiled_dataset.get_data_sequence_by_name(project_name)[image_idx]
+        tf = tiled_datasets.get_data_sequence_by_name(project_name)[image_idx]
         if toggle_seg_result:
             # if toggle is true and overlay exists already (2 images in data) this will
             # be handled in hide_show_segmentation_overlay callback
@@ -117,8 +117,8 @@ def render_image(
                 and ctx.triggered_id == "show-result-overlay-toggle"
             ):
                 return [dash.no_update] * 7 + ["hidden"]
-            if str(image_idx + 1) in tiled_dataset.get_annotated_segmented_results():
-                result = tiled_dataset.get_data_sequence_by_name(seg_result_selection)[
+            if str(image_idx + 1) in tiled_masks.get_annotated_segmented_results():
+                result = tiled_results.get_data_sequence_by_name(seg_result_selection)[
                     image_idx
                 ]
             else:
@@ -485,7 +485,7 @@ def update_slider_values(project_name, annotation_store):
     """
     # Retrieve data shape if project_name is valid and points to a 3d array
     data_shape = (
-        tiled_dataset.get_data_shape_by_name(project_name) if project_name else None
+        tiled_datasets.get_data_shape_by_name(project_name) if project_name else None
     )
     disable_slider = data_shape is None
     if not disable_slider:

@@ -26,7 +26,7 @@ from dash_iconify import DashIconify
 from components.annotation_class import annotation_class_item
 from constants import ANNOT_ICONS, ANNOT_NOTIFICATION_MSGS, KEY_MODES, KEYBINDS
 from utils.annotations import Annotations
-from utils.data_utils import tiled_dataset
+from utils.data_utils import tiled_datasets, tiled_masks, tiled_results
 from utils.plot_utils import generate_notification, generate_notification_bg_icon_col
 
 # TODO - temporary local file path and user for annotation saving and exporting
@@ -758,7 +758,7 @@ def populate_load_annotations_dropdown_menu_options(modal_opened, image_src):
     if not modal_opened:
         raise PreventUpdate
 
-    data = tiled_dataset.DEV_load_exported_json_data(
+    data = tiled_masks.DEV_load_exported_json_data(
         EXPORT_FILE_PATH, USER_NAME, image_src
     )
     if not data:
@@ -804,10 +804,10 @@ def load_and_apply_selected_annotations(selected_annotation, image_src, img_idx)
     )["index"]
 
     # TODO : when quering from the server, load (data) for user, source, time
-    data = tiled_dataset.DEV_load_exported_json_data(
+    data = tiled_masks.DEV_load_exported_json_data(
         EXPORT_FILE_PATH, USER_NAME, image_src
     )
-    data = tiled_dataset.DEV_filter_json_data_by_timestamp(
+    data = tiled_masks.DEV_filter_json_data_by_timestamp(
         data, str(selected_annotation_timestamp)
     )
     data = data[0]["data"]
@@ -853,10 +853,10 @@ def populate_classification_results(
     image_src, refresh_tiled, toggle, dropdown_enabled, slider_enabled
 ):
     if refresh_tiled:
-        tiled_dataset.refresh_data_client()
+        tiled_datasets.refresh_data_client()
 
     data_options = [
-        item for item in tiled_dataset.get_data_project_names() if "seg" not in item
+        item for item in tiled_datasets.get_data_project_names() if "seg" not in item
     ]
     results = []
     value = None
@@ -872,9 +872,10 @@ def populate_classification_results(
         disabled_toggle = False
         disabled_slider = slider_enabled
     else:
+        # TODO: Match by mask uid instead of image_src
         results = [
             item
-            for item in tiled_dataset.get_data_project_names()
+            for item in tiled_results.get_data_project_names()
             if ("seg" in item and image_src in item)
         ]
         if results:
