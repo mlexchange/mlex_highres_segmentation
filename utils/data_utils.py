@@ -22,14 +22,14 @@ class TiledDataLoader:
     ):
         self.data_tiled_uri = data_tiled_uri
         self.data_tiled_api_key = data_tiled_api_key
-        self.data = from_uri(
+        self.data_client = from_uri(
             self.data_tiled_uri,
             api_key=self.data_tiled_api_key,
             timeout=httpx.Timeout(30.0),
         )
 
-    def refresh_data(self):
-        self.data = from_uri(
+    def refresh_data_client(self):
+        self.data_client = from_uri(
             self.data_tiled_uri,
             api_key=self.data_tiled_api_key,
             timeout=httpx.Timeout(30.0),
@@ -42,8 +42,8 @@ class TiledDataLoader:
         """
         project_names = [
             project
-            for project in list(self.data)
-            if isinstance(self.data[project], (Container, ArrayClient))
+            for project in list(self.data_client)
+            if isinstance(self.data_client[project], (Container, ArrayClient))
         ]
         return project_names
 
@@ -53,7 +53,7 @@ class TiledDataLoader:
         but can also be additionally encapsulated in a folder, multiple container or in a .nxs file.
         We make use of specs to figure out the path to the 3d data.
         """
-        project_client = self.data[project_name]
+        project_client = self.data_client[project_name]
         # If the project directly points to an array, directly return it
         if isinstance(project_client, ArrayClient):
             return project_client

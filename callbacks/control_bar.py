@@ -853,7 +853,7 @@ def populate_classification_results(
     image_src, refresh_tiled, toggle, dropdown_enabled, slider_enabled
 ):
     if refresh_tiled:
-        tiled_dataset.refresh_data()
+        tiled_dataset.refresh_data_client()
 
     data_options = [
         item for item in tiled_dataset.get_data_project_names() if "seg" not in item
