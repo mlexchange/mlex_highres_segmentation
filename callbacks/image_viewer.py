@@ -118,9 +118,12 @@ def render_image(
                 and ctx.triggered_id == "show-result-overlay-toggle"
             ):
                 return [dash.no_update] * 7 + ["hidden"]
-            if str(image_idx + 1) in tiled_masks.get_annotated_segmented_results():
+            annotation_indices = tiled_masks.get_annotated_segmented_results()
+            if str(image_idx + 1) in annotation_indices:
+                # Will not return an error since we already checked if image_idx+1 is in the list
+                mapped_index = annotation_indices.index(str(image_idx + 1))
                 result = tiled_results.get_data_sequence_by_name(seg_result_selection)[
-                    image_idx
+                    mapped_index
                 ]
             else:
                 result = None
