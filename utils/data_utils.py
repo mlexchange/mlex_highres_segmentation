@@ -18,6 +18,7 @@ MASK_TILED_URI = os.getenv("MASK_TILED_URI")
 MASK_TILED_API_KEY = os.getenv("MASK_TILED_API_KEY")
 SEG_TILED_URI = os.getenv("SEG_TILED_URI")
 SEG_TILED_API_KEY = os.getenv("SEG_TILED_API_KEY")
+USER_NAME = os.getenv("USER_NAME", "user1")
 
 
 class TiledDataLoader:
@@ -149,16 +150,13 @@ class TiledMaskHandler:
     def DEV_filter_json_data_by_timestamp(data, timestamp):
         return [data for data in data if data["time"] == timestamp]
 
-    @staticmethod
-    def save_annotations_data(global_store, all_annotations, project_name):
+    def save_annotations_data(self, global_store, all_annotations, project_name):
         """
-        Transforms annotations data to a pixelated mask and outputs to
-        the Tiled server
-
-        # TODO: Save data to Tiled server after transformation
+        Transforms annotations data to a pixelated mask and outputs to the Tiled server
         """
         annotations = Annotations(all_annotations, global_store)
-        annotations.create_annotation_mask(sparse=True)  # TODO: Check sparse status
+        # TODO: Check sparse status
+        annotations.create_annotation_mask(sparse=False)
 
         # Get metadata and annotation data
         metadata = annotations.get_annotations()
@@ -173,7 +171,20 @@ class TiledMaskHandler:
         except ValueError:
             return "No annotations to process."
 
-        return
+        # Store the mask in the Tiled server under /username/project_name/uid/mask"
+        container_keys = [USER_NAME, project_name]
+        last_container = self.mask_client
+        for key in container_keys:
+            if key not in last_container.keys():
+                last_container = last_container.create_container(key=key)
+            else:
+                last_container = last_container[key]
+        # Add json metadata to a container with a uuid as key
+        # (uuid will be created by Tiled, since no key is given)
+        last_container = last_container.create_container(metadata=metadata)
+        mask = last_container.write_array(key="mask", array=mask)
+        # print("Created a mask array with the following uri: ", mask.uri)
+        return mask.uri
 
 
 tiled_datasets = TiledDataLoader(

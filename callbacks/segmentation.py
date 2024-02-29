@@ -74,6 +74,9 @@ def run_job(n_clicks, global_store, all_annotations, project_name):
     """
     if n_clicks:
         if MODE == "dev":
+            tiled_masks.save_annotations_data(
+                global_store, all_annotations, project_name
+            )
             job_uid = str(uuid.uuid4())
             return (
                 dmc.Text(
@@ -83,7 +86,6 @@ def run_job(n_clicks, global_store, all_annotations, project_name):
                 job_uid,
             )
         else:
-
             tiled_masks.save_annotations_data(
                 global_store, all_annotations, project_name
             )

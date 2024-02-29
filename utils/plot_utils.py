@@ -193,12 +193,14 @@ def generate_segmentation_colormap(all_annotations_data):
     color_list = [
         annotation_class["color"] for annotation_class in all_annotations_data
     ]
+    # We need to repeat each color twice, to create discrete color segments
+    # This loop contains the range limits 0 and 1 once,
+    # but every other value in between twice
     colorscale = [
         [normalized_range[i + j], color_list[i % len(color_list)]]
         for i in range(0, normalized_range.size - 1)
         for j in range(2)
     ]
-
     return colorscale, max_class_id
 
 
