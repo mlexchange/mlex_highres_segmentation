@@ -84,7 +84,9 @@ class Annotations:
         for slice_idx, slice_data in self.annotations.items():
             image_height = slice_data[0]["image_shape"][0]
             image_width = slice_data[0]["image_shape"][1]
-            slice_mask = np.zeros([image_height, image_width], dtype=np.uint8)
+            slice_mask = np.full(
+                [image_height, image_width], fill_value=-1, dtype=np.int8
+            )
             for shape in slice_data:
                 if shape["type"] == "Closed Freeform":
                     shape_mask = ShapeConversion.closed_path_to_array(
@@ -100,7 +102,7 @@ class Annotations:
                     )
                 else:
                     continue
-                slice_mask[shape_mask > 0] = shape_mask[shape_mask > 0]
+                slice_mask[shape_mask >= 0] = shape_mask[shape_mask >= 0]
             annotation_mask.append(slice_mask)
 
         if sparse:
@@ -154,7 +156,7 @@ class ShapeConversion:
         c_radius = abs(svg_data["y0"] - svg_data["y1"]) / 2  # Vertical radius
 
         # Create mask and draw ellipse
-        mask = np.zeros((image_height, image_width), dtype=np.uint8)
+        mask = np.full((image_height, image_width), fill_value=-1, dtype=np.int8)
         rr, cc = draw.ellipse(
             cy, cx, c_radius, r_radius
         )  # Vertical radius first, then horizontal
@@ -181,7 +183,7 @@ class ShapeConversion:
         y1 = max(min(y1, image_height - 1), 0)
 
         # # Draw the rectangle
-        mask = np.zeros((image_height, image_width), dtype=np.uint8)
+        mask = np.full((image_height, image_width), fill_value=-1, dtype=np.int8)
         rr, cc = draw.rectangle(start=(y0, x0), end=(y1, x1))
 
         # Convert coordinates to integers
@@ -217,8 +219,9 @@ class ShapeConversion:
         is_inside = polygon_path.contains_points(points)
 
         # Reshape the result back into the 2D shape
-        mask = is_inside.reshape(image_height, image_width).astype(int)
+        mask = is_inside.reshape(image_height, image_width).astype(np.int8)
 
         # Set the class value for the pixels inside the polygon
         mask[mask == 1] = mask_class
+        mask[mask == 0] = -1
         return mask
