@@ -155,23 +155,31 @@ class TiledMaskHandler:
         Transforms annotations data to a pixelated mask and outputs to the Tiled server
         """
         annotations = Annotations(all_annotations, global_store)
-        # TODO: Check sparse status
+        # TODO: Check sparse status, it may be worthwhile to store the mask as a sparse array
+        # if our machine learning models can handle sparse arrays
         annotations.create_annotation_mask(sparse=False)
 
         # Get metadata and annotation data
-        metadata = annotations.get_annotations()
+        annnotations_per_slice = annotations.get_annotations()
+        annotation_classes = annotations.get_annotation_classes()
+
+        metadata = {
+            "classes": annotation_classes,
+            "unlabeled_class_id": -1,
+            "annotations": annnotations_per_slice,
+            "image_shape": global_store["image_shapes"][0],
+            "project_name": project_name,
+            "mask_idx": list(annnotations_per_slice.keys()),
+        }
+        print("Metadata: ", metadata)
         mask = annotations.get_annotation_mask()
 
-        # Get raw images associated with each annotated slice
-        img_idx = list(metadata.keys())
-        metadata["mask_idx"] = img_idx
-        metadata["project_name"] = project_name
         try:
             mask = np.stack(mask)
         except ValueError:
             return "No annotations to process."
 
-        # Store the mask in the Tiled server under /username/project_name/uid/mask"
+        # Store the mask in the Tiled server under /username/project_name/uuid/mask"
         container_keys = [USER_NAME, project_name]
         last_container = self.mask_client
         for key in container_keys:

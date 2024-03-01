@@ -17,30 +17,43 @@ class Annotations:
             slices = set(slices)
             annotations = {key: [] for key in slices}
 
+            all_class_labels = [
+                annotation_class["class_id"] for annotation_class in annotation_store
+            ]
+            annotation_classes = {}
+
             for annotation_class in annotation_store:
+                condensed_id = str(all_class_labels.index(annotation_class["class_id"]))
+                annotation_classes[condensed_id] = {
+                    "label": annotation_class["label"],
+                    "color": annotation_class["color"],
+                }
                 for image_idx, slice_data in annotation_class["annotations"].items():
                     for shape in slice_data:
                         self._set_annotation_type(shape)
                         self._set_annotation_svg(shape)
                         annotation = {
-                            "id": annotation_class["class_id"],
+                            "class_id": condensed_id,
                             "type": self.annotation_type,
-                            "class": annotation_class["label"],
-                            # TODO: This is the same across all images in a dataset
-                            "image_shape": global_store["image_shapes"][0],
                             "svg_data": self.svg_data,
                         }
                         annotations[image_idx].append(annotation)
         else:
-            annotations = []
+            annotations = None
+            annotation_classes = None
 
+        self.annotation_classes = annotation_classes
         self.annotations = annotations
+        self.image_shape = global_store["image_shapes"][0]
 
     def get_annotations(self):
         return self.annotations
 
     def get_annotation_mask(self):
         return self.annotation_mask
+
+    def get_annotation_classes(self):
+        return self.annotation_classes
 
     def get_annotation_mask_as_bytes(self):
         buffer = io.BytesIO()
@@ -81,24 +94,25 @@ class Annotations:
         self.sparse = sparse
         annotation_mask = []
 
+        image_height = self.image_shape[0]
+        image_width = self.image_shape[1]
+
         for slice_idx, slice_data in self.annotations.items():
-            image_height = slice_data[0]["image_shape"][0]
-            image_width = slice_data[0]["image_shape"][1]
             slice_mask = np.full(
                 [image_height, image_width], fill_value=-1, dtype=np.int8
             )
             for shape in slice_data:
                 if shape["type"] == "Closed Freeform":
                     shape_mask = ShapeConversion.closed_path_to_array(
-                        shape["svg_data"], shape["image_shape"], shape["id"]
+                        shape["svg_data"], self.image_shape, shape["class_id"]
                     )
                 elif shape["type"] == "Rectangle":
                     shape_mask = ShapeConversion.rectangle_to_array(
-                        shape["svg_data"], shape["image_shape"], shape["id"]
+                        shape["svg_data"], self.image_shape, shape["class_id"]
                     )
                 elif shape["type"] == "Ellipse":
                     shape_mask = ShapeConversion.ellipse_to_array(
-                        shape["svg_data"], shape["image_shape"], shape["id"]
+                        shape["svg_data"], self.image_shape, shape["class_id"]
                     )
                 else:
                     continue
