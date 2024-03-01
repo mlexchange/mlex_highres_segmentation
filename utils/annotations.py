@@ -15,7 +15,9 @@ class Annotations:
             for annotation_class in annotation_store:
                 slices.extend(list(annotation_class["annotations"].keys()))
             slices = set(slices)
-            annotations = {key: [] for key in slices}
+            # Slices need to be sorted to ensure that the exported mask slices
+            # have the same order as the original data set
+            annotations = {key: [] for key in sorted(slices, key=int)}
 
             all_class_labels = [
                 annotation_class["class_id"] for annotation_class in annotation_store
