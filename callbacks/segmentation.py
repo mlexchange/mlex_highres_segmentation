@@ -57,13 +57,15 @@ DEMO_WORKFLOW = {
 
 @callback(
     Output("output-details", "children"),
-    Output("submitted-job-id", "data"),
+    Output("submitted-job-id", "data"), 
+    Output("gui-components-values", "data"),
     Input("run-model", "n_clicks"),
     State("annotation-store", "data"),
     State({"type": "annotation-class-store", "index": ALL}, "data"),
     State("project-name-src", "value"),
+    State("gui-layouts", "children")
 )
-def run_job(n_clicks, global_store, all_annotations, project_name):
+def run_job(n_clicks, global_store, all_annotations, project_name, children):
     """
     This callback collects parameters from the UI and submits a job to the computing api.
     If the app is run from "dev" mode, then only a placeholder job_uid will be created.
@@ -72,7 +74,17 @@ def run_job(n_clicks, global_store, all_annotations, project_name):
     # TODO: Appropriately paramaterize the DEMO_WORKFLOW json depending on user inputs
     and relevant file paths
     """
+    input_params = {}
     if n_clicks:
+        if len(children) >= 2:
+            params = children[1]
+            for param in params['props']['children']:
+                key   = param["props"]["children"][1]["props"]["id"]["param_key"]
+                value = param["props"]["children"][1]["props"]["value"]
+                input_params[key] = value
+        
+        # return the input values in dictionary and saved to dcc.Store "gui-components-values" 
+        print(f'input_param:\n{input_params}')
         if MODE == "dev":
             job_uid = str(uuid.uuid4())
             return (
@@ -81,6 +93,7 @@ def run_job(n_clicks, global_store, all_annotations, project_name):
                     size="sm",
                 ),
                 job_uid,
+                input_params
             )
         else:
 
@@ -98,6 +111,7 @@ def run_job(n_clicks, global_store, all_annotations, project_name):
                         size="sm",
                     ),
                     job_uid,
+                    input_params
                 )
             else:
                 return (
@@ -106,8 +120,9 @@ def run_job(n_clicks, global_store, all_annotations, project_name):
                         size="sm",
                     ),
                     job_uid,
+                    input_params
                 )
-    return no_update, no_update
+    return no_update, no_update, input_params
 
 
 @callback(
