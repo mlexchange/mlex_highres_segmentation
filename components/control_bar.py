@@ -7,6 +7,7 @@ from dash_iconify import DashIconify
 from components.annotation_class import annotation_class_item
 from constants import ANNOT_ICONS, KEYBINDS
 from utils.data_utils import tiled_dataset
+from utils.content_registry import models
 
 
 def _tooltip(text, children):
@@ -603,6 +604,23 @@ def layout():
                             "run-model",
                             id="model-configuration",
                             children=[
+                                _control_item(
+                                    "Model Selection",
+                                    "model-selector",
+                                    dmc.Select(
+                                        id="model-list",
+                                        data=models.modelname_list,
+                                        value=(
+                                            models.modelname_list[0]
+                                            if models.modelname_list[0]
+                                            else None
+                                        ),
+                                        placeholder="Select an model...",
+                                    ),
+                                ),
+                                dmc.Space(h=25),
+                                html.Div(id="gui-layouts"),
+                                dmc.Space(h=25),
                                 dmc.Center(
                                     dmc.Button(
                                         "Run model",
