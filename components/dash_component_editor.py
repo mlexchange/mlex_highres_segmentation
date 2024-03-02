@@ -3,7 +3,7 @@ from typing import Callable
 # noinspection PyUnresolvedReferences
 from inspect import signature, _empty
 
-from dash import html, dcc, dash_table, Input, Output, State, MATCH, ALL
+from dash import html, dcc, Input, Output, State, ALL
 import dash_bootstrap_components as dbc
 import dash_daq as daq
 
@@ -12,6 +12,7 @@ import base64
 import io
 #import plotly.express as px
 # Procedural dash form generation
+
 
 
 """
@@ -221,85 +222,6 @@ class ImgItem(dbc.Col):
                                            'layer': 'form_group'},
                                        children=[self.label, self.input_img],
                                        style=style)
-
-
-# class GraphItem(dbc.Col):
-#     def __init__(self,
-#                  name,
-#                  base_id,
-#                  title=None,
-#                  param_key=None,
-#                  visible=True,
-#                  figure = None,
-#                  **kwargs):
-# 
-#         self.name = name
-#         if param_key == None:
-#             param_key = name
-#         self.label = dbc.Label(title)
-#         self.input_graph = dcc.Graph(id={**base_id,
-#                                     'name': name,
-#                                     'param_key': param_key,
-#                                     'layer': 'input'},
-#                                     **kwargs)
-#                                 
-#         self.input_upload = dcc.Upload(id={**base_id,
-#                                     'name': name+'_upload',
-#                                     'param_key': param_key,
-#                                     'layer': 'input'},
-#                                     children=html.Div([
-#                                         'Drag and Drop or ',
-#                                         html.A('Select Files')
-#                                     ]),
-#                                     style={
-#                                         'width': '95%',
-#                                         'height': '60px',
-#                                         'lineHeight': '60px',
-#                                         'borderWidth': '1px',
-#                                         'borderStyle': 'dashed',
-#                                         'borderRadius': '5px',
-#                                         'textAlign': 'center',
-#                                         'margin': '10px'
-#                         },
-#                         multiple = False)
-# 
-#         style = {}
-#         if not visible:
-#             style['display'] = 'none'
-# 
-#         super(GraphItem, self).__init__(id={**base_id,
-#                                            'name': name,
-#                                            'param_key': param_key,
-#                                            'layer': 'form_group'},
-#                                        children=[self.label, self.input_upload, self.input_graph],
-#                                        style=style)
-#      
-#     # Issue: cannot get inputs from the callback decorator    
-#     def return_upload(self, *args): 
-#         print(f'before if, args {args}')
-#         if args:
-#             print(f'args {args}')
-#             img_bytes = base64.b64decode(contents.split(",")[1])
-#             img = PIL.Image.open(io.BytesIO(img_bytes))
-#             fig = px.imshow(img, binary_string=True)
-#             return fig 
-#     
-#     def init_callbacks(self, app):
-#         app.callback(Output({**self.id,
-#                             'name': self.name,
-#                             'layer': 'input'}, 'figure', allow_duplicate=True), 
-#                      Input({**self.id,
-#                             'name': self.name+'_upload',
-#                             'layer': 'input'},
-#                             'contents'),
-#                      State({**self.id,
-#                             'name': self.name+'_upload',
-#                             'layer': 'input'}, 'last_modified'),
-#                      State({**self.id,
-#                             'name': self.name+'_upload',
-#                             'layer': 'input'}, 'filename'), 
-#                      prevent_initial_call=True)(self.return_upload())
-
 
 
 class ParameterEditor(dbc.Form):
