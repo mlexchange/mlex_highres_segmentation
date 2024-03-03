@@ -89,6 +89,20 @@ class TiledDataLoader:
             return project_container.shape
         return None
 
+    def get_data_uri_by_name(self, project_name):
+        """
+        Retrieve uri of the data
+        """
+        project_container = self.get_data_sequence_by_name(project_name)
+        if project_container:
+            return project_container.uri
+        return None
+
+
+tiled_datasets = TiledDataLoader(
+    data_tiled_uri=DATA_TILED_URI, data_tiled_api_key=DATA_TILED_API_KEY
+)
+
 
 class TiledMaskHandler:
     """
@@ -169,6 +183,7 @@ class TiledMaskHandler:
             "annotations": annnotations_per_slice,
             "image_shape": global_store["image_shapes"][0],
             "project_name": project_name,
+            "data_uri": tiled_datasets.get_data_uri_by_name(project_name),
             "mask_idx": list(annnotations_per_slice.keys()),
         }
         print("Metadata: ", metadata)
@@ -191,13 +206,9 @@ class TiledMaskHandler:
         # (uuid will be created by Tiled, since no key is given)
         last_container = last_container.create_container(metadata=metadata)
         mask = last_container.write_array(key="mask", array=mask)
-        # print("Created a mask array with the following uri: ", mask.uri)
+
         return mask.uri
 
-
-tiled_datasets = TiledDataLoader(
-    data_tiled_uri=DATA_TILED_URI, data_tiled_api_key=DATA_TILED_API_KEY
-)
 
 tiled_masks = TiledMaskHandler(
     mask_tiled_uri=MASK_TILED_URI, mask_tiled_api_key=MASK_TILED_API_KEY
