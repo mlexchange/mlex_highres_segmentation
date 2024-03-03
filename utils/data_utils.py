@@ -176,17 +176,18 @@ class TiledMaskHandler:
         # Get metadata and annotation data
         annnotations_per_slice = annotations.get_annotations()
         annotation_classes = annotations.get_annotation_classes()
+        annotations_hash = annotations.get_annotations_hash()
 
         metadata = {
-            "classes": annotation_classes,
-            "unlabeled_class_id": -1,
-            "annotations": annnotations_per_slice,
-            "image_shape": global_store["image_shapes"][0],
             "project_name": project_name,
             "data_uri": tiled_datasets.get_data_uri_by_name(project_name),
+            "image_shape": global_store["image_shapes"][0],
             "mask_idx": list(annnotations_per_slice.keys()),
+            "classes": annotation_classes,
+            "annotations": annnotations_per_slice,
+            "unlabeled_class_id": -1,
         }
-        print("Metadata: ", metadata)
+
         mask = annotations.get_annotation_mask()
 
         try:
@@ -202,12 +203,17 @@ class TiledMaskHandler:
                 last_container = last_container.create_container(key=key)
             else:
                 last_container = last_container[key]
-        # Add json metadata to a container with a uuid as key
-        # (uuid will be created by Tiled, since no key is given)
-        last_container = last_container.create_container(metadata=metadata)
-        mask = last_container.write_array(key="mask", array=mask)
 
-        return mask.uri
+        # Add json metadata to a container with the md5 hash as key
+        # if a mask with that hash does not already exist
+        if annotations_hash not in last_container.keys():
+            last_container = last_container.create_container(
+                key=annotations_hash, metadata=metadata
+            )
+            mask = last_container.write_array(key="mask", array=mask)
+        else:
+            last_container = last_container[annotations_hash]
+        return last_container.uri
 
 
 tiled_masks = TiledMaskHandler(

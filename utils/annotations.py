@@ -1,4 +1,6 @@
+import hashlib
 import io
+import json
 import zipfile
 
 import numpy as np
@@ -46,6 +48,7 @@ class Annotations:
 
         self.annotation_classes = annotation_classes
         self.annotations = annotations
+        self.annotations_hash = self.get_annotations_hash()
         self.image_shape = global_store["image_shapes"][0]
 
     def get_annotations(self):
@@ -56,6 +59,12 @@ class Annotations:
 
     def get_annotation_classes(self):
         return self.annotation_classes
+
+    def get_annotations_hash(self):
+        hash_object = hashlib.md5()
+        hash_object.update(json.dumps(self.annotations, sort_keys=True).encode())
+        hash_object.update(json.dumps(self.annotation_classes, sort_keys=True).encode())
+        return hash_object.hexdigest()
 
     def get_annotation_mask_as_bytes(self):
         buffer = io.BytesIO()
