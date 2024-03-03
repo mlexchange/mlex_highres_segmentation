@@ -332,6 +332,10 @@ def open_annotation_class_modal(
             disable_class_creation = True
             error_msg.append("Label Already in Use!")
             error_msg.append(html.Br())
+        if new_label == "Unlabeled":
+            disable_class_creation = True
+            error_msg.append("Label name cannot be 'Unlabeled'")
+            error_msg.append(html.Br())
         if new_color in current_colors:
             disable_class_creation = True
             error_msg.append("Color Already in use!")

@@ -19,6 +19,7 @@ def plot_mask(mask_uri, api_key, slice_idx, output_path):
     # Retrieve mask and metadata
     mask_client = from_uri(mask_uri, api_key=api_key)
     mask = mask_client["mask"][slice_idx]
+
     meta_data = mask_client.metadata
     mask_idx = meta_data["mask_idx"]
 
@@ -34,10 +35,14 @@ def plot_mask(mask_uri, api_key, slice_idx, output_path):
     labels = [
         annotation_class["label"] for _, annotation_class in class_meta_data.items()
     ]
+    # Add color for unlabeled pixels
+    colors = ["#D3D3D3"] + colors
+    labels = ["Unlabeled"] + labels
+
     plt.imshow(
         mask,
         cmap=ListedColormap(colors),
-        vmin=-0.5,
+        vmin=-1.5,
         vmax=max_class_id + 0.5,
     )
     plt.title(meta_data["project_name"] + ", slice: " + mask_idx[slice_idx])
