@@ -237,7 +237,7 @@ class ShapeConversion:
         # Reshape the result back into the 2D shape
         mask = is_inside.reshape(image_height, image_width).astype(np.int8)
 
-        # Set the class value for the pixels inside the polygon
-        mask[mask == 1] = mask_class
+        # Set the class value for the pixels inside the polygon, -1 for the rest
         mask[mask == 0] = -1
+        mask[mask == 1] = mask_class
         return mask
