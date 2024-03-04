@@ -1,8 +1,8 @@
 import hashlib
 import io
-import json
 import zipfile
 
+import canonicaljson
 import numpy as np
 import scipy.sparse as sp
 from matplotlib.path import Path
@@ -62,8 +62,8 @@ class Annotations:
 
     def get_annotations_hash(self):
         hash_object = hashlib.md5()
-        hash_object.update(json.dumps(self.annotations, sort_keys=True).encode())
-        hash_object.update(json.dumps(self.annotation_classes, sort_keys=True).encode())
+        hash_object.update(canonicaljson.encode_canonical_json(self.annotations))
+        hash_object.update(canonicaljson.encode_canonical_json(self.annotation_classes))
         return hash_object.hexdigest()
 
     def get_annotation_mask_as_bytes(self):
