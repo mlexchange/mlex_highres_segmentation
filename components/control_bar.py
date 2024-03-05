@@ -6,8 +6,8 @@ from dash_iconify import DashIconify
 
 from components.annotation_class import annotation_class_item
 from constants import ANNOT_ICONS, KEYBINDS
-from utils.data_utils import tiled_dataset
 from utils.content_registry import models
+from utils.data_utils import tiled_dataset
 
 
 def _tooltip(text, children):
