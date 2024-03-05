@@ -5,6 +5,7 @@ from dash_extensions import EventListener
 from dash_iconify import DashIconify
 
 from components.annotation_class import annotation_class_item
+from components.dash_component_editor import ControlItem
 from constants import ANNOT_ICONS, KEYBINDS
 from utils.content_registry import models
 from utils.data_utils import tiled_dataset
@@ -16,24 +17,6 @@ def _tooltip(text, children):
     """
     return dmc.Tooltip(
         label=text, withArrow=True, position="top", color="#464646", children=children
-    )
-
-
-def _control_item(title, title_id, item):
-    """
-    Returns a customized layout for a control item
-    """
-    return dmc.Grid(
-        [
-            dmc.Text(
-                title,
-                id=title_id,
-                size="sm",
-                style={"width": "100px", "margin": "auto", "paddingRight": "5px"},
-                align="right",
-            ),
-            html.Div(item, style={"width": "265px", "margin": "auto"}),
-        ]
     )
 
 
@@ -79,7 +62,7 @@ def layout():
                             id="data-selection-controls",
                             children=[
                                 dmc.Space(h=5),
-                                _control_item(
+                                ControlItem(
                                     "Dataset",
                                     "image-selector",
                                     dmc.Grid(
@@ -115,7 +98,7 @@ def layout():
                                     ),
                                 ),
                                 dmc.Space(h=25),
-                                _control_item(
+                                ControlItem(
                                     "Slice 1",
                                     "image-selection-text",
                                     [
@@ -178,7 +161,7 @@ def layout():
                                     ],
                                 ),
                                 dmc.Space(h=25),
-                                _control_item(
+                                ControlItem(
                                     _tooltip(
                                         "Jump to your annotated slices",
                                         "Annotated slices",
@@ -208,7 +191,7 @@ def layout():
                             children=html.Div(
                                 [
                                     dmc.Space(h=5),
-                                    _control_item(
+                                    ControlItem(
                                         "Brightness",
                                         "bightness-text",
                                         [
@@ -252,7 +235,7 @@ def layout():
                                         ],
                                     ),
                                     dmc.Space(h=20),
-                                    _control_item(
+                                    ControlItem(
                                         "Contrast",
                                         "contrast-text",
                                         dmc.Grid(
@@ -607,7 +590,7 @@ def layout():
                             "run-model",
                             id="model-configuration",
                             children=[
-                                _control_item(
+                                ControlItem(
                                     "Model",
                                     "model-selector",
                                     dmc.Select(
@@ -646,7 +629,7 @@ def layout():
                                     styles={"trackLabel": {"cursor": "pointer"}},
                                 ),
                                 dmc.Space(h=25),
-                                _control_item(
+                                ControlItem(
                                     "Results",
                                     "",
                                     dmc.Select(
@@ -655,7 +638,7 @@ def layout():
                                     ),
                                 ),
                                 dmc.Space(h=25),
-                                _control_item(
+                                ControlItem(
                                     "Opacity",
                                     "",
                                     dmc.Slider(

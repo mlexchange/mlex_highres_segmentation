@@ -921,16 +921,15 @@ def update_current_annotated_slices_values(all_classes):
     Output("gui-layouts", "children"),
     Input("model-list", "value"),
 )
-def update_gui_parameters(model_name):
+def update_model_parameters(model_name):
     data = models.models[model_name]
     if data["gui_parameters"]:
         item_list = JSONParameterEditor(
-            _id={"type": str(uuid.uuid4())},  # pattern match _id (base id), name
+            _id={"type": str(uuid.uuid4())},
             json_blob=models.remove_key_from_dict_list(
                 data["gui_parameters"], "comp_group"
             ),
         )
-        # item_list.init_callbacks(app)
-        return [html.H4("Model Parameters"), item_list]
+        return [item_list]
     else:
         return [""]

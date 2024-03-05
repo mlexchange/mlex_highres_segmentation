@@ -1,10 +1,28 @@
-import base64
-from inspect import _empty, signature
-from typing import Callable
-
 import dash_bootstrap_components as dbc
 import dash_daq as daq
+import dash_mantine_components as dmc
 from dash import ALL, Input, Output, State, dcc, html
+
+
+class ControlItem(dmc.Grid):
+    """
+    Customized layout for a control item
+    """
+
+    def __init__(self, title, title_id, item, **kwargs):
+        super(ControlItem, self).__init__(
+            [
+                dmc.Text(
+                    title,
+                    id=title_id,
+                    size="sm",
+                    style={"width": "100px", "margin": "auto", "paddingRight": "5px"},
+                    align="right",
+                ),
+                html.Div(item, style={"width": "265px", "margin": "auto"}),
+            ],
+            **kwargs,
+        )
 
 
 class SimpleItem(dbc.Col):
@@ -155,46 +173,6 @@ class BoolItem(dbc.Col):
         )
 
 
-class ImgItem(dbc.Col):
-    def __init__(
-        self,
-        name,
-        src,
-        base_id,
-        title=None,
-        param_key=None,
-        width="100px",
-        visible=True,
-        **kwargs,
-    ):
-        if param_key is None:
-            param_key = name
-
-        if not (width.endswith("px") or width.endswith("%")):
-            width = width + "px"
-
-        self.label = dbc.Label(title)
-
-        encoded_image = base64.b64encode(open(src, "rb").read())
-        self.src = "data:image/png;base64,{}".format(encoded_image.decode())
-        self.input_img = html.Img(
-            id={**base_id, "name": name, "param_key": param_key, "layer": "input"},
-            src=self.src,
-            style={"height": "auto", "width": width},
-            **kwargs,
-        )
-
-        style = {}
-        if not visible:
-            style["display"] = "none"
-
-        super(ImgItem, self).__init__(
-            id={**base_id, "name": name, "param_key": param_key, "layer": "form_group"},
-            children=[self.label, self.input_img],
-            style=style,
-        )
-
-
 class ParameterEditor(dbc.Form):
     type_map = {
         float: FloatItem,
@@ -264,7 +242,6 @@ class JSONParameterEditor(ParameterEditor):
         "dropdown": DropdownItem,
         "radio": RadioItem,
         "bool": BoolItem,
-        "img": ImgItem,
     }
 
     def __init__(self, _id, json_blob, **kwargs):
@@ -289,28 +266,3 @@ class JSONParameterEditor(ParameterEditor):
             children.append(item)
 
         return children
-
-
-class KwargsEditor(ParameterEditor):
-    def __init__(self, instance_index, func: Callable, **kwargs):
-        self.func = func
-        self._instance_index = instance_index
-
-        parameters = [
-            {"name": name, "value": param.default}
-            for name, param in signature(func).parameters.items()
-            if param.default is not _empty
-        ]
-
-        super(KwargsEditor, self).__init__(
-            dict(index=instance_index, type="kwargs-editor"),
-            parameters=parameters,
-            **kwargs,
-        )
-
-    def new_record(self):
-        return {
-            name: p.default
-            for name, p in signature(self.func).parameters.items()
-            if p.default is not _empty
-        }
