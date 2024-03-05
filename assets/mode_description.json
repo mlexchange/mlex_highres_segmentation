@@ -1,6 +1,0 @@
-{
-    "contents":[
-        {"model_name": "random_forest", "version": "1.0.0", "type": "supervised", "user": "mlexchange team", "uri": "xxx", "application": ["classification", "segmentation"], "description": "xxx", "gui_parameters": [{"type": "int", "name": "num-tree", "title": "Number of Trees", "param_key": "n_estimators", "value": "30"}, {"type": "int", "name": "tree-depth", "title": "Tree Depth", "param_key": "max_depth", "value": "8"}], "cmd": ["xxx"], "reference": "Adapted from Dash Plotly image segmentation example"},
-        {"model_name": "kmeans", "version": "1.0.0", "type": "unsupervised", "user": "mlexchange team", "uri": "xxx", "application": ["segmentation", "clustering"], "description": "xxx", "gui_parameters": [{"type": "int", "name": "num-cluster", "title": "Number of Clusters", "param_key": "n_clusters", "value": "2"}, {"type": "int", "name": "num-iter", "title": "Max Iteration", "param_key": "max_iter", "value": "300"}], "cmd": ["xxx", "xxxx"], "reference": "Nicholas Schwartz & Howard Yanxon"}
-    ]
-}

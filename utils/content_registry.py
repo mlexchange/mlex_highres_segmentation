@@ -3,9 +3,9 @@ from copy import deepcopy
 
 
 class Models:
-    def __init__(self, modelfile_path="./assets/mode_description.json"):
+    def __init__(self, modelfile_path="./assets/models.json"):
         self.path = modelfile_path
-        f = open("./assets/mode_description.json")
+        f = open(self.path)
 
         self.contents = json.load(f)["contents"]
         self.modelname_list = [content["model_name"] for content in self.contents]
