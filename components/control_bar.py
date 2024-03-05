@@ -603,15 +603,46 @@ def layout():
                             "run-model",
                             id="model-configuration",
                             children=[
-                                dmc.Center(
-                                    dmc.Button(
-                                        "Run model",
-                                        id="run-model",
-                                        variant="light",
-                                        style={"width": "160px", "margin": "5px"},
-                                    )
+                                _control_item(
+                                    "Name",
+                                    "job-name-input",
+                                    dmc.TextInput(
+                                        placeholder="Name your job...",
+                                        id="job-name",
+                                    ),
                                 ),
-                                html.Div(id="output-details"),
+                                dmc.Space(h=10),
+                                dmc.Button(
+                                    "Train",
+                                    id="run-train",
+                                    variant="light",
+                                    style={"width": "100%", "margin": "5px"},
+                                ),
+                                dmc.Space(h=10),
+                                _control_item(
+                                    "Train Jobs",
+                                    "selected-train-job",
+                                    dmc.Select(
+                                        placeholder="Select a job...",
+                                        id="train-job-selector",
+                                    ),
+                                ),
+                                dmc.Space(h=10),
+                                dmc.Button(
+                                    "Inference",
+                                    id="run-inference",
+                                    variant="light",
+                                    style={"width": "100%", "margin": "5px"},
+                                ),
+                                dmc.Space(h=10),
+                                _control_item(
+                                    "Inference Jobs",
+                                    "selected-inference-job",
+                                    dmc.Select(
+                                        placeholder="Select a job...",
+                                        id="inference-job-selector",
+                                    ),
+                                ),
                                 dmc.Space(h=25),
                                 dmc.Switch(
                                     id="show-result-overlay-toggle",

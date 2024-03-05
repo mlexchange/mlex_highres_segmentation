@@ -65,7 +65,8 @@ async def _flow_run_query(tags, flow_run_name=None):
             flow_run_filter=FlowRunFilter(
                 name=FlowRunFilterName(like_=flow_run_name),
                 tags=FlowRunFilterTags(all_=tags),
-            )
+            ),
+            sort="START_TIME_DESC",
         )
         for flow_run in flow_runs:
             if flow_run.state_name == "Failed":
