@@ -8,6 +8,10 @@ services:
     environment:
       DATA_TILED_URI: '${DATA_TILED_URI}'
       DATA_TILED_API_KEY: '${DATA_TILED_API_KEY}'
+      RESULTS_DIR: '${RESULTS_DIR}'
+      PREFECT_API_URL: '${PREFECT_API_URL}'
+      FLOW_NAME: '${FLOW_NAME}'
+      TIMEZONE: "${TIMEZONE}"
     volumes:
       - ./app.py:/app/app.py
       - ./constants.py:/app/constants.py
