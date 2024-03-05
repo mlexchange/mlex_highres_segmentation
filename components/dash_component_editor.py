@@ -1,24 +1,10 @@
 import base64
-
-# import PIL.Image
-import io
-import re
-
-# noinspection PyUnresolvedReferences
 from inspect import _empty, signature
 from typing import Callable
 
 import dash_bootstrap_components as dbc
 import dash_daq as daq
 from dash import ALL, Input, Output, State, dcc, html
-
-# import plotly.express as px
-# Procedural dash form generation
-
-
-"""
-{'name', 'title', 'value', 'type',
-"""
 
 
 class SimpleItem(dbc.Col):
@@ -32,7 +18,7 @@ class SimpleItem(dbc.Col):
         debounce=True,
         **kwargs,
     ):
-        if param_key == None:
+        if param_key is None:
             param_key = name
         self.label = dbc.Label(title)
         self.input = dbc.Input(
@@ -72,7 +58,7 @@ class SliderItem(dbc.Col):
         visible=True,
         **kwargs,
     ):
-        if param_key == None:
+        if param_key is None:
             param_key = name
         self.label = dbc.Label(title)
         self.input = dcc.Slider(
@@ -103,7 +89,7 @@ class DropdownItem(dbc.Col):
         visible=True,
         **kwargs,
     ):
-        if param_key == None:
+        if param_key is None:
             param_key = name
         self.label = dbc.Label(title)
         self.input = dcc.Dropdown(
@@ -126,7 +112,7 @@ class RadioItem(dbc.Col):
     def __init__(
         self, name, base_id, title=None, param_key=None, visible=True, **kwargs
     ):
-        if param_key == None:
+        if param_key is None:
             param_key = name
         self.label = dbc.Label(title)
         self.input = dbc.RadioItems(
@@ -149,7 +135,7 @@ class BoolItem(dbc.Col):
     def __init__(
         self, name, base_id, title=None, param_key=None, visible=True, **kwargs
     ):
-        if param_key == None:
+        if param_key is None:
             param_key = name
         self.label = dbc.Label(title)
         self.input = daq.ToggleSwitch(
@@ -181,7 +167,7 @@ class ImgItem(dbc.Col):
         visible=True,
         **kwargs,
     ):
-        if param_key == None:
+        if param_key is None:
             param_key = name
 
         if not (width.endswith("px") or width.endswith("%")):
@@ -279,7 +265,6 @@ class JSONParameterEditor(ParameterEditor):
         "radio": RadioItem,
         "bool": BoolItem,
         "img": ImgItem,
-        #'graph': GraphItem,
     }
 
     def __init__(self, _id, json_blob, **kwargs):
