@@ -2,6 +2,7 @@ import json
 import os
 import random
 import time
+import uuid
 
 import dash_mantine_components as dmc
 import plotly.express as px
@@ -24,8 +25,10 @@ from dash.exceptions import PreventUpdate
 from dash_iconify import DashIconify
 
 from components.annotation_class import annotation_class_item
+from components.dash_component_editor import JSONParameterEditor
 from constants import ANNOT_ICONS, ANNOT_NOTIFICATION_MSGS, KEY_MODES, KEYBINDS
 from utils.annotations import Annotations
+from utils.content_registry import models
 from utils.data_utils import tiled_dataset
 from utils.plot_utils import generate_notification, generate_notification_bg_icon_col
 
@@ -912,3 +915,22 @@ def update_current_annotated_slices_values(all_classes):
     ]
     disabled = True if len(dropdown_values) == 0 else False
     return dropdown_values, disabled
+
+
+@callback(
+    Output("gui-layouts", "children"),
+    Input("model-list", "value"),
+)
+def update_gui_parameters(model_name):
+    data = models.models[model_name]
+    if data["gui_parameters"]:
+        item_list = JSONParameterEditor(
+            _id={"type": str(uuid.uuid4())},  # pattern match _id (base id), name
+            json_blob=models.remove_key_from_dict_list(
+                data["gui_parameters"], "comp_group"
+            ),
+        )
+        # item_list.init_callbacks(app)
+        return [html.H4("Model Parameters"), item_list]
+    else:
+        return [""]
