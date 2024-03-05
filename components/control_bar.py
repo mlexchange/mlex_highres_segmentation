@@ -453,6 +453,9 @@ def layout():
                                             },
                                             className="add-class-btn",
                                         ),
+                                        dcc.Store(
+                                            id="current-class-selection", data="#FFA200"
+                                        ),
                                         dmc.Space(h=20),
                                     ],
                                 ),
@@ -605,7 +608,7 @@ def layout():
                             id="model-configuration",
                             children=[
                                 _control_item(
-                                    "Model Selection",
+                                    "Model",
                                     "model-selector",
                                     dmc.Select(
                                         id="model-list",
@@ -615,11 +618,12 @@ def layout():
                                             if models.modelname_list[0]
                                             else None
                                         ),
-                                        placeholder="Select an model...",
+                                        placeholder="Select a model...",
                                     ),
                                 ),
                                 dmc.Space(h=25),
                                 html.Div(id="gui-layouts"),
+                                dcc.Store(id="gui-components-values", data={}),
                                 dmc.Space(h=25),
                                 dmc.Center(
                                     dmc.Button(
