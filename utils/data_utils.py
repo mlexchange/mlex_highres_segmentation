@@ -14,6 +14,11 @@ load_dotenv()
 
 DATA_TILED_URI = os.getenv("DATA_TILED_URI")
 DATA_TILED_API_KEY = os.getenv("DATA_TILED_API_KEY")
+MASK_TILED_URI = os.getenv("MASK_TILED_URI")
+MASK_TILED_API_KEY = os.getenv("MASK_TILED_API_KEY")
+SEG_TILED_URI = os.getenv("SEG_TILED_URI")
+SEG_TILED_API_KEY = os.getenv("SEG_TILED_API_KEY")
+USER_NAME = os.getenv("USER_NAME", "user1")
 
 
 class TiledDataLoader:
@@ -22,14 +27,14 @@ class TiledDataLoader:
     ):
         self.data_tiled_uri = data_tiled_uri
         self.data_tiled_api_key = data_tiled_api_key
-        self.data = from_uri(
+        self.data_client = from_uri(
             self.data_tiled_uri,
             api_key=self.data_tiled_api_key,
             timeout=httpx.Timeout(30.0),
         )
 
-    def refresh_data(self):
-        self.data = from_uri(
+    def refresh_data_client(self):
+        self.data_client = from_uri(
             self.data_tiled_uri,
             api_key=self.data_tiled_api_key,
             timeout=httpx.Timeout(30.0),
@@ -42,8 +47,8 @@ class TiledDataLoader:
         """
         project_names = [
             project
-            for project in list(self.data)
-            if isinstance(self.data[project], (Container, ArrayClient))
+            for project in list(self.data_client)
+            if isinstance(self.data_client[project], (Container, ArrayClient))
         ]
         return project_names
 
@@ -53,7 +58,7 @@ class TiledDataLoader:
         but can also be additionally encapsulated in a folder, multiple container or in a .nxs file.
         We make use of specs to figure out the path to the 3d data.
         """
-        project_client = self.data[project_name]
+        project_client = self.data_client[project_name]
         # If the project directly points to an array, directly return it
         if isinstance(project_client, ArrayClient):
             return project_client
@@ -83,6 +88,37 @@ class TiledDataLoader:
         if project_container:
             return project_container.shape
         return None
+
+    def get_data_uri_by_name(self, project_name):
+        """
+        Retrieve uri of the data
+        """
+        project_container = self.get_data_sequence_by_name(project_name)
+        if project_container:
+            return project_container.uri
+        return None
+
+
+tiled_datasets = TiledDataLoader(
+    data_tiled_uri=DATA_TILED_URI, data_tiled_api_key=DATA_TILED_API_KEY
+)
+
+
+class TiledMaskHandler:
+    """
+    This class is used to handle the masks that are generated from the annotations.
+    """
+
+    def __init__(
+        self, mask_tiled_uri=MASK_TILED_URI, mask_tiled_api_key=MASK_TILED_API_KEY
+    ):
+        self.mask_tiled_uri = mask_tiled_uri
+        self.mask_tiled_api_key = mask_tiled_api_key
+        self.mask_client = from_uri(
+            self.mask_tiled_uri,
+            api_key=self.mask_tiled_api_key,
+            timeout=httpx.Timeout(30.0),
+        )
 
     @staticmethod
     def get_annotated_segmented_results(json_file_path="exported_annotation_data.json"):
@@ -130,32 +166,60 @@ class TiledDataLoader:
 
     def save_annotations_data(self, global_store, all_annotations, project_name):
         """
-        Transforms annotations data to a pixelated mask and outputs to
-        the Tiled server
-
-        # TODO: Save data to Tiled server after transformation
+        Transforms annotations data to a pixelated mask and outputs to the Tiled server
         """
         annotations = Annotations(all_annotations, global_store)
-        annotations.create_annotation_mask(sparse=True)  # TODO: Check sparse status
+        # TODO: Check sparse status, it may be worthwhile to store the mask as a sparse array
+        # if our machine learning models can handle sparse arrays
+        annotations.create_annotation_mask(sparse=False)
 
         # Get metadata and annotation data
-        metadata = annotations.get_annotations()
+        annnotations_per_slice = annotations.get_annotations()
+        annotation_classes = annotations.get_annotation_classes()
+        annotations_hash = annotations.get_annotations_hash()
+
+        metadata = {
+            "project_name": project_name,
+            "data_uri": tiled_datasets.get_data_uri_by_name(project_name),
+            "image_shape": global_store["image_shapes"][0],
+            "mask_idx": list(annnotations_per_slice.keys()),
+            "classes": annotation_classes,
+            "annotations": annnotations_per_slice,
+            "unlabeled_class_id": -1,
+        }
+
         mask = annotations.get_annotation_mask()
 
-        # Get raw images associated with each annotated slice
-        img_idx = list(metadata.keys())
-        img = self.data[project_name]
-        raw = []
-        for idx in img_idx:
-            ar = img[int(idx)]
-            raw.append(ar)
         try:
-            raw = np.stack(raw)
             mask = np.stack(mask)
         except ValueError:
             return "No annotations to process."
 
-        return
+        # Store the mask in the Tiled server under /username/project_name/uuid/mask"
+        container_keys = [USER_NAME, project_name]
+        last_container = self.mask_client
+        for key in container_keys:
+            if key not in last_container.keys():
+                last_container = last_container.create_container(key=key)
+            else:
+                last_container = last_container[key]
+
+        # Add json metadata to a container with the md5 hash as key
+        # if a mask with that hash does not already exist
+        if annotations_hash not in last_container.keys():
+            last_container = last_container.create_container(
+                key=annotations_hash, metadata=metadata
+            )
+            mask = last_container.write_array(key="mask", array=mask)
+        else:
+            last_container = last_container[annotations_hash]
+        return last_container.uri
 
 
-tiled_dataset = TiledDataLoader()
+tiled_masks = TiledMaskHandler(
+    mask_tiled_uri=MASK_TILED_URI, mask_tiled_api_key=MASK_TILED_API_KEY
+)
+
+tiled_results = TiledDataLoader(
+    data_tiled_uri=SEG_TILED_URI, data_tiled_api_key=SEG_TILED_API_KEY
+)
