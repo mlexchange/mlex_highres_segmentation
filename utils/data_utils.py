@@ -159,3 +159,45 @@ class TiledDataLoader:
 
 
 tiled_dataset = TiledDataLoader()
+
+
+class Models:
+    def __init__(self, modelfile_path="./assets/models.json"):
+        self.path = modelfile_path
+        f = open(self.path)
+
+        contents = json.load(f)["contents"]
+        self.modelname_list = [content["model_name"] for content in contents]
+        self.models = {}
+
+        for i, n in enumerate(self.modelname_list):
+            self.models[n] = contents[i]
+
+    def __getitem__(self, key):
+        try:
+            return self.models[key]
+        except KeyError:
+            raise KeyError(f"A model with name {key} does not exist.")
+
+
+models = Models()
+
+
+def extract_parameters_from_html(model_parameters_html):
+    """
+    Extracts parameters from the children component of a
+    """
+    input_params = {}
+    for param in model_parameters_html["props"]["children"]:
+        # param["props"]["children"][0] is the label
+        # param["props"]["children"][1] is the input
+        parameter_container = param["props"]["children"][1]
+        # The achtual parameter item is the first and only child of the parameter container
+        parameter_item = parameter_container["props"]["children"]["props"]
+        key = parameter_item["id"]["param_key"]
+        if "value" in parameter_item:
+            value = parameter_item["value"]
+        elif "checked" in parameter_item:
+            value = parameter_item["checked"]
+        input_params[key] = value
+    return input_params

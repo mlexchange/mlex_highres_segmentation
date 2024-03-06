@@ -1,6 +1,6 @@
 import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
-from dash import ALL, Input, Output, State, html
+from dash import html
 
 
 class ControlItem(dmc.Grid):
@@ -51,7 +51,7 @@ class NumberItem(ControlItem):
                 **base_id,
                 "name": name,
                 "param_key": param_key,
-                "layer": "title",
+                "layer": "label",
             },
             item=self.input,
             style=style,
@@ -85,7 +85,7 @@ class StrItem(ControlItem):
                 **base_id,
                 "name": name,
                 "param_key": param_key,
-                "layer": "title",
+                "layer": "label",
             },
             item=self.input,
             style=style,
@@ -120,7 +120,7 @@ class SliderItem(ControlItem):
                 **base_id,
                 "name": name,
                 "param_key": param_key,
-                "layer": "title",
+                "layer": "label",
             },
             item=self.input,
             style=style,
@@ -196,7 +196,7 @@ class RadioItem(ControlItem):
         )
 
 
-class BoolItem(dmc.Grid):
+class BoolItem(ControlItem):
     def __init__(
         self, name, base_id, title=None, param_key=None, visible=True, **kwargs
     ):
@@ -214,45 +214,33 @@ class BoolItem(dmc.Grid):
             style["display"] = "none"
 
         super(BoolItem, self).__init__(
-            id={**base_id, "name": name, "param_key": param_key, "layer": "form_group"},
-            children=[self.input, dmc.Space(h=25)],
+            title="",  # title is already in the switch
+            title_id={
+                **base_id,
+                "name": name,
+                "param_key": param_key,
+                "layer": "label",
+            },
+            item=self.input,
             style=style,
         )
 
 
-class ParameterEditor(dbc.Form):
+class ParameterItems(dbc.Form):
     type_map = {
-        float: NumberItem,
-        int: NumberItem,
-        str: StrItem,
+        "float": NumberItem,
+        "int": NumberItem,
+        "str": StrItem,
+        "slider": SliderItem,
+        "dropdown": DropdownItem,
+        "radio": RadioItem,
+        "bool": BoolItem,
     }
 
-    def __init__(self, _id, parameters, **kwargs):
-        self._parameters = parameters
-
-        super(ParameterEditor, self).__init__(
-            id=_id, children=[], className="kwarg-editor", **kwargs
-        )
-        self.children = self.build_children()
-
-    def init_callbacks(self, app):
-        app.callback(
-            Output(self.id, "n_submit"),
-            Input({**self.id, "name": ALL}, "value"),
-            State(self.id, "n_submit"),
-        )
-
-        for child in self.children:
-            if hasattr(child, "init_callbacks"):
-                child.init_callbacks(app)
-
-    @property
-    def values(self):
-        return {param["name"]: param.get("value", None) for param in self._parameters}
-
-    @property
-    def parameters(self):
-        return {param["name"]: param for param in self._parameters}
+    def __init__(self, _id, json_blob, values=None):
+        super(ParameterItems, self).__init__(id=_id, children=[])
+        self._json_blob = json_blob
+        self.children = self.build_children(values=values)
 
     def _determine_type(self, parameter_dict):
         if "type" in parameter_dict:
@@ -268,47 +256,15 @@ class ParameterEditor(dbc.Form):
 
     def build_children(self, values=None):
         children = []
-        for parameter_dict in self._parameters:
-            parameter_dict = parameter_dict.copy()
-            if values and parameter_dict["name"] in values:
-                parameter_dict["value"] = values[parameter_dict["name"]]
-            type = self._determine_type(parameter_dict)
-            parameter_dict.pop("type", None)
-            item = self.type_map[type](**parameter_dict, base_id=self.id)
-            children.append(item)
-
-        return children
-
-
-class JSONParameterEditor(ParameterEditor):
-    type_map = {
-        "float": NumberItem,
-        "int": NumberItem,
-        "str": StrItem,
-        "slider": SliderItem,
-        "dropdown": DropdownItem,
-        "radio": RadioItem,
-        "bool": BoolItem,
-    }
-
-    def __init__(self, _id, json_blob, **kwargs):
-        super(ParameterEditor, self).__init__(
-            id=_id, children=[], className="kwarg-editor", **kwargs
-        )
-        self._json_blob = json_blob
-        self.children = self.build_children()
-
-    def build_children(self, values=None):
-        children = []
         for json_record in self._json_blob:
-            ...
-            # build a parameter dict from self.json_blob
-            ...
+            # Build a parameter dict from self.json_blob
             type = json_record.get("type", self._determine_type(json_record))
             json_record = json_record.copy()
             if values and json_record["name"] in values:
                 json_record["value"] = values[json_record["name"]]
             json_record.pop("type", None)
+            if "comp_group" in json_record:
+                json_record.pop("comp_group", None)
             item = self.type_map[type](**json_record, base_id=self.id)
             children.append(item)
 

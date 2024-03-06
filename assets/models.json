@@ -22,7 +22,7 @@
                 {
                     "type": "int",
                     "name": "num_layers",
-                    "title": "Number of Layers",
+                    "title": "# Layers",
                     "param_key": "num_layers",
                     "value": 3,
                     "comp_group": "train_model"

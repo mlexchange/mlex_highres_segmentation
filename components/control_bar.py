@@ -7,8 +7,7 @@ from dash_iconify import DashIconify
 from components.annotation_class import annotation_class_item
 from components.dash_component_editor import ControlItem
 from constants import ANNOT_ICONS, KEYBINDS
-from utils.content_registry import models
-from utils.data_utils import tiled_dataset
+from utils.data_utils import models, tiled_dataset
 
 
 def _tooltip(text, children):
@@ -605,8 +604,8 @@ def layout():
                                     ),
                                 ),
                                 dmc.Space(h=25),
-                                html.Div(id="gui-layouts"),
-                                dcc.Store(id="gui-components-values", data={}),
+                                html.Div(id="model-parameters"),
+                                dcc.Store(id="model-parameter-values", data={}),
                                 dmc.Space(h=25),
                                 dmc.Center(
                                     dmc.Button(

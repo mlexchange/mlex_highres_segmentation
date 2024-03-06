@@ -25,11 +25,10 @@ from dash.exceptions import PreventUpdate
 from dash_iconify import DashIconify
 
 from components.annotation_class import annotation_class_item
-from components.dash_component_editor import JSONParameterEditor
+from components.dash_component_editor import ParameterItems
 from constants import ANNOT_ICONS, ANNOT_NOTIFICATION_MSGS, KEY_MODES, KEYBINDS
 from utils.annotations import Annotations
-from utils.content_registry import models
-from utils.data_utils import tiled_dataset
+from utils.data_utils import models, tiled_dataset
 from utils.plot_utils import generate_notification, generate_notification_bg_icon_col
 
 # TODO - temporary local file path and user for annotation saving and exporting
@@ -918,18 +917,16 @@ def update_current_annotated_slices_values(all_classes):
 
 
 @callback(
-    Output("gui-layouts", "children"),
+    Output("model-parameters", "children"),
     Input("model-list", "value"),
 )
 def update_model_parameters(model_name):
-    data = models.models[model_name]
-    if data["gui_parameters"]:
-        item_list = JSONParameterEditor(
-            _id={"type": str(uuid.uuid4())},
-            json_blob=models.remove_key_from_dict_list(
-                data["gui_parameters"], "comp_group"
-            ),
+    model = models[model_name]
+    if model["gui_parameters"]:
+        # TODO: Retain old parameters if they exist
+        item_list = ParameterItems(
+            _id={"type": str(uuid.uuid4())}, json_blob=model["gui_parameters"]
         )
-        return [item_list]
+        return item_list
     else:
-        return [""]
+        return html.Div("Model has no parameters")
