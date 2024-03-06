@@ -306,24 +306,6 @@
                     "comp_group": "train_model"
                 },
                 {
-                    "type": "radio",
-                    "name": "shuffle_val",
-                    "title": "Shuffle Training",
-                    "param_key": "shuffle_val",
-                    "value": true,
-                    "options": [
-                        {
-                            "label": "True",
-                            "value": true
-                        },
-                        {
-                            "label": "False",
-                            "value": false
-                        }
-                    ],
-                    "comp_group": "train_model"
-                },
-                {
                     "type": "slider",
                     "name": "batch_size_val",
                     "title": "Validation Batch Size",
@@ -333,24 +315,6 @@
                     "step": 16,
                     "value": 32,
                     "comp_group": "train_model"
-                },
-                {
-                    "type": "radio",
-                    "name": "shuffle_inference",
-                    "title": "Shuffle Inference",
-                    "param_key": "shuffle_inference",
-                    "value": true,
-                    "options": [
-                        {
-                            "label": "True",
-                            "value": true
-                        },
-                        {
-                            "label": "False",
-                            "value": false
-                        }
-                    ],
-                    "comp_group": "prediction_model"
                 },
                 {
                     "type": "slider",
@@ -658,24 +622,6 @@
                     "comp_group": "train_model"
                 },
                 {
-                    "type": "radio",
-                    "name": "shuffle_val",
-                    "title": "Shuffle Training",
-                    "param_key": "shuffle_val",
-                    "value": true,
-                    "options": [
-                        {
-                            "label": "True",
-                            "value": true
-                        },
-                        {
-                            "label": "False",
-                            "value": false
-                        }
-                    ],
-                    "comp_group": "train_model"
-                },
-                {
                     "type": "slider",
                     "name": "batch_size_val",
                     "title": "Validation Batch Size",
@@ -685,24 +631,6 @@
                     "step": 16,
                     "value": 32,
                     "comp_group": "train_model"
-                },
-                {
-                    "type": "radio",
-                    "name": "shuffle_inference",
-                    "title": "Shuffle Inference",
-                    "param_key": "shuffle_inference",
-                    "value": true,
-                    "options": [
-                        {
-                            "label": "True",
-                            "value": true
-                        },
-                        {
-                            "label": "False",
-                            "value": false
-                        }
-                    ],
-                    "comp_group": "prediction_model"
                 },
                 {
                     "type": "slider",
@@ -1018,24 +946,6 @@
                     "comp_group": "train_model"
                 },
                 {
-                    "type": "radio",
-                    "name": "shuffle_val",
-                    "title": "Shuffle Training",
-                    "param_key": "shuffle_val",
-                    "value": true,
-                    "options": [
-                        {
-                            "label": "True",
-                            "value": true
-                        },
-                        {
-                            "label": "False",
-                            "value": false
-                        }
-                    ],
-                    "comp_group": "train_model"
-                },
-                {
                     "type": "slider",
                     "name": "batch_size_val",
                     "title": "Validation Batch Size",
@@ -1045,24 +955,6 @@
                     "step": 16,
                     "value": 32,
                     "comp_group": "train_model"
-                },
-                {
-                    "type": "radio",
-                    "name": "shuffle_inference",
-                    "title": "Shuffle Inference",
-                    "param_key": "shuffle_inference",
-                    "value": true,
-                    "options": [
-                        {
-                            "label": "True",
-                            "value": true
-                        },
-                        {
-                            "label": "False",
-                            "value": false
-                        }
-                    ],
-                    "comp_group": "prediction_model"
                 },
                 {
                     "type": "slider",
