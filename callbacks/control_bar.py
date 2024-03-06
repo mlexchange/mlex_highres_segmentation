@@ -25,7 +25,7 @@ from dash.exceptions import PreventUpdate
 from dash_iconify import DashIconify
 
 from components.annotation_class import annotation_class_item
-from components.dash_component_editor import ParameterItems
+from components.parameter_items import ParameterItems
 from constants import ANNOT_ICONS, ANNOT_NOTIFICATION_MSGS, KEY_MODES, KEYBINDS
 from utils.annotations import Annotations
 from utils.data_utils import models, tiled_dataset

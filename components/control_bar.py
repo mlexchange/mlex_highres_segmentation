@@ -5,7 +5,7 @@ from dash_extensions import EventListener
 from dash_iconify import DashIconify
 
 from components.annotation_class import annotation_class_item
-from components.dash_component_editor import ControlItem
+from components.parameter_items import ControlItem
 from constants import ANNOT_ICONS, KEYBINDS
 from utils.data_utils import models, tiled_dataset
 
