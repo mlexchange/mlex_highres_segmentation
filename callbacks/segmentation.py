@@ -7,7 +7,7 @@ import requests
 from dash import ALL, Input, Output, State, callback, no_update
 from dash.exceptions import PreventUpdate
 
-from utils.data_utils import extract_parameters_from_html, tiled_dataset
+from utils.data_utils import extract_parameters_from_html, tiled_masks
 
 MODE = os.getenv("MODE", "")
 
@@ -80,18 +80,20 @@ def run_job(n_clicks, global_store, all_annotations, project_name, model_paramet
         # return the input values in dictionary and save to the model parameter store
         print(f"input_param:\n{input_params}")
         if MODE == "dev":
+            mask_uri = tiled_masks.save_annotations_data(
+                global_store, all_annotations, project_name
+            )
             job_uid = str(uuid.uuid4())
             return (
                 dmc.Text(
-                    f"Workflow has been succesfully submitted with uid: {job_uid}",
+                    f"Workflow has been succesfully submitted with uid: {job_uid} and mask uri: {mask_uri}",
                     size="sm",
                 ),
                 job_uid,
                 input_params,
             )
         else:
-
-            tiled_dataset.save_annotations_data(
+            mask_uri = tiled_masks.save_annotations_data(
                 global_store, all_annotations, project_name
             )
             job_submitted = requests.post(
