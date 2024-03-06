@@ -1,7 +1,6 @@
 import dash_bootstrap_components as dbc
-import dash_daq as daq
 import dash_mantine_components as dmc
-from dash import ALL, Input, Output, State, dcc, html
+from dash import ALL, Input, Output, State, html
 
 
 class ControlItem(dmc.Grid):
@@ -9,9 +8,9 @@ class ControlItem(dmc.Grid):
     Customized layout for a control item
     """
 
-    def __init__(self, title, title_id, item, **kwargs):
+    def __init__(self, title, title_id, item, style={}):
         super(ControlItem, self).__init__(
-            [
+            children=[
                 dmc.Text(
                     title,
                     id=title_id,
@@ -21,67 +20,93 @@ class ControlItem(dmc.Grid):
                 ),
                 html.Div(item, style={"width": "265px", "margin": "auto"}),
             ],
-            **kwargs,
+            style=style,
         )
 
 
-class SimpleItem(dbc.Col):
+class NumberItem(ControlItem):
     def __init__(
         self,
         name,
         base_id,
         title=None,
         param_key=None,
-        type="number",
-        debounce=True,
-        **kwargs,
-    ):
-        if param_key is None:
-            param_key = name
-        self.label = dbc.Label(title)
-        self.input = dbc.Input(
-            type=type,
-            debounce=debounce,
-            id={**base_id, "name": name, "param_key": param_key},
-            **kwargs,
-        )
-
-        super(SimpleItem, self).__init__(children=[self.label, self.input])
-
-
-class FloatItem(SimpleItem):
-    pass
-
-
-class IntItem(SimpleItem):
-    def __init__(self, *args, **kwargs):
-        if "min" not in kwargs:
-            kwargs["min"] = -9007199254740991
-        super(IntItem, self).__init__(*args, step=1, **kwargs)
-
-
-class StrItem(SimpleItem):
-    def __init__(self, *args, **kwargs):
-        super(StrItem, self).__init__(*args, type="text", **kwargs)
-
-
-class SliderItem(dbc.Col):
-    def __init__(
-        self,
-        name,
-        base_id,
-        title=None,
-        param_key=None,
-        debounce=True,
         visible=True,
         **kwargs,
     ):
         if param_key is None:
             param_key = name
-        self.label = dbc.Label(title)
-        self.input = dcc.Slider(
+        self.input = dmc.NumberInput(
             id={**base_id, "name": name, "param_key": param_key, "layer": "input"},
-            tooltip={"placement": "bottom", "always_visible": True},
+            **kwargs,
+        )
+
+        style = {}
+        if not visible:
+            style["display"] = "none"
+
+        super(NumberItem, self).__init__(
+            title=title,
+            title_id={
+                **base_id,
+                "name": name,
+                "param_key": param_key,
+                "layer": "title",
+            },
+            item=self.input,
+            style=style,
+        )
+
+
+class StrItem(ControlItem):
+    def __init__(
+        self,
+        name,
+        base_id,
+        title=None,
+        param_key=None,
+        visible=True,
+        **kwargs,
+    ):
+        if param_key is None:
+            param_key = name
+        self.input = dmc.TextInput(
+            id={**base_id, "name": name, "param_key": param_key, "layer": "input"},
+            **kwargs,
+        )
+
+        style = {}
+        if not visible:
+            style["display"] = "none"
+
+        super(StrItem, self).__init__(
+            title=title,
+            title_id={
+                **base_id,
+                "name": name,
+                "param_key": param_key,
+                "layer": "title",
+            },
+            item=self.input,
+            style=style,
+        )
+
+
+class SliderItem(ControlItem):
+    def __init__(
+        self,
+        name,
+        base_id,
+        title=None,
+        param_key=None,
+        visible=True,
+        **kwargs,
+    ):
+        if param_key is None:
+            param_key = name
+        self.input = dmc.Slider(
+            id={**base_id, "name": name, "param_key": param_key, "layer": "input"},
+            labelAlwaysOn=False,
             **kwargs,
         )
 
@@ -90,27 +115,31 @@ class SliderItem(dbc.Col):
             style["display"] = "none"
 
         super(SliderItem, self).__init__(
-            id={**base_id, "name": name, "param_key": param_key, "layer": "form_group"},
-            children=[self.label, self.input],
+            title=title,
+            title_id={
+                **base_id,
+                "name": name,
+                "param_key": param_key,
+                "layer": "title",
+            },
+            item=self.input,
             style=style,
         )
 
 
-class DropdownItem(dbc.Col):
+class DropdownItem(ControlItem):
     def __init__(
         self,
         name,
         base_id,
         title=None,
         param_key=None,
-        debounce=True,
         visible=True,
         **kwargs,
     ):
         if param_key is None:
             param_key = name
-        self.label = dbc.Label(title)
-        self.input = dcc.Dropdown(
+        self.input = dmc.Select(
             id={**base_id, "name": name, "param_key": param_key, "layer": "input"},
             **kwargs,
         )
@@ -120,20 +149,32 @@ class DropdownItem(dbc.Col):
             style["display"] = "none"
 
         super(DropdownItem, self).__init__(
-            id={**base_id, "name": name, "param_key": param_key, "layer": "form_group"},
-            children=[self.label, self.input],
+            title=title,
+            title_id={
+                **base_id,
+                "name": name,
+                "param_key": param_key,
+                "layer": "label",
+            },
+            item=self.input,
             style=style,
         )
 
 
-class RadioItem(dbc.Col):
+class RadioItem(ControlItem):
     def __init__(
         self, name, base_id, title=None, param_key=None, visible=True, **kwargs
     ):
         if param_key is None:
             param_key = name
-        self.label = dbc.Label(title)
-        self.input = dbc.RadioItems(
+
+        options = [
+            dmc.Radio(option["label"], value=option["value"])
+            for option in kwargs["options"]
+        ]
+        kwargs.pop("options", None)
+        self.input = dmc.RadioGroup(
+            options,
             id={**base_id, "name": name, "param_key": param_key, "layer": "input"},
             **kwargs,
         )
@@ -143,24 +184,30 @@ class RadioItem(dbc.Col):
             style["display"] = "none"
 
         super(RadioItem, self).__init__(
-            id={**base_id, "name": name, "param_key": param_key, "layer": "form_group"},
-            children=[self.label, self.input],
+            title=title,
+            title_id={
+                **base_id,
+                "name": name,
+                "param_key": param_key,
+                "layer": "label",
+            },
+            item=self.input,
             style=style,
         )
 
 
-class BoolItem(dbc.Col):
+class BoolItem(dmc.Grid):
     def __init__(
         self, name, base_id, title=None, param_key=None, visible=True, **kwargs
     ):
         if param_key is None:
             param_key = name
-        self.label = dbc.Label(title)
-        self.input = daq.ToggleSwitch(
+
+        self.input = dmc.Switch(
             id={**base_id, "name": name, "param_key": param_key, "layer": "input"},
+            label=title,
             **kwargs,
         )
-        self.output_label = dbc.Label("False/True")
 
         style = {}
         if not visible:
@@ -168,15 +215,15 @@ class BoolItem(dbc.Col):
 
         super(BoolItem, self).__init__(
             id={**base_id, "name": name, "param_key": param_key, "layer": "form_group"},
-            children=[self.label, self.input, self.output_label],
+            children=[self.input, dmc.Space(h=25)],
             style=style,
         )
 
 
 class ParameterEditor(dbc.Form):
     type_map = {
-        float: FloatItem,
-        int: IntItem,
+        float: NumberItem,
+        int: NumberItem,
         str: StrItem,
     }
 
@@ -235,8 +282,8 @@ class ParameterEditor(dbc.Form):
 
 class JSONParameterEditor(ParameterEditor):
     type_map = {
-        "float": FloatItem,
-        "int": IntItem,
+        "float": NumberItem,
+        "int": NumberItem,
         "str": StrItem,
         "slider": SliderItem,
         "dropdown": DropdownItem,

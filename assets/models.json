@@ -14,7 +14,7 @@
                 {
                     "type": "int",
                     "name": "layer_width",
-                    "title": "Layers Width",
+                    "title": "Layer Width",
                     "param_key": "layer_width",
                     "value": 1,
                     "comp_group": "train_model"
@@ -28,21 +28,11 @@
                     "comp_group": "train_model"
                 },
                 {
-                    "type": "radio",
+                    "type": "bool",
                     "name": "custom_dilation",
                     "title": "Custom Dilation",
                     "param_key": "custom_dilation",
-                    "value": true,
-                    "options": [
-                        {
-                            "label": "True",
-                            "value": true
-                        },
-                        {
-                            "label": "False",
-                            "value": false
-                        }
-                    ],
+                    "checked": false,
                     "comp_group": "train_model"
                 },
                 {
@@ -64,11 +54,25 @@
                 {
                     "type": "slider",
                     "name": "num_epochs",
-                    "title": "Number of epoch",
+                    "title": "# Epochs",
                     "param_key": "num_epochs",
                     "min": 1,
                     "max": 1000,
                     "value": 30,
+                    "marks": [
+                        {
+                            "value": 1,
+                            "label": "1"
+                        },
+                        {
+                            "value": 100,
+                            "label": "100"
+                        },
+                        {
+                            "value": 1000,
+                            "label": "1000"
+                        }
+                    ],
                     "comp_group": "train_model"
                 },
                 {
@@ -77,7 +81,7 @@
                     "title": "Optimizer",
                     "param_key": "optimizer",
                     "value": "Adam",
-                    "options": [
+                    "data": [
                         {
                             "label": "Adadelta",
                             "value": "Adadelta"
@@ -131,7 +135,7 @@
                     "title": "Criterion",
                     "param_key": "criterion",
                     "value": "MSELoss",
-                    "options": [
+                    "data": [
                         {
                             "label": "L1Loss",
                             "value": "L1Loss"
@@ -241,7 +245,7 @@
                     "title": "Activation",
                     "param_key": "activation",
                     "value": "ReLU",
-                    "options": [
+                    "data": [
                         {
                             "label": "ReLU",
                             "value": "ReLU"
@@ -270,61 +274,115 @@
                     "max": 100,
                     "step": 5,
                     "value": 20,
-                    "marks": {
-                        "0": "0",
-                        "100": "100"
-                    },
+                    "marks": [
+                        {
+                            "value": 0,
+                            "label": "0%"
+                        },
+                        {
+                            "value": 50,
+                            "label": "50%"
+                        },
+                        {
+                            "value": 100,
+                            "label": "100%"
+                        }
+                    ],
                     "comp_group": "train_model"
                 },
                 {
-                    "type": "radio",
+                    "type": "bool",
                     "name": "shuffle_train",
                     "title": "Shuffle Training",
                     "param_key": "shuffle_train",
-                    "value": true,
-                    "options": [
+                    "checked": true,
+                    "comp_group": "train_model"
+                },
+                {
+                    "type": "slider",
+                    "name": "batch_size_train",
+                    "title": "Batch Size Training",
+                    "param_key": "batch_size_train",
+                    "min": 16,
+                    "max": 128,
+                    "step": 16,
+                    "value": 32,
+                    "marks": [
                         {
-                            "label": "True",
-                            "value": true
+                            "value": 16,
+                            "label": "16"
                         },
                         {
-                            "label": "False",
-                            "value": false
+                            "value": 32,
+                            "label": "32"
+                        },
+                        {
+                            "value": 64,
+                            "label": "64"
+                        },
+                        {
+                            "value": 128,
+                            "label": "128"
                         }
                     ],
                     "comp_group": "train_model"
                 },
                 {
                     "type": "slider",
-                    "name": "batch_size_train",
-                    "title": "Training Batch Size",
-                    "param_key": "batch_size_train",
-                    "min": 16,
-                    "max": 128,
-                    "step": 16,
-                    "value": 32,
-                    "comp_group": "train_model"
-                },
-                {
-                    "type": "slider",
                     "name": "batch_size_val",
-                    "title": "Validation Batch Size",
+                    "title": "Batch Size Validation",
                     "param_key": "batch_size_val",
                     "min": 16,
                     "max": 128,
                     "step": 16,
                     "value": 32,
+                    "marks": [
+                        {
+                            "value": 16,
+                            "label": "16"
+                        },
+                        {
+                            "value": 32,
+                            "label": "32"
+                        },
+                        {
+                            "value": 64,
+                            "label": "64"
+                        },
+                        {
+                            "value": 128,
+                            "label": "128"
+                        }
+                    ],
                     "comp_group": "train_model"
                 },
                 {
                     "type": "slider",
                     "name": "batch_size_inference",
-                    "title": "Inference Batch Size",
+                    "title": "Batch Size Inference",
                     "param_key": "batch_size_inference",
                     "min": 16,
                     "max": 128,
                     "step": 16,
                     "value": 32,
+                    "marks": [
+                        {
+                            "value": 16,
+                            "label": "16"
+                        },
+                        {
+                            "value": 32,
+                            "label": "32"
+                        },
+                        {
+                            "value": 64,
+                            "label": "64"
+                        },
+                        {
+                            "value": 128,
+                            "label": "128"
+                        }
+                    ],
                     "comp_group": "prediction_model"
                 }
             ],
@@ -380,11 +438,25 @@
                 {
                     "type": "slider",
                     "name": "num_epochs",
-                    "title": "Number of epoch",
+                    "title": "# Epochs",
                     "param_key": "num_epochs",
                     "min": 1,
                     "max": 1000,
                     "value": 30,
+                    "marks": [
+                        {
+                            "value": 1,
+                            "label": "1"
+                        },
+                        {
+                            "value": 100,
+                            "label": "100"
+                        },
+                        {
+                            "value": 1000,
+                            "label": "1000"
+                        }
+                    ],
                     "comp_group": "train_model"
                 },
                 {
@@ -393,7 +465,7 @@
                     "title": "Optimizer",
                     "param_key": "optimizer",
                     "value": "Adam",
-                    "options": [
+                    "data": [
                         {
                             "label": "Adadelta",
                             "value": "Adadelta"
@@ -447,7 +519,7 @@
                     "title": "Criterion",
                     "param_key": "criterion",
                     "value": "MSELoss",
-                    "options": [
+                    "data": [
                         {
                             "label": "L1Loss",
                             "value": "L1Loss"
@@ -557,7 +629,7 @@
                     "title": "Activation",
                     "param_key": "activation",
                     "value": "ReLU",
-                    "options": [
+                    "data": [
                         {
                             "label": "ReLU",
                             "value": "ReLU"
@@ -586,28 +658,24 @@
                     "max": 100,
                     "step": 5,
                     "value": 20,
-                    "marks": {
-                        "0": "0",
-                        "100": "100"
-                    },
+                    "marks": [
+                        {
+                            "value": 0,
+                            "label": "0%"
+                        },
+                        {
+                            "value": 100,
+                            "label": "100%"
+                        }
+                    ],
                     "comp_group": "train_model"
                 },
                 {
-                    "type": "radio",
+                    "type": "bool",
                     "name": "shuffle_train",
                     "title": "Shuffle Training",
                     "param_key": "shuffle_train",
-                    "value": true,
-                    "options": [
-                        {
-                            "label": "True",
-                            "value": true
-                        },
-                        {
-                            "label": "False",
-                            "value": false
-                        }
-                    ],
+                    "checked": true,
                     "comp_group": "train_model"
                 },
                 {
@@ -619,6 +687,24 @@
                     "max": 128,
                     "step": 16,
                     "value": 32,
+                    "marks": [
+                        {
+                            "value": 16,
+                            "label": "16"
+                        },
+                        {
+                            "value": 32,
+                            "label": "32"
+                        },
+                        {
+                            "value": 64,
+                            "label": "64"
+                        },
+                        {
+                            "value": 128,
+                            "label": "128"
+                        }
+                    ],
                     "comp_group": "train_model"
                 },
                 {
@@ -630,6 +716,24 @@
                     "max": 128,
                     "step": 16,
                     "value": 32,
+                    "marks": [
+                        {
+                            "value": 16,
+                            "label": "16"
+                        },
+                        {
+                            "value": 32,
+                            "label": "32"
+                        },
+                        {
+                            "value": 64,
+                            "label": "64"
+                        },
+                        {
+                            "value": 128,
+                            "label": "128"
+                        }
+                    ],
                     "comp_group": "train_model"
                 },
                 {
@@ -641,6 +745,24 @@
                     "max": 128,
                     "step": 16,
                     "value": 32,
+                    "marks": [
+                        {
+                            "value": 16,
+                            "label": "16"
+                        },
+                        {
+                            "value": 32,
+                            "label": "32"
+                        },
+                        {
+                            "value": 64,
+                            "label": "64"
+                        },
+                        {
+                            "value": 128,
+                            "label": "128"
+                        }
+                    ],
                     "comp_group": "prediction_model"
                 }
             ],
@@ -704,11 +826,25 @@
                 {
                     "type": "slider",
                     "name": "num_epochs",
-                    "title": "Number of epoch",
+                    "title": "# Epochs",
                     "param_key": "num_epochs",
                     "min": 1,
                     "max": 1000,
                     "value": 30,
+                    "marks": [
+                        {
+                            "value": 1,
+                            "label": "1"
+                        },
+                        {
+                            "value": 100,
+                            "label": "100"
+                        },
+                        {
+                            "value": 1000,
+                            "label": "1000"
+                        }
+                    ],
                     "comp_group": "train_model"
                 },
                 {
@@ -717,7 +853,7 @@
                     "title": "Optimizer",
                     "param_key": "optimizer",
                     "value": "Adam",
-                    "options": [
+                    "data": [
                         {
                             "label": "Adadelta",
                             "value": "Adadelta"
@@ -771,7 +907,7 @@
                     "title": "Criterion",
                     "param_key": "criterion",
                     "value": "MSELoss",
-                    "options": [
+                    "data": [
                         {
                             "label": "L1Loss",
                             "value": "L1Loss"
@@ -881,7 +1017,7 @@
                     "title": "Activation",
                     "param_key": "activation",
                     "value": "ReLU",
-                    "options": [
+                    "data": [
                         {
                             "label": "ReLU",
                             "value": "ReLU"
@@ -910,28 +1046,24 @@
                     "max": 100,
                     "step": 5,
                     "value": 20,
-                    "marks": {
-                        "0": "0",
-                        "100": "100"
-                    },
+                    "marks": [
+                        {
+                            "value": 0,
+                            "label": "0%"
+                        },
+                        {
+                            "value": 100,
+                            "label": "100%"
+                        }
+                    ],
                     "comp_group": "train_model"
                 },
                 {
-                    "type": "radio",
+                    "type": "bool",
                     "name": "shuffle_train",
                     "title": "Shuffle Training",
                     "param_key": "shuffle_train",
-                    "value": true,
-                    "options": [
-                        {
-                            "label": "True",
-                            "value": true
-                        },
-                        {
-                            "label": "False",
-                            "value": false
-                        }
-                    ],
+                    "checked": true,
                     "comp_group": "train_model"
                 },
                 {
@@ -943,6 +1075,24 @@
                     "max": 128,
                     "step": 16,
                     "value": 32,
+                    "marks": [
+                        {
+                            "value": 16,
+                            "label": "16"
+                        },
+                        {
+                            "value": 32,
+                            "label": "32"
+                        },
+                        {
+                            "value": 64,
+                            "label": "64"
+                        },
+                        {
+                            "value": 128,
+                            "label": "128"
+                        }
+                    ],
                     "comp_group": "train_model"
                 },
                 {
@@ -954,6 +1104,24 @@
                     "max": 128,
                     "step": 16,
                     "value": 32,
+                    "marks": [
+                        {
+                            "value": 16,
+                            "label": "16"
+                        },
+                        {
+                            "value": 32,
+                            "label": "32"
+                        },
+                        {
+                            "value": 64,
+                            "label": "64"
+                        },
+                        {
+                            "value": 128,
+                            "label": "128"
+                        }
+                    ],
                     "comp_group": "train_model"
                 },
                 {
@@ -965,6 +1133,24 @@
                     "max": 128,
                     "step": 16,
                     "value": 32,
+                    "marks": [
+                        {
+                            "value": 16,
+                            "label": "16"
+                        },
+                        {
+                            "value": 32,
+                            "label": "32"
+                        },
+                        {
+                            "value": 64,
+                            "label": "64"
+                        },
+                        {
+                            "value": 128,
+                            "label": "128"
+                        }
+                    ],
                     "comp_group": "prediction_model"
                 }
             ],
