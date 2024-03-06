@@ -168,7 +168,18 @@ class TiledMaskHandler:
         """
         Transforms annotations data to a pixelated mask and outputs to the Tiled server
         """
-        annotations = Annotations(all_annotations, global_store)
+        if "image_shapes" in global_store:
+            image_shape = global_store["image_shapes"][0]
+        else:
+            print("Global store was not filled.")
+            data_shape = (
+                tiled_datasets.get_data_shape_by_name(project_name)
+                if project_name
+                else None
+            )
+            image_shape = (data_shape[1], data_shape[2])
+
+        annotations = Annotations(all_annotations, image_shape)
         # TODO: Check sparse status, it may be worthwhile to store the mask as a sparse array
         # if our machine learning models can handle sparse arrays
         annotations.create_annotation_mask(sparse=False)
