@@ -2,7 +2,7 @@ import os
 
 import dash_auth
 import dash_mantine_components as dmc
-from dash import Dash, dcc
+from dash import Dash
 
 from callbacks.control_bar import *  # noqa: F403, F401
 from callbacks.image_viewer import *  # noqa: F403, F401
@@ -30,9 +30,8 @@ app.layout = dmc.MantineProvider(
     children=[
         control_bar_layout(),
         image_viewer_layout(),
-        dcc.Store(id="current-class-selection", data="#FFA200"),
     ],
 )
 
 if __name__ == "__main__":
-    app.run_server(debug=True)
+    app.run_server(host="0.0.0.0", port=8075, debug=True)

@@ -7,7 +7,7 @@ import requests
 from dash import ALL, Input, Output, State, callback, no_update
 from dash.exceptions import PreventUpdate
 
-from utils.data_utils import tiled_masks
+from utils.data_utils import extract_parameters_from_html, tiled_masks
 
 MODE = os.getenv("MODE", "")
 
@@ -58,12 +58,14 @@ DEMO_WORKFLOW = {
 @callback(
     Output("output-details", "children"),
     Output("submitted-job-id", "data"),
+    Output("model-parameter-values", "data"),
     Input("run-model", "n_clicks"),
     State("annotation-store", "data"),
     State({"type": "annotation-class-store", "index": ALL}, "data"),
     State("project-name-src", "value"),
+    State("model-parameters", "children"),
 )
-def run_job(n_clicks, global_store, all_annotations, project_name):
+def run_job(n_clicks, global_store, all_annotations, project_name, model_parameters):
     """
     This callback collects parameters from the UI and submits a job to the computing api.
     If the app is run from "dev" mode, then only a placeholder job_uid will be created.
@@ -72,7 +74,11 @@ def run_job(n_clicks, global_store, all_annotations, project_name):
     # TODO: Appropriately paramaterize the DEMO_WORKFLOW json depending on user inputs
     and relevant file paths
     """
+    input_params = {}
     if n_clicks:
+        input_params = extract_parameters_from_html(model_parameters)
+        # return the input values in dictionary and save to the model parameter store
+        print(f"input_param:\n{input_params}")
         if MODE == "dev":
             mask_uri = tiled_masks.save_annotations_data(
                 global_store, all_annotations, project_name
@@ -84,6 +90,7 @@ def run_job(n_clicks, global_store, all_annotations, project_name):
                     size="sm",
                 ),
                 job_uid,
+                input_params,
             )
         else:
             mask_uri = tiled_masks.save_annotations_data(
@@ -100,6 +107,7 @@ def run_job(n_clicks, global_store, all_annotations, project_name):
                         size="sm",
                     ),
                     job_uid,
+                    input_params,
                 )
             else:
                 return (
@@ -108,8 +116,9 @@ def run_job(n_clicks, global_store, all_annotations, project_name):
                         size="sm",
                     ),
                     job_uid,
+                    input_params,
                 )
-    return no_update, no_update
+    return no_update, no_update, input_params
 
 
 @callback(

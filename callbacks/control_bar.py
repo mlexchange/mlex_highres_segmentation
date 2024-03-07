@@ -2,6 +2,7 @@ import json
 import os
 import random
 import time
+import uuid
 
 import dash_mantine_components as dmc
 import plotly.express as px
@@ -24,9 +25,10 @@ from dash.exceptions import PreventUpdate
 from dash_iconify import DashIconify
 
 from components.annotation_class import annotation_class_item
+from components.parameter_items import ParameterItems
 from constants import ANNOT_ICONS, ANNOT_NOTIFICATION_MSGS, KEY_MODES, KEYBINDS
 from utils.annotations import Annotations
-from utils.data_utils import tiled_datasets, tiled_masks, tiled_results
+from utils.data_utils import models, tiled_datasets, tiled_masks, tiled_results
 from utils.plot_utils import generate_notification, generate_notification_bg_icon_col
 
 # TODO - temporary local file path and user for annotation saving and exporting
@@ -917,3 +919,19 @@ def update_current_annotated_slices_values(all_classes):
     ]
     disabled = True if len(dropdown_values) == 0 else False
     return dropdown_values, disabled
+
+
+@callback(
+    Output("model-parameters", "children"),
+    Input("model-list", "value"),
+)
+def update_model_parameters(model_name):
+    model = models[model_name]
+    if model["gui_parameters"]:
+        # TODO: Retain old parameters if they exist
+        item_list = ParameterItems(
+            _id={"type": str(uuid.uuid4())}, json_blob=model["gui_parameters"]
+        )
+        return item_list
+    else:
+        return html.Div("Model has no parameters")

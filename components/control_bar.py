@@ -5,8 +5,9 @@ from dash_extensions import EventListener
 from dash_iconify import DashIconify
 
 from components.annotation_class import annotation_class_item
+from components.parameter_items import ControlItem
 from constants import ANNOT_ICONS, KEYBINDS
-from utils.data_utils import tiled_datasets
+from utils.data_utils import models, tiled_datasets
 
 
 def _tooltip(text, children):
@@ -15,24 +16,6 @@ def _tooltip(text, children):
     """
     return dmc.Tooltip(
         label=text, withArrow=True, position="top", color="#464646", children=children
-    )
-
-
-def _control_item(title, title_id, item):
-    """
-    Returns a customized layout for a control item
-    """
-    return dmc.Grid(
-        [
-            dmc.Text(
-                title,
-                id=title_id,
-                size="sm",
-                style={"width": "100px", "margin": "auto", "paddingRight": "5px"},
-                align="right",
-            ),
-            html.Div(item, style={"width": "265px", "margin": "auto"}),
-        ]
     )
 
 
@@ -78,7 +61,7 @@ def layout():
                             id="data-selection-controls",
                             children=[
                                 dmc.Space(h=5),
-                                _control_item(
+                                ControlItem(
                                     "Dataset",
                                     "image-selector",
                                     dmc.Grid(
@@ -114,7 +97,7 @@ def layout():
                                     ),
                                 ),
                                 dmc.Space(h=25),
-                                _control_item(
+                                ControlItem(
                                     "Slice 1",
                                     "image-selection-text",
                                     [
@@ -177,7 +160,7 @@ def layout():
                                     ],
                                 ),
                                 dmc.Space(h=25),
-                                _control_item(
+                                ControlItem(
                                     _tooltip(
                                         "Jump to your annotated slices",
                                         "Annotated slices",
@@ -207,7 +190,7 @@ def layout():
                             children=html.Div(
                                 [
                                     dmc.Space(h=5),
-                                    _control_item(
+                                    ControlItem(
                                         "Brightness",
                                         "bightness-text",
                                         [
@@ -251,7 +234,7 @@ def layout():
                                         ],
                                     ),
                                     dmc.Space(h=20),
-                                    _control_item(
+                                    ControlItem(
                                         "Contrast",
                                         "contrast-text",
                                         dmc.Grid(
@@ -452,6 +435,9 @@ def layout():
                                             },
                                             className="add-class-btn",
                                         ),
+                                        dcc.Store(
+                                            id="current-class-selection", data="#FFA200"
+                                        ),
                                         dmc.Space(h=20),
                                     ],
                                 ),
@@ -603,6 +589,24 @@ def layout():
                             "run-model",
                             id="model-configuration",
                             children=[
+                                ControlItem(
+                                    "Model",
+                                    "model-selector",
+                                    dmc.Select(
+                                        id="model-list",
+                                        data=models.modelname_list,
+                                        value=(
+                                            models.modelname_list[0]
+                                            if models.modelname_list[0]
+                                            else None
+                                        ),
+                                        placeholder="Select a model...",
+                                    ),
+                                ),
+                                dmc.Space(h=15),
+                                html.Div(id="model-parameters"),
+                                dcc.Store(id="model-parameter-values", data={}),
+                                dmc.Space(h=25),
                                 dmc.Center(
                                     dmc.Button(
                                         "Run model",
@@ -624,7 +628,7 @@ def layout():
                                     styles={"trackLabel": {"cursor": "pointer"}},
                                 ),
                                 dmc.Space(h=25),
-                                _control_item(
+                                ControlItem(
                                     "Results",
                                     "",
                                     dmc.Select(
@@ -633,7 +637,7 @@ def layout():
                                     ),
                                 ),
                                 dmc.Space(h=25),
-                                _control_item(
+                                ControlItem(
                                     "Opacity",
                                     "",
                                     dmc.Slider(

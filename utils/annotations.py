@@ -11,7 +11,7 @@ from svgpathtools import parse_path
 
 
 class Annotations:
-    def __init__(self, annotation_store, global_store):
+    def __init__(self, annotation_store, image_shape):
         if annotation_store:
             slices = []
             for annotation_class in annotation_store:
@@ -49,7 +49,7 @@ class Annotations:
         self.annotation_classes = annotation_classes
         self.annotations = annotations
         self.annotations_hash = self.get_annotations_hash()
-        self.image_shape = global_store["image_shapes"][0]
+        self.image_shape = image_shape
 
     def get_annotations(self):
         return self.annotations

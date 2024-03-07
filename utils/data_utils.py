@@ -168,7 +168,18 @@ class TiledMaskHandler:
         """
         Transforms annotations data to a pixelated mask and outputs to the Tiled server
         """
-        annotations = Annotations(all_annotations, global_store)
+        if "image_shapes" in global_store:
+            image_shape = global_store["image_shapes"][0]
+        else:
+            print("Global store was not filled.")
+            data_shape = (
+                tiled_datasets.get_data_shape_by_name(project_name)
+                if project_name
+                else None
+            )
+            image_shape = (data_shape[1], data_shape[2])
+
+        annotations = Annotations(all_annotations, image_shape)
         # TODO: Check sparse status, it may be worthwhile to store the mask as a sparse array
         # if our machine learning models can handle sparse arrays
         annotations.create_annotation_mask(sparse=False)
@@ -223,3 +234,45 @@ tiled_masks = TiledMaskHandler(
 tiled_results = TiledDataLoader(
     data_tiled_uri=SEG_TILED_URI, data_tiled_api_key=SEG_TILED_API_KEY
 )
+
+
+class Models:
+    def __init__(self, modelfile_path="./assets/models.json"):
+        self.path = modelfile_path
+        f = open(self.path)
+
+        contents = json.load(f)["contents"]
+        self.modelname_list = [content["model_name"] for content in contents]
+        self.models = {}
+
+        for i, n in enumerate(self.modelname_list):
+            self.models[n] = contents[i]
+
+    def __getitem__(self, key):
+        try:
+            return self.models[key]
+        except KeyError:
+            raise KeyError(f"A model with name {key} does not exist.")
+
+
+models = Models()
+
+
+def extract_parameters_from_html(model_parameters_html):
+    """
+    Extracts parameters from the children component of a
+    """
+    input_params = {}
+    for param in model_parameters_html["props"]["children"]:
+        # param["props"]["children"][0] is the label
+        # param["props"]["children"][1] is the input
+        parameter_container = param["props"]["children"][1]
+        # The achtual parameter item is the first and only child of the parameter container
+        parameter_item = parameter_container["props"]["children"]["props"]
+        key = parameter_item["id"]["param_key"]
+        if "value" in parameter_item:
+            value = parameter_item["value"]
+        elif "checked" in parameter_item:
+            value = parameter_item["checked"]
+        input_params[key] = value
+    return input_params
