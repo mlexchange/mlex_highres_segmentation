@@ -41,7 +41,7 @@ class NumberItem(ControlItem):
             **kwargs,
         )
 
-        style = {}
+        style = {"padding": "15px 0px 0px 0px"}
         if not visible:
             style["display"] = "none"
 
@@ -75,7 +75,7 @@ class StrItem(ControlItem):
             **kwargs,
         )
 
-        style = {}
+        style = {"padding": "15px 0px 0px 0px"}
         if not visible:
             style["display"] = "none"
 
@@ -110,7 +110,7 @@ class SliderItem(ControlItem):
             **kwargs,
         )
 
-        style = {}
+        style = {"padding": "15px 0px 15px 0px"}
         if not visible:
             style["display"] = "none"
 
@@ -144,7 +144,7 @@ class DropdownItem(ControlItem):
             **kwargs,
         )
 
-        style = {}
+        style = {"padding": "15px 0px 0px 0px"}
         if not visible:
             style["display"] = "none"
 
@@ -179,7 +179,7 @@ class RadioItem(ControlItem):
             **kwargs,
         )
 
-        style = {}
+        style = {"padding": "15px 0px 0px 0px"}
         if not visible:
             style["display"] = "none"
 
@@ -209,7 +209,7 @@ class BoolItem(ControlItem):
             **kwargs,
         )
 
-        style = {}
+        style = {"padding": "15px 0px 0px 0px"}
         if not visible:
             style["display"] = "none"
 
