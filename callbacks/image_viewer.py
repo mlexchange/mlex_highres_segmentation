@@ -16,11 +16,12 @@ from dash import (
 from dash.exceptions import PreventUpdate
 
 from constants import ANNOT_ICONS, ANNOT_NOTIFICATION_MSGS, KEYBINDS
-from utils.data_utils import tiled_dataset
+from utils.data_utils import tiled_datasets, tiled_masks, tiled_results
 from utils.plot_utils import (
     create_viewfinder,
     downscale_view,
     generate_notification,
+    generate_segmentation_colormap,
     get_view_finder_max_min,
     resize_canvas,
 )
@@ -108,7 +109,7 @@ def render_image(
 
     if image_idx:
         image_idx -= 1  # slider starts at 1, so subtract 1 to get the correct index
-        tf = tiled_dataset.get_data_sequence_by_name(project_name)[image_idx]
+        tf = tiled_datasets.get_data_sequence_by_name(project_name)[image_idx]
         if toggle_seg_result:
             # if toggle is true and overlay exists already (2 images in data) this will
             # be handled in hide_show_segmentation_overlay callback
@@ -117,9 +118,12 @@ def render_image(
                 and ctx.triggered_id == "show-result-overlay-toggle"
             ):
                 return [dash.no_update] * 7 + ["hidden"]
-            if str(image_idx + 1) in tiled_dataset.get_annotated_segmented_results():
-                result = tiled_dataset.get_data_sequence_by_name(seg_result_selection)[
-                    image_idx
+            annotation_indices = tiled_masks.get_annotated_segmented_results()
+            if str(image_idx + 1) in annotation_indices:
+                # Will not return an error since we already checked if image_idx+1 is in the list
+                mapped_index = annotation_indices.index(str(image_idx + 1))
+                result = tiled_results.get_data_sequence_by_name(seg_result_selection)[
+                    mapped_index
                 ]
             else:
                 result = None
@@ -127,20 +131,14 @@ def render_image(
         tf = np.zeros((500, 500))
     fig = px.imshow(tf, binary_string=True)
     if toggle_seg_result and result is not None:
-        unique_segmentation_values = np.unique(result)
-        normalized_range = np.linspace(
-            0, 1, len(unique_segmentation_values)
-        )  # heatmap requires a normalized range
-        color_list = (
-            px.colors.qualitative.Plotly
-        )  # TODO placeholder - replace with user defined classess
-        colorscale = [
-            [normalized_range[i], color_list[i % len(color_list)]]
-            for i in range(len(unique_segmentation_values))
-        ]
+        colorscale, max_class_id = generate_segmentation_colormap(
+            all_annotation_class_store
+        )
         fig.add_trace(
             go.Heatmap(
                 z=result,
+                zmin=-0.5,
+                zmax=max_class_id + 0.5,
                 colorscale=colorscale,
                 showscale=False,
             )
@@ -485,7 +483,7 @@ def update_slider_values(project_name, annotation_store):
     """
     # Retrieve data shape if project_name is valid and points to a 3d array
     data_shape = (
-        tiled_dataset.get_data_shape_by_name(project_name) if project_name else None
+        tiled_datasets.get_data_shape_by_name(project_name) if project_name else None
     )
     disable_slider = data_shape is None
     if not disable_slider:

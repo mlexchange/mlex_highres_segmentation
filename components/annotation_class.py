@@ -33,7 +33,7 @@ def annotation_class_item(class_color, class_label, existing_ids, data=None):
         annotations = data["annotations"]
         is_visible = data["is_visible"]
     else:
-        class_id = 1 if not existing_ids else max(existing_ids) + 1
+        class_id = 0 if not existing_ids else max(existing_ids) + 1
         annotations = {}
         is_visible = True
     class_color_transparent = class_color + "50"

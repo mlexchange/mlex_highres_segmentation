@@ -1,6 +1,8 @@
+import hashlib
 import io
 import zipfile
 
+import canonicaljson
 import numpy as np
 import scipy.sparse as sp
 from matplotlib.path import Path
@@ -9,38 +11,60 @@ from svgpathtools import parse_path
 
 
 class Annotations:
-    def __init__(self, annotation_store, global_store):
+    def __init__(self, annotation_store, image_shape):
         if annotation_store:
             slices = []
             for annotation_class in annotation_store:
                 slices.extend(list(annotation_class["annotations"].keys()))
             slices = set(slices)
-            annotations = {key: [] for key in slices}
+            # Slices need to be sorted to ensure that the exported mask slices
+            # have the same order as the original data set
+            annotations = {key: [] for key in sorted(slices, key=int)}
+
+            all_class_labels = [
+                annotation_class["class_id"] for annotation_class in annotation_store
+            ]
+            annotation_classes = {}
 
             for annotation_class in annotation_store:
+                condensed_id = str(all_class_labels.index(annotation_class["class_id"]))
+                annotation_classes[condensed_id] = {
+                    "label": annotation_class["label"],
+                    "color": annotation_class["color"],
+                }
                 for image_idx, slice_data in annotation_class["annotations"].items():
                     for shape in slice_data:
                         self._set_annotation_type(shape)
                         self._set_annotation_svg(shape)
                         annotation = {
-                            "id": annotation_class["class_id"],
+                            "class_id": condensed_id,
                             "type": self.annotation_type,
-                            "class": annotation_class["label"],
-                            # TODO: This is the same across all images in a dataset
-                            "image_shape": global_store["image_shapes"][0],
                             "svg_data": self.svg_data,
                         }
                         annotations[image_idx].append(annotation)
         else:
-            annotations = []
+            annotations = None
+            annotation_classes = None
 
+        self.annotation_classes = annotation_classes
         self.annotations = annotations
+        self.annotations_hash = self.get_annotations_hash()
+        self.image_shape = image_shape
 
     def get_annotations(self):
         return self.annotations
 
     def get_annotation_mask(self):
         return self.annotation_mask
+
+    def get_annotation_classes(self):
+        return self.annotation_classes
+
+    def get_annotations_hash(self):
+        hash_object = hashlib.md5()
+        hash_object.update(canonicaljson.encode_canonical_json(self.annotations))
+        hash_object.update(canonicaljson.encode_canonical_json(self.annotation_classes))
+        return hash_object.hexdigest()
 
     def get_annotation_mask_as_bytes(self):
         buffer = io.BytesIO()
@@ -81,26 +105,29 @@ class Annotations:
         self.sparse = sparse
         annotation_mask = []
 
+        image_height = self.image_shape[0]
+        image_width = self.image_shape[1]
+
         for slice_idx, slice_data in self.annotations.items():
-            image_height = slice_data[0]["image_shape"][0]
-            image_width = slice_data[0]["image_shape"][1]
-            slice_mask = np.zeros([image_height, image_width], dtype=np.uint8)
+            slice_mask = np.full(
+                [image_height, image_width], fill_value=-1, dtype=np.int8
+            )
             for shape in slice_data:
                 if shape["type"] == "Closed Freeform":
                     shape_mask = ShapeConversion.closed_path_to_array(
-                        shape["svg_data"], shape["image_shape"], shape["id"]
+                        shape["svg_data"], self.image_shape, shape["class_id"]
                     )
                 elif shape["type"] == "Rectangle":
                     shape_mask = ShapeConversion.rectangle_to_array(
-                        shape["svg_data"], shape["image_shape"], shape["id"]
+                        shape["svg_data"], self.image_shape, shape["class_id"]
                     )
                 elif shape["type"] == "Ellipse":
                     shape_mask = ShapeConversion.ellipse_to_array(
-                        shape["svg_data"], shape["image_shape"], shape["id"]
+                        shape["svg_data"], self.image_shape, shape["class_id"]
                     )
                 else:
                     continue
-                slice_mask[shape_mask > 0] = shape_mask[shape_mask > 0]
+                slice_mask[shape_mask >= 0] = shape_mask[shape_mask >= 0]
             annotation_mask.append(slice_mask)
 
         if sparse:
@@ -154,7 +181,7 @@ class ShapeConversion:
         c_radius = abs(svg_data["y0"] - svg_data["y1"]) / 2  # Vertical radius
 
         # Create mask and draw ellipse
-        mask = np.zeros((image_height, image_width), dtype=np.uint8)
+        mask = np.full((image_height, image_width), fill_value=-1, dtype=np.int8)
         rr, cc = draw.ellipse(
             cy, cx, c_radius, r_radius
         )  # Vertical radius first, then horizontal
@@ -181,7 +208,7 @@ class ShapeConversion:
         y1 = max(min(y1, image_height - 1), 0)
 
         # # Draw the rectangle
-        mask = np.zeros((image_height, image_width), dtype=np.uint8)
+        mask = np.full((image_height, image_width), fill_value=-1, dtype=np.int8)
         rr, cc = draw.rectangle(start=(y0, x0), end=(y1, x1))
 
         # Convert coordinates to integers
@@ -217,8 +244,9 @@ class ShapeConversion:
         is_inside = polygon_path.contains_points(points)
 
         # Reshape the result back into the 2D shape
-        mask = is_inside.reshape(image_height, image_width).astype(int)
+        mask = is_inside.reshape(image_height, image_width).astype(np.int8)
 
-        # Set the class value for the pixels inside the polygon
+        # Set the class value for the pixels inside the polygon, -1 for the rest
+        mask[mask == 0] = -1
         mask[mask == 1] = mask_class
         return mask

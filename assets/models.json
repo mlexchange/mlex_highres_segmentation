@@ -1,0 +1,1176 @@
+{
+    "contents": [
+        {
+            "model_name": "DSLIA MSDNet",
+            "version": "0.0.1",
+            "type": "supervised",
+            "user": "mlexchange team",
+            "uri": "ghcr.io/mlexchange/mlex_dlsia_segmentation:main",
+            "application": [
+                "segmentation"
+            ],
+            "description": "MSDNets in DLSIA for image segmentation",
+            "gui_parameters": [
+                {
+                    "type": "int",
+                    "name": "layer_width",
+                    "title": "Layer Width",
+                    "param_key": "layer_width",
+                    "value": 1,
+                    "comp_group": "train_model"
+                },
+                {
+                    "type": "int",
+                    "name": "num_layers",
+                    "title": "# Layers",
+                    "param_key": "num_layers",
+                    "value": 3,
+                    "comp_group": "train_model"
+                },
+                {
+                    "type": "bool",
+                    "name": "custom_dilation",
+                    "title": "Custom Dilation",
+                    "param_key": "custom_dilation",
+                    "checked": false,
+                    "comp_group": "train_model"
+                },
+                {
+                    "type": "int",
+                    "name": "max_dilation",
+                    "title": "Maximum Dilation",
+                    "param_key": "max_dilation",
+                    "value": 5,
+                    "comp_group": "train_model"
+                },
+                {
+                    "type": "str",
+                    "name": "dilation_array",
+                    "title": "Dilation Array",
+                    "param_key": "dilation_array",
+                    "value": "[1, 2, 4]",
+                    "comp_group": "train_model"
+                },
+                {
+                    "type": "slider",
+                    "name": "num_epochs",
+                    "title": "# Epochs",
+                    "param_key": "num_epochs",
+                    "min": 1,
+                    "max": 1000,
+                    "value": 30,
+                    "marks": [
+                        {
+                            "value": 1,
+                            "label": "1"
+                        },
+                        {
+                            "value": 100,
+                            "label": "100"
+                        },
+                        {
+                            "value": 1000,
+                            "label": "1000"
+                        }
+                    ],
+                    "comp_group": "train_model"
+                },
+                {
+                    "type": "dropdown",
+                    "name": "optimizer",
+                    "title": "Optimizer",
+                    "param_key": "optimizer",
+                    "value": "Adam",
+                    "data": [
+                        {
+                            "label": "Adadelta",
+                            "value": "Adadelta"
+                        },
+                        {
+                            "label": "Adagrad",
+                            "value": "Adagrad"
+                        },
+                        {
+                            "label": "Adam",
+                            "value": "Adam"
+                        },
+                        {
+                            "label": "AdamW",
+                            "value": "AdamW"
+                        },
+                        {
+                            "label": "SparseAdam",
+                            "value": "SparseAdam"
+                        },
+                        {
+                            "label": "Adamax",
+                            "value": "Adamax"
+                        },
+                        {
+                            "label": "ASGD",
+                            "value": "ASGD"
+                        },
+                        {
+                            "label": "LBFGS",
+                            "value": "LBFGS"
+                        },
+                        {
+                            "label": "RMSprop",
+                            "value": "RMSprop"
+                        },
+                        {
+                            "label": "Rprop",
+                            "value": "Rprop"
+                        },
+                        {
+                            "label": "SGD",
+                            "value": "SGD"
+                        }
+                    ],
+                    "comp_group": "train_model"
+                },
+                {
+                    "type": "dropdown",
+                    "name": "criterion",
+                    "title": "Criterion",
+                    "param_key": "criterion",
+                    "value": "MSELoss",
+                    "data": [
+                        {
+                            "label": "L1Loss",
+                            "value": "L1Loss"
+                        },
+                        {
+                            "label": "MSELoss",
+                            "value": "MSELoss"
+                        },
+                        {
+                            "label": "CrossEntropyLoss",
+                            "value": "CrossEntropyLoss"
+                        },
+                        {
+                            "label": "CTCLoss",
+                            "value": "CTCLoss"
+                        },
+                        {
+                            "label": "NLLLoss",
+                            "value": "NLLLoss"
+                        },
+                        {
+                            "label": "PoissonNLLLoss",
+                            "value": "PoissonNLLLoss"
+                        },
+                        {
+                            "label": "GaussianNLLLoss",
+                            "value": "GaussianNLLLoss"
+                        },
+                        {
+                            "label": "KLDivLoss",
+                            "value": "KLDivLoss"
+                        },
+                        {
+                            "label": "BCELoss",
+                            "value": "BCELoss"
+                        },
+                        {
+                            "label": "BCEWithLogitsLoss",
+                            "value": "BCEWithLogitsLoss"
+                        },
+                        {
+                            "label": "MarginRankingLoss",
+                            "value": "MarginRankingLoss"
+                        },
+                        {
+                            "label": "HingeEnbeddingLoss",
+                            "value": "HingeEnbeddingLoss"
+                        },
+                        {
+                            "label": "MultiLabelMarginLoss",
+                            "value": "MultiLabelMarginLoss"
+                        },
+                        {
+                            "label": "HuberLoss",
+                            "value": "HuberLoss"
+                        },
+                        {
+                            "label": "SmoothL1Loss",
+                            "value": "SmoothL1Loss"
+                        },
+                        {
+                            "label": "SoftMarginLoss",
+                            "value": "SoftMarginLoss"
+                        },
+                        {
+                            "label": "MutiLabelSoftMarginLoss",
+                            "value": "MutiLabelSoftMarginLoss"
+                        },
+                        {
+                            "label": "CosineEmbeddingLoss",
+                            "value": "CosineEmbeddingLoss"
+                        },
+                        {
+                            "label": "MultiMarginLoss",
+                            "value": "MultiMarginLoss"
+                        },
+                        {
+                            "label": "TripletMarginLoss",
+                            "value": "TripletMarginLoss"
+                        },
+                        {
+                            "label": "TripletMarginWithDistanceLoss",
+                            "value": "TripletMarginWithDistanceLoss"
+                        }
+                    ],
+                    "comp_group": "train_model"
+                },
+                {
+                    "type": "str",
+                    "name": "weights",
+                    "title": "Class Weights",
+                    "param_key": "weights",
+                    "value": "[1.0, 1.0, 1.0]",
+                    "comp_group": "train_model"
+                },
+                {
+                    "type": "float",
+                    "name": "learning_rate",
+                    "title": "Learning Rate",
+                    "param_key": "learning_rate",
+                    "value": 0.001,
+                    "min": 0,
+                    "max": 0.1,
+                    "step": 0.0001,
+                    "precision": 4,
+                    "comp_group": "train_model"
+                },
+                {
+                    "type": "dropdown",
+                    "name": "activation",
+                    "title": "Activation",
+                    "param_key": "activation",
+                    "value": "Sigmoid",
+                    "data": [
+                        {
+                            "label": "ReLU",
+                            "value": "ReLU"
+                        },
+                        {
+                            "label": "Sigmoid",
+                            "value": "Sigmoid"
+                        },
+                        {
+                            "label": "Tanh",
+                            "value": "Tanh"
+                        },
+                        {
+                            "label": "Softmax",
+                            "value": "Softmax"
+                        }
+                    ],
+                    "comp_group": "train_model"
+                },
+                {
+                    "type": "slider",
+                    "name": "val_pct",
+                    "title": "Validation %",
+                    "param_key": "val_pct",
+                    "min": 0,
+                    "max": 100,
+                    "step": 5,
+                    "value": 20,
+                    "marks": [
+                        {
+                            "value": 0,
+                            "label": "0%"
+                        },
+                        {
+                            "value": 50,
+                            "label": "50%"
+                        },
+                        {
+                            "value": 100,
+                            "label": "100%"
+                        }
+                    ],
+                    "comp_group": "train_model"
+                },
+                {
+                    "type": "bool",
+                    "name": "shuffle_train",
+                    "title": "Shuffle Training",
+                    "param_key": "shuffle_train",
+                    "checked": true,
+                    "comp_group": "train_model"
+                },
+                {
+                    "type": "slider",
+                    "name": "batch_size_train",
+                    "title": "Batch Size Training",
+                    "param_key": "batch_size_train",
+                    "min": 16,
+                    "max": 128,
+                    "step": 16,
+                    "value": 32,
+                    "marks": [
+                        {
+                            "value": 16,
+                            "label": "16"
+                        },
+                        {
+                            "value": 32,
+                            "label": "32"
+                        },
+                        {
+                            "value": 64,
+                            "label": "64"
+                        },
+                        {
+                            "value": 128,
+                            "label": "128"
+                        }
+                    ],
+                    "comp_group": "train_model"
+                },
+                {
+                    "type": "slider",
+                    "name": "batch_size_val",
+                    "title": "Batch Size Validation",
+                    "param_key": "batch_size_val",
+                    "min": 16,
+                    "max": 128,
+                    "step": 16,
+                    "value": 32,
+                    "marks": [
+                        {
+                            "value": 16,
+                            "label": "16"
+                        },
+                        {
+                            "value": 32,
+                            "label": "32"
+                        },
+                        {
+                            "value": 64,
+                            "label": "64"
+                        },
+                        {
+                            "value": 128,
+                            "label": "128"
+                        }
+                    ],
+                    "comp_group": "train_model"
+                },
+                {
+                    "type": "slider",
+                    "name": "batch_size_inference",
+                    "title": "Batch Size Inference",
+                    "param_key": "batch_size_inference",
+                    "min": 16,
+                    "max": 128,
+                    "step": 16,
+                    "value": 32,
+                    "marks": [
+                        {
+                            "value": 16,
+                            "label": "16"
+                        },
+                        {
+                            "value": 32,
+                            "label": "32"
+                        },
+                        {
+                            "value": 64,
+                            "label": "64"
+                        },
+                        {
+                            "value": 128,
+                            "label": "128"
+                        }
+                    ],
+                    "comp_group": "prediction_model"
+                }
+            ],
+            "cmd": [
+                "python3 src/train_model.py",
+                "python3 src/segment.py"
+            ],
+            "reference": "https://dlsia.readthedocs.io/en/latest/"
+        },
+        {
+            "model_name": "DSLIA TUNet",
+            "version": "0.0.1",
+            "type": "supervised",
+            "user": "mlexchange team",
+            "uri": "ghcr.io/mlexchange/mlex_dlsia_segmentation:main",
+            "application": [
+                "segmentation"
+            ],
+            "description": "TUNet in DLSIA for image segmentation",
+            "gui_parameters": [
+                {
+                    "type": "int",
+                    "name": "depth",
+                    "title": "Depth",
+                    "param_key": "depth",
+                    "value": 4,
+                    "comp_group": "train_model"
+                },
+                {
+                    "type": "int",
+                    "name": "base_channels",
+                    "title": "Base Channels",
+                    "param_key": "base_channels",
+                    "value": 32,
+                    "comp_group": "train_model"
+                },
+                {
+                    "type": "int",
+                    "name": "growth_rate",
+                    "title": "Growth Rate",
+                    "param_key": "growth_rate",
+                    "value": 2,
+                    "comp_group": "train_model"
+                },
+                {
+                    "type": "int",
+                    "name": "hidden_rate",
+                    "title": "Hidden Rate",
+                    "param_key": "hidden_rate",
+                    "value": 1,
+                    "comp_group": "train_model"
+                },
+                {
+                    "type": "slider",
+                    "name": "num_epochs",
+                    "title": "# Epochs",
+                    "param_key": "num_epochs",
+                    "min": 1,
+                    "max": 1000,
+                    "value": 30,
+                    "marks": [
+                        {
+                            "value": 1,
+                            "label": "1"
+                        },
+                        {
+                            "value": 100,
+                            "label": "100"
+                        },
+                        {
+                            "value": 1000,
+                            "label": "1000"
+                        }
+                    ],
+                    "comp_group": "train_model"
+                },
+                {
+                    "type": "dropdown",
+                    "name": "optimizer",
+                    "title": "Optimizer",
+                    "param_key": "optimizer",
+                    "value": "Adam",
+                    "data": [
+                        {
+                            "label": "Adadelta",
+                            "value": "Adadelta"
+                        },
+                        {
+                            "label": "Adagrad",
+                            "value": "Adagrad"
+                        },
+                        {
+                            "label": "Adam",
+                            "value": "Adam"
+                        },
+                        {
+                            "label": "AdamW",
+                            "value": "AdamW"
+                        },
+                        {
+                            "label": "SparseAdam",
+                            "value": "SparseAdam"
+                        },
+                        {
+                            "label": "Adamax",
+                            "value": "Adamax"
+                        },
+                        {
+                            "label": "ASGD",
+                            "value": "ASGD"
+                        },
+                        {
+                            "label": "LBFGS",
+                            "value": "LBFGS"
+                        },
+                        {
+                            "label": "RMSprop",
+                            "value": "RMSprop"
+                        },
+                        {
+                            "label": "Rprop",
+                            "value": "Rprop"
+                        },
+                        {
+                            "label": "SGD",
+                            "value": "SGD"
+                        }
+                    ],
+                    "comp_group": "train_model"
+                },
+                {
+                    "type": "dropdown",
+                    "name": "criterion",
+                    "title": "Criterion",
+                    "param_key": "criterion",
+                    "value": "MSELoss",
+                    "data": [
+                        {
+                            "label": "L1Loss",
+                            "value": "L1Loss"
+                        },
+                        {
+                            "label": "MSELoss",
+                            "value": "MSELoss"
+                        },
+                        {
+                            "label": "CrossEntropyLoss",
+                            "value": "CrossEntropyLoss"
+                        },
+                        {
+                            "label": "CTCLoss",
+                            "value": "CTCLoss"
+                        },
+                        {
+                            "label": "NLLLoss",
+                            "value": "NLLLoss"
+                        },
+                        {
+                            "label": "PoissonNLLLoss",
+                            "value": "PoissonNLLLoss"
+                        },
+                        {
+                            "label": "GaussianNLLLoss",
+                            "value": "GaussianNLLLoss"
+                        },
+                        {
+                            "label": "KLDivLoss",
+                            "value": "KLDivLoss"
+                        },
+                        {
+                            "label": "BCELoss",
+                            "value": "BCELoss"
+                        },
+                        {
+                            "label": "BCEWithLogitsLoss",
+                            "value": "BCEWithLogitsLoss"
+                        },
+                        {
+                            "label": "MarginRankingLoss",
+                            "value": "MarginRankingLoss"
+                        },
+                        {
+                            "label": "HingeEnbeddingLoss",
+                            "value": "HingeEnbeddingLoss"
+                        },
+                        {
+                            "label": "MultiLabelMarginLoss",
+                            "value": "MultiLabelMarginLoss"
+                        },
+                        {
+                            "label": "HuberLoss",
+                            "value": "HuberLoss"
+                        },
+                        {
+                            "label": "SmoothL1Loss",
+                            "value": "SmoothL1Loss"
+                        },
+                        {
+                            "label": "SoftMarginLoss",
+                            "value": "SoftMarginLoss"
+                        },
+                        {
+                            "label": "MutiLabelSoftMarginLoss",
+                            "value": "MutiLabelSoftMarginLoss"
+                        },
+                        {
+                            "label": "CosineEmbeddingLoss",
+                            "value": "CosineEmbeddingLoss"
+                        },
+                        {
+                            "label": "MultiMarginLoss",
+                            "value": "MultiMarginLoss"
+                        },
+                        {
+                            "label": "TripletMarginLoss",
+                            "value": "TripletMarginLoss"
+                        },
+                        {
+                            "label": "TripletMarginWithDistanceLoss",
+                            "value": "TripletMarginWithDistanceLoss"
+                        }
+                    ],
+                    "comp_group": "train_model"
+                },
+                {
+                    "type": "str",
+                    "name": "weights",
+                    "title": "Class Weights",
+                    "param_key": "weights",
+                    "value": "[1.0, 1.0, 1.0]",
+                    "comp_group": "train_model"
+                },
+                {
+                    "type": "float",
+                    "name": "learning_rate",
+                    "title": "Learning Rate",
+                    "param_key": "learning_rate",
+                    "value": 0.001,
+                    "min": 0,
+                    "max": 0.1,
+                    "step": 0.0001,
+                    "precision": 4,
+                    "comp_group": "train_model"
+                },
+                {
+                    "type": "dropdown",
+                    "name": "activation",
+                    "title": "Activation",
+                    "param_key": "activation",
+                    "value": "Sigmoid",
+                    "data": [
+                        {
+                            "label": "ReLU",
+                            "value": "ReLU"
+                        },
+                        {
+                            "label": "Sigmoid",
+                            "value": "Sigmoid"
+                        },
+                        {
+                            "label": "Tanh",
+                            "value": "Tanh"
+                        },
+                        {
+                            "label": "Softmax",
+                            "value": "Softmax"
+                        }
+                    ],
+                    "comp_group": "train_model"
+                },
+                {
+                    "type": "slider",
+                    "name": "val_pct",
+                    "title": "Validation %",
+                    "param_key": "val_pct",
+                    "min": 0,
+                    "max": 100,
+                    "step": 5,
+                    "value": 20,
+                    "marks": [
+                        {
+                            "value": 0,
+                            "label": "0%"
+                        },
+                        {
+                            "value": 100,
+                            "label": "100%"
+                        }
+                    ],
+                    "comp_group": "train_model"
+                },
+                {
+                    "type": "bool",
+                    "name": "shuffle_train",
+                    "title": "Shuffle Training",
+                    "param_key": "shuffle_train",
+                    "checked": true,
+                    "comp_group": "train_model"
+                },
+                {
+                    "type": "slider",
+                    "name": "batch_size_train",
+                    "title": "Training Batch Size",
+                    "param_key": "batch_size_train",
+                    "min": 16,
+                    "max": 128,
+                    "step": 16,
+                    "value": 32,
+                    "marks": [
+                        {
+                            "value": 16,
+                            "label": "16"
+                        },
+                        {
+                            "value": 32,
+                            "label": "32"
+                        },
+                        {
+                            "value": 64,
+                            "label": "64"
+                        },
+                        {
+                            "value": 128,
+                            "label": "128"
+                        }
+                    ],
+                    "comp_group": "train_model"
+                },
+                {
+                    "type": "slider",
+                    "name": "batch_size_val",
+                    "title": "Validation Batch Size",
+                    "param_key": "batch_size_val",
+                    "min": 16,
+                    "max": 128,
+                    "step": 16,
+                    "value": 32,
+                    "marks": [
+                        {
+                            "value": 16,
+                            "label": "16"
+                        },
+                        {
+                            "value": 32,
+                            "label": "32"
+                        },
+                        {
+                            "value": 64,
+                            "label": "64"
+                        },
+                        {
+                            "value": 128,
+                            "label": "128"
+                        }
+                    ],
+                    "comp_group": "train_model"
+                },
+                {
+                    "type": "slider",
+                    "name": "batch_size_inference",
+                    "title": "Inference Batch Size",
+                    "param_key": "batch_size_inference",
+                    "min": 16,
+                    "max": 128,
+                    "step": 16,
+                    "value": 32,
+                    "marks": [
+                        {
+                            "value": 16,
+                            "label": "16"
+                        },
+                        {
+                            "value": 32,
+                            "label": "32"
+                        },
+                        {
+                            "value": 64,
+                            "label": "64"
+                        },
+                        {
+                            "value": 128,
+                            "label": "128"
+                        }
+                    ],
+                    "comp_group": "prediction_model"
+                }
+            ],
+            "cmd": [
+                "python3 src/train_model.py",
+                "python3 src/segment.py"
+            ],
+            "reference": "https://dlsia.readthedocs.io/en/latest/"
+        },
+        {
+            "model_name": "DSLIA TUNet3+",
+            "version": "0.0.1",
+            "type": "supervised",
+            "user": "mlexchange team",
+            "uri": "ghcr.io/mlexchange/mlex_dlsia_segmentation:main",
+            "application": [
+                "segmentation"
+            ],
+            "description": "TUNet3+ DLSIA for image segmentation",
+            "gui_parameters": [
+                {
+                    "type": "int",
+                    "name": "depth",
+                    "title": "Depth",
+                    "param_key": "depth",
+                    "value": 4,
+                    "comp_group": "train_model"
+                },
+                {
+                    "type": "int",
+                    "name": "base_channels",
+                    "title": "Base Channels",
+                    "param_key": "base_channels",
+                    "value": 32,
+                    "comp_group": "train_model"
+                },
+                {
+                    "type": "int",
+                    "name": "growth_rate",
+                    "title": "Growth Rate",
+                    "param_key": "growth_rate",
+                    "value": 2,
+                    "comp_group": "train_model"
+                },
+                {
+                    "type": "int",
+                    "name": "hidden_rate",
+                    "title": "Hidden Rate",
+                    "param_key": "hidden_rate",
+                    "value": 1,
+                    "comp_group": "train_model"
+                },
+                {
+                    "type": "int",
+                    "name": "carryover_channels",
+                    "title": "Carryover Channels",
+                    "param_key": "carryover_channels",
+                    "value": 32,
+                    "comp_group": "train_model"
+                },
+                {
+                    "type": "slider",
+                    "name": "num_epochs",
+                    "title": "# Epochs",
+                    "param_key": "num_epochs",
+                    "min": 1,
+                    "max": 1000,
+                    "value": 30,
+                    "marks": [
+                        {
+                            "value": 1,
+                            "label": "1"
+                        },
+                        {
+                            "value": 100,
+                            "label": "100"
+                        },
+                        {
+                            "value": 1000,
+                            "label": "1000"
+                        }
+                    ],
+                    "comp_group": "train_model"
+                },
+                {
+                    "type": "dropdown",
+                    "name": "optimizer",
+                    "title": "Optimizer",
+                    "param_key": "optimizer",
+                    "value": "Adam",
+                    "data": [
+                        {
+                            "label": "Adadelta",
+                            "value": "Adadelta"
+                        },
+                        {
+                            "label": "Adagrad",
+                            "value": "Adagrad"
+                        },
+                        {
+                            "label": "Adam",
+                            "value": "Adam"
+                        },
+                        {
+                            "label": "AdamW",
+                            "value": "AdamW"
+                        },
+                        {
+                            "label": "SparseAdam",
+                            "value": "SparseAdam"
+                        },
+                        {
+                            "label": "Adamax",
+                            "value": "Adamax"
+                        },
+                        {
+                            "label": "ASGD",
+                            "value": "ASGD"
+                        },
+                        {
+                            "label": "LBFGS",
+                            "value": "LBFGS"
+                        },
+                        {
+                            "label": "RMSprop",
+                            "value": "RMSprop"
+                        },
+                        {
+                            "label": "Rprop",
+                            "value": "Rprop"
+                        },
+                        {
+                            "label": "SGD",
+                            "value": "SGD"
+                        }
+                    ],
+                    "comp_group": "train_model"
+                },
+                {
+                    "type": "dropdown",
+                    "name": "criterion",
+                    "title": "Criterion",
+                    "param_key": "criterion",
+                    "value": "MSELoss",
+                    "data": [
+                        {
+                            "label": "L1Loss",
+                            "value": "L1Loss"
+                        },
+                        {
+                            "label": "MSELoss",
+                            "value": "MSELoss"
+                        },
+                        {
+                            "label": "CrossEntropyLoss",
+                            "value": "CrossEntropyLoss"
+                        },
+                        {
+                            "label": "CTCLoss",
+                            "value": "CTCLoss"
+                        },
+                        {
+                            "label": "NLLLoss",
+                            "value": "NLLLoss"
+                        },
+                        {
+                            "label": "PoissonNLLLoss",
+                            "value": "PoissonNLLLoss"
+                        },
+                        {
+                            "label": "GaussianNLLLoss",
+                            "value": "GaussianNLLLoss"
+                        },
+                        {
+                            "label": "KLDivLoss",
+                            "value": "KLDivLoss"
+                        },
+                        {
+                            "label": "BCELoss",
+                            "value": "BCELoss"
+                        },
+                        {
+                            "label": "BCEWithLogitsLoss",
+                            "value": "BCEWithLogitsLoss"
+                        },
+                        {
+                            "label": "MarginRankingLoss",
+                            "value": "MarginRankingLoss"
+                        },
+                        {
+                            "label": "HingeEnbeddingLoss",
+                            "value": "HingeEnbeddingLoss"
+                        },
+                        {
+                            "label": "MultiLabelMarginLoss",
+                            "value": "MultiLabelMarginLoss"
+                        },
+                        {
+                            "label": "HuberLoss",
+                            "value": "HuberLoss"
+                        },
+                        {
+                            "label": "SmoothL1Loss",
+                            "value": "SmoothL1Loss"
+                        },
+                        {
+                            "label": "SoftMarginLoss",
+                            "value": "SoftMarginLoss"
+                        },
+                        {
+                            "label": "MutiLabelSoftMarginLoss",
+                            "value": "MutiLabelSoftMarginLoss"
+                        },
+                        {
+                            "label": "CosineEmbeddingLoss",
+                            "value": "CosineEmbeddingLoss"
+                        },
+                        {
+                            "label": "MultiMarginLoss",
+                            "value": "MultiMarginLoss"
+                        },
+                        {
+                            "label": "TripletMarginLoss",
+                            "value": "TripletMarginLoss"
+                        },
+                        {
+                            "label": "TripletMarginWithDistanceLoss",
+                            "value": "TripletMarginWithDistanceLoss"
+                        }
+                    ],
+                    "comp_group": "train_model"
+                },
+                {
+                    "type": "str",
+                    "name": "weights",
+                    "title": "Class Weights",
+                    "param_key": "weights",
+                    "value": "[1.0, 1.0, 1.0]",
+                    "comp_group": "train_model"
+                },
+                {
+                    "type": "float",
+                    "name": "learning_rate",
+                    "title": "Learning Rate",
+                    "param_key": "learning_rate",
+                    "value": 0.001,
+                    "min": 0,
+                    "max": 0.1,
+                    "step": 0.0001,
+                    "precision": 4,
+                    "comp_group": "train_model"
+                },
+                {
+                    "type": "dropdown",
+                    "name": "activation",
+                    "title": "Activation",
+                    "param_key": "activation",
+                    "value": "Sigmoid",
+                    "data": [
+                        {
+                            "label": "ReLU",
+                            "value": "ReLU"
+                        },
+                        {
+                            "label": "Sigmoid",
+                            "value": "Sigmoid"
+                        },
+                        {
+                            "label": "Tanh",
+                            "value": "Tanh"
+                        },
+                        {
+                            "label": "Softmax",
+                            "value": "Softmax"
+                        }
+                    ],
+                    "comp_group": "train_model"
+                },
+                {
+                    "type": "slider",
+                    "name": "val_pct",
+                    "title": "Validation %",
+                    "param_key": "val_pct",
+                    "min": 0,
+                    "max": 100,
+                    "step": 5,
+                    "value": 20,
+                    "marks": [
+                        {
+                            "value": 0,
+                            "label": "0%"
+                        },
+                        {
+                            "value": 100,
+                            "label": "100%"
+                        }
+                    ],
+                    "comp_group": "train_model"
+                },
+                {
+                    "type": "bool",
+                    "name": "shuffle_train",
+                    "title": "Shuffle Training",
+                    "param_key": "shuffle_train",
+                    "checked": true,
+                    "comp_group": "train_model"
+                },
+                {
+                    "type": "slider",
+                    "name": "batch_size_train",
+                    "title": "Training Batch Size",
+                    "param_key": "batch_size_train",
+                    "min": 16,
+                    "max": 128,
+                    "step": 16,
+                    "value": 32,
+                    "marks": [
+                        {
+                            "value": 16,
+                            "label": "16"
+                        },
+                        {
+                            "value": 32,
+                            "label": "32"
+                        },
+                        {
+                            "value": 64,
+                            "label": "64"
+                        },
+                        {
+                            "value": 128,
+                            "label": "128"
+                        }
+                    ],
+                    "comp_group": "train_model"
+                },
+                {
+                    "type": "slider",
+                    "name": "batch_size_val",
+                    "title": "Validation Batch Size",
+                    "param_key": "batch_size_val",
+                    "min": 16,
+                    "max": 128,
+                    "step": 16,
+                    "value": 32,
+                    "marks": [
+                        {
+                            "value": 16,
+                            "label": "16"
+                        },
+                        {
+                            "value": 32,
+                            "label": "32"
+                        },
+                        {
+                            "value": 64,
+                            "label": "64"
+                        },
+                        {
+                            "value": 128,
+                            "label": "128"
+                        }
+                    ],
+                    "comp_group": "train_model"
+                },
+                {
+                    "type": "slider",
+                    "name": "batch_size_inference",
+                    "title": "Inference Batch Size",
+                    "param_key": "batch_size_inference",
+                    "min": 16,
+                    "max": 128,
+                    "step": 16,
+                    "value": 32,
+                    "marks": [
+                        {
+                            "value": 16,
+                            "label": "16"
+                        },
+                        {
+                            "value": 32,
+                            "label": "32"
+                        },
+                        {
+                            "value": 64,
+                            "label": "64"
+                        },
+                        {
+                            "value": 128,
+                            "label": "128"
+                        }
+                    ],
+                    "comp_group": "prediction_model"
+                }
+            ],
+            "cmd": [
+                "python3 src/train_model.py",
+                "python3 src/segment.py"
+            ],
+            "reference": "https://dlsia.readthedocs.io/en/latest/"
+        }
+    ]
+}

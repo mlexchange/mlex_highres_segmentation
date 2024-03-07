@@ -8,7 +8,7 @@ import pytz
 from dash import ALL, Input, Output, State, callback, no_update
 
 from constants import ANNOT_ICONS
-from utils.data_utils import tiled_dataset
+from utils.data_utils import extract_parameters_from_html, tiled_masks
 from utils.plot_utils import generate_notification
 from utils.prefect import get_flow_run_name, query_flow_run, schedule_prefect_flow
 
@@ -57,14 +57,16 @@ INFERENCE_PARAMS_EXAMPLE = {
 
 @callback(
     Output("notifications-container", "children", allow_duplicate=True),
+    Output("model-parameter-values", "data"),
     Input("run-train", "n_clicks"),
     State("annotation-store", "data"),
     State({"type": "annotation-class-store", "index": ALL}, "data"),
     State("project-name-src", "value"),
+    State("model-parameters", "children"),
     State("job-name", "value"),
     prevent_initial_call=True,
 )
-def run_train(n_clicks, global_store, all_annotations, project_name, job_name):
+def run_train(n_clicks, global_store, all_annotations, project_name, model_parameters, job_name):
     """
     This callback collects parameters from the UI and submits a training job to Prefect.
     If the app is run from "dev" mode, then only a placeholder job_uid will be created.
@@ -72,13 +74,20 @@ def run_train(n_clicks, global_store, all_annotations, project_name, job_name):
     # TODO: Appropriately paramaterize the job json depending on user inputs
     and relevant file paths
     """
+    input_params = {}
     if n_clicks:
+        input_params = extract_parameters_from_html(model_parameters)
+        # return the input values in dictionary and save to the model parameter store
+        print(f"input_param:\n{input_params}")
         if MODE == "dev":
+            mask_uri = tiled_masks.save_annotations_data(
+                global_store, all_annotations, project_name
+            )
             job_uid = str(uuid.uuid4())
-            job_message = f"Job has been succesfully submitted with uid: {job_uid}"
+            job_message = f"Workflow has been succesfully submitted with uid: {job_uid} and mask uri: {mask_uri}"
             notification_color = "indigo"
         else:
-            tiled_dataset.save_annotations_data(
+            mask_uri = tiled_masks.save_annotations_data(
                 global_store, all_annotations, project_name
             )
             try:
@@ -105,8 +114,8 @@ def run_train(n_clicks, global_store, all_annotations, project_name, job_name):
             "Job Submission", notification_color, ANNOT_ICONS["submit"], job_message
         )
 
-        return notification
-    return no_update
+        return notification, input_params
+    return no_update, no_update
 
 
 @callback(
