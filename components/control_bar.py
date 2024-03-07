@@ -603,7 +603,7 @@ def layout():
                                         placeholder="Select a model...",
                                     ),
                                 ),
-                                dmc.Space(h=25),
+                                dmc.Space(h=15),
                                 html.Div(id="model-parameters"),
                                 dcc.Store(id="model-parameter-values", data={}),
                                 dmc.Space(h=25),

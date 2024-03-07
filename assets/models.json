@@ -237,6 +237,10 @@
                     "title": "Learning Rate",
                     "param_key": "learning_rate",
                     "value": 0.001,
+                    "min": 0,
+                    "max": 0.1,
+                    "step": 0.0001,
+                    "precision": 4,
                     "comp_group": "train_model"
                 },
                 {
@@ -244,7 +248,7 @@
                     "name": "activation",
                     "title": "Activation",
                     "param_key": "activation",
-                    "value": "ReLU",
+                    "value": "Sigmoid",
                     "data": [
                         {
                             "label": "ReLU",
@@ -621,6 +625,10 @@
                     "title": "Learning Rate",
                     "param_key": "learning_rate",
                     "value": 0.001,
+                    "min": 0,
+                    "max": 0.1,
+                    "step": 0.0001,
+                    "precision": 4,
                     "comp_group": "train_model"
                 },
                 {
@@ -628,7 +636,7 @@
                     "name": "activation",
                     "title": "Activation",
                     "param_key": "activation",
-                    "value": "ReLU",
+                    "value": "Sigmoid",
                     "data": [
                         {
                             "label": "ReLU",
@@ -1009,6 +1017,10 @@
                     "title": "Learning Rate",
                     "param_key": "learning_rate",
                     "value": 0.001,
+                    "min": 0,
+                    "max": 0.1,
+                    "step": 0.0001,
+                    "precision": 4,
                     "comp_group": "train_model"
                 },
                 {
@@ -1016,7 +1028,7 @@
                     "name": "activation",
                     "title": "Activation",
                     "param_key": "activation",
-                    "value": "ReLU",
+                    "value": "Sigmoid",
                     "data": [
                         {
                             "label": "ReLU",
