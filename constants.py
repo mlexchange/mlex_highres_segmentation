@@ -29,6 +29,7 @@ ANNOT_ICONS = {
     "export-annotation": "entypo:export",
     "no-more-slices": "pajamas:warning-solid",
     "export": "entypo:export",
+    "submit": "formkit:submit",
 }
 
 ANNOT_NOTIFICATION_MSGS = {
