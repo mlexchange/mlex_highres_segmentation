@@ -274,6 +274,39 @@
                     "comp_group": "train_model"
                 },
                 {
+                    "type": "int",
+                    "name": "qlty_window",
+                    "title": "Qlty Window",
+                    "param_key": "qlty_window",
+                    "value": 64,
+                    "min": 0,
+                    "max": 4096,
+                    "step": 1,
+                    "comp_group": "train_model"
+                },
+                {
+                    "type": "int",
+                    "name": "qlty_step",
+                    "title": "Qlty Step",
+                    "param_key": "qlty_step",
+                    "value": 32,
+                    "min": 0,
+                    "max": 4096,
+                    "step": 1,
+                    "comp_group": "train_model"
+                },
+                {
+                    "type": "int",
+                    "name": "qlty_border",
+                    "title": "Qlty Border",
+                    "param_key": "qlty_border",
+                    "value": 8,
+                    "min": 0,
+                    "max": 4096,
+                    "step": 1,
+                    "comp_group": "train_model"
+                },
+                {
                     "type": "slider",
                     "name": "val_pct",
                     "title": "Validation %",
@@ -661,6 +694,39 @@
                             "value": "Softmax"
                         }
                     ],
+                    "comp_group": "train_model"
+                },
+                {
+                    "type": "int",
+                    "name": "qlty_window",
+                    "title": "Qlty Window",
+                    "param_key": "qlty_window",
+                    "value": 64,
+                    "min": 0,
+                    "max": 4096,
+                    "step": 1,
+                    "comp_group": "train_model"
+                },
+                {
+                    "type": "int",
+                    "name": "qlty_step",
+                    "title": "Qlty Step",
+                    "param_key": "qlty_step",
+                    "value": 32,
+                    "min": 0,
+                    "max": 4096,
+                    "step": 1,
+                    "comp_group": "train_model"
+                },
+                {
+                    "type": "int",
+                    "name": "qlty_border",
+                    "title": "Qlty Border",
+                    "param_key": "qlty_border",
+                    "value": 8,
+                    "min": 0,
+                    "max": 4096,
+                    "step": 1,
                     "comp_group": "train_model"
                 },
                 {
@@ -1055,6 +1121,39 @@
                             "value": "Softmax"
                         }
                     ],
+                    "comp_group": "train_model"
+                },
+                {
+                    "type": "int",
+                    "name": "qlty_window",
+                    "title": "Qlty Window",
+                    "param_key": "qlty_window",
+                    "value": 64,
+                    "min": 0,
+                    "max": 4096,
+                    "step": 1,
+                    "comp_group": "train_model"
+                },
+                {
+                    "type": "int",
+                    "name": "qlty_step",
+                    "title": "Qlty Step",
+                    "param_key": "qlty_step",
+                    "value": 32,
+                    "min": 0,
+                    "max": 4096,
+                    "step": 1,
+                    "comp_group": "train_model"
+                },
+                {
+                    "type": "int",
+                    "name": "qlty_border",
+                    "title": "Qlty Border",
+                    "param_key": "qlty_border",
+                    "value": 8,
+                    "min": 0,
+                    "max": 4096,
+                    "step": 1,
                     "comp_group": "train_model"
                 },
                 {
