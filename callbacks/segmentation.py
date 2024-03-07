@@ -66,7 +66,9 @@ INFERENCE_PARAMS_EXAMPLE = {
     State("job-name", "value"),
     prevent_initial_call=True,
 )
-def run_train(n_clicks, global_store, all_annotations, project_name, model_parameters, job_name):
+def run_train(
+    n_clicks, global_store, all_annotations, project_name, model_parameters, job_name
+):
     """
     This callback collects parameters from the UI and submits a training job to Prefect.
     If the app is run from "dev" mode, then only a placeholder job_uid will be created.
