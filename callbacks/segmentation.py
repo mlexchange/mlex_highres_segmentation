@@ -242,7 +242,7 @@ def check_inference_job(n_intervals, train_job_id):
                 else:
                     data = query_flow_run(
                         PREFECT_TAGS + ["inference"], flow_run_name=job_name
-                        )
+                    )
                     selected_value = None if len(data) == 0 else no_update
                 return data, selected_value
         return [], None
