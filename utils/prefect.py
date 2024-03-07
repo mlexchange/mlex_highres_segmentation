@@ -80,4 +80,4 @@ async def _flow_run_query(tags, flow_run_name=None):
 
 
 def query_flow_run(tags, flow_run_name=None):
-    return _flow_run_query(tags, flow_run_name)
+    return asyncio.run(_flow_run_query(tags, flow_run_name))

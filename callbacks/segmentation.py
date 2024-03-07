@@ -1,4 +1,3 @@
-import asyncio
 import os
 import traceback
 import uuid
@@ -28,14 +27,14 @@ TRAIN_PARAMS_EXAMPLE = {
             "image_name": "ghcr.io/mlexchange/mlex_dlsia_segmentation_prototype",
             "image_tag": "main",
             "command": 'python -c \\"import time; time.sleep(30)\\"',
-            "model_params": {"test": "test"},
+            "model_params": {"io_parameters": {"uid": "uid0001"}},
             "volumes": [f"{RESULTS_DIR}:/app/work/results"],
         },
         {
             "image_name": "ghcr.io/mlexchange/mlex_dlsia_segmentation_prototype",
             "image_tag": "main",
             "command": 'python -c \\"import time; time.sleep(10)\\"',
-            "model_params": {"test": "test"},
+            "model_params": {"io_parameters": {"uid": "uid0001"}},
             "volumes": [f"{RESULTS_DIR}:/app/work/results"],
         },
     ],
@@ -48,7 +47,7 @@ INFERENCE_PARAMS_EXAMPLE = {
             "image_name": "ghcr.io/mlexchange/mlex_dlsia_segmentation_prototype",
             "image_tag": "main",
             "command": 'python -c \\"import time; time.sleep(30)\\"',
-            "model_params": {"test": "test"},
+            "model_params": {"io_parameters": {"uid": "uid0001"}},
             "volumes": [f"{RESULTS_DIR}:/app/work/results"],
         },
     ],
@@ -196,7 +195,7 @@ def check_train_job(n_intervals):
             {"label": "✅ DLSIA CBA 03/11/2024 10:02AM", "value": "uid0003"},
         ]
     else:
-        data = asyncio.run(query_flow_run(PREFECT_TAGS + ["train"]))
+        data = query_flow_run(PREFECT_TAGS + ["train"])
     return data
 
 
@@ -241,11 +240,9 @@ def check_inference_job(n_intervals, train_job_id):
                         },
                     ]
                 else:
-                    data = asyncio.run(
-                        query_flow_run(
-                            PREFECT_TAGS + ["inference"], flow_run_name=job_name
+                    data = query_flow_run(
+                        PREFECT_TAGS + ["inference"], flow_run_name=job_name
                         )
-                    )
                     selected_value = None if len(data) == 0 else no_update
                 return data, selected_value
         return [], None
