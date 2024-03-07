@@ -66,6 +66,7 @@ class TiledDataLoader:
         elif isinstance(project_client, Container):
             # Check if the specs give us information about which sub-container to access
             specs = project_client.specs
+            # TODO: Read yaml file with spec to path mapping
             if any(spec.name == "NXtomoproc" for spec in specs):
                 # Example for how to access data if the project container corresponds to a
                 # nexus-file following the NXtomoproc definition
@@ -171,12 +172,13 @@ class TiledMaskHandler:
         if "image_shapes" in global_store:
             image_shape = global_store["image_shapes"][0]
         else:
-            print("Global store was not filled.")
             data_shape = (
                 tiled_datasets.get_data_shape_by_name(project_name)
                 if project_name
                 else None
             )
+            if data_shape is None:
+                return "Image shape could not be determined."
             image_shape = (data_shape[1], data_shape[2])
 
         annotations = Annotations(all_annotations, image_shape)
@@ -192,7 +194,7 @@ class TiledMaskHandler:
         metadata = {
             "project_name": project_name,
             "data_uri": tiled_datasets.get_data_uri_by_name(project_name),
-            "image_shape": global_store["image_shapes"][0],
+            "image_shape": image_shape,
             "mask_idx": list(annnotations_per_slice.keys()),
             "classes": annotation_classes,
             "annotations": annnotations_per_slice,
