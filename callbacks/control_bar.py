@@ -32,7 +32,7 @@ from utils.data_utils import models, tiled_datasets, tiled_masks
 from utils.plot_utils import generate_notification, generate_notification_bg_icon_col
 
 # TODO - temporary local file path and user for annotation saving and exporting
-EXPORT_FILE_PATH = os.getenv("EXPORT_FILE_PATH", "exported_annotation_data.json")
+EXPORT_FILE_PATH = os.getenv("EXPORT_FILE_PATH", "data/exported_annotation_data.json")
 USER_NAME = os.getenv("USER_NAME", "user1")
 
 # Create an empty file if it doesn't exist
