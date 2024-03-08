@@ -9,7 +9,11 @@ from dash import ALL, Input, Output, State, callback, no_update
 from constants import ANNOT_ICONS
 from utils.data_utils import extract_parameters_from_html, tiled_masks
 from utils.plot_utils import generate_notification
-from utils.prefect import get_flow_run_name, query_flow_run, schedule_prefect_flow
+from utils.prefect import (
+    get_flow_run_name,
+    get_flow_runs_by_name,
+    schedule_prefect_flow,
+)
 
 MODE = os.getenv("MODE", "")
 RESULTS_DIR = os.getenv("RESULTS_DIR", "")
@@ -27,14 +31,18 @@ TRAIN_PARAMS_EXAMPLE = {
             "image_name": "ghcr.io/mlexchange/mlex_dlsia_segmentation_prototype",
             "image_tag": "main",
             "command": 'python -c \\"import time; time.sleep(30)\\"',
-            "model_params": {"io_parameters": {"uid": "uid0001"}},
+            "params": {
+                "io_parameters": {"uid_save": "uid0001", "uid_retrieve": "uid0001"}
+            },
             "volumes": [f"{RESULTS_DIR}:/app/work/results"],
         },
         {
             "image_name": "ghcr.io/mlexchange/mlex_dlsia_segmentation_prototype",
             "image_tag": "main",
             "command": 'python -c \\"import time; time.sleep(10)\\"',
-            "model_params": {"io_parameters": {"uid": "uid0001"}},
+            "params": {
+                "io_parameters": {"uid_save": "uid0001", "uid_retrieve": "uid0001"}
+            },
             "volumes": [f"{RESULTS_DIR}:/app/work/results"],
         },
     ],
@@ -47,7 +55,9 @@ INFERENCE_PARAMS_EXAMPLE = {
             "image_name": "ghcr.io/mlexchange/mlex_dlsia_segmentation_prototype",
             "image_tag": "main",
             "command": 'python -c \\"import time; time.sleep(30)\\"',
-            "model_params": {"io_parameters": {"uid": "uid0001"}},
+            "params": {
+                "io_parameters": {"uid_save": "uid0001", "uid_retrieve": "uid0001"}
+            },
             "volumes": [f"{RESULTS_DIR}:/app/work/results"],
         },
     ],
@@ -100,7 +110,7 @@ def run_train(
                     FLOW_NAME,
                     parameters=TRAIN_PARAMS_EXAMPLE,
                     flow_run_name=f"{job_name} {current_time}",
-                    tags=PREFECT_TAGS + ["train"],
+                    tags=PREFECT_TAGS + ["train", project_name],
                 )
                 job_message = f"Job has been succesfully submitted with uid: {job_uid}"
                 notification_color = "indigo"
@@ -123,9 +133,10 @@ def run_train(
     Output("notifications-container", "children", allow_duplicate=True),
     Input("run-inference", "n_clicks"),
     State("train-job-selector", "value"),
+    State("project-name-src", "value"),
     prevent_initial_call=True,
 )
-def run_inference(n_clicks, train_job_id):
+def run_inference(n_clicks, train_job_id, project_name):
     """
     This callback collects parameters from the UI and submits an inference job to Prefect.
     If the app is run from "dev" mode, then only a placeholder job_uid will be created.
@@ -151,7 +162,7 @@ def run_inference(n_clicks, train_job_id):
                             FLOW_NAME,
                             parameters=INFERENCE_PARAMS_EXAMPLE,
                             flow_run_name=f"{job_name} {current_time}",
-                            tags=PREFECT_TAGS + ["inference"],
+                            tags=PREFECT_TAGS + ["inference", project_name],
                         )
                         job_message = (
                             f"Job has been succesfully submitted with uid: {job_uid}"
@@ -195,7 +206,7 @@ def check_train_job(n_intervals):
             {"label": "✅ DLSIA CBA 03/11/2024 10:02AM", "value": "uid0003"},
         ]
     else:
-        data = query_flow_run(PREFECT_TAGS + ["train"])
+        data = get_flow_runs_by_name(tags=PREFECT_TAGS + ["train"])
     return data
 
 
@@ -204,8 +215,9 @@ def check_train_job(n_intervals):
     Output("inference-job-selector", "value"),
     Input("model-check", "n_intervals"),
     Input("train-job-selector", "value"),
+    State("project-name-src", "value"),
 )
-def check_inference_job(n_intervals, train_job_id):
+def check_inference_job(n_intervals, train_job_id, project_name):
     """
     This callback populates the inference job selector dropdown with job names and ids from Prefect.
     The list of jobs is filtered by the selected train job in the train job selector dropdown.
@@ -240,8 +252,9 @@ def check_inference_job(n_intervals, train_job_id):
                         },
                     ]
                 else:
-                    data = query_flow_run(
-                        PREFECT_TAGS + ["inference"], flow_run_name=job_name
+                    data = get_flow_runs_by_name(
+                        flow_run_name=job_name,
+                        tags=PREFECT_TAGS + ["inference", project_name],
                     )
                     selected_value = None if len(data) == 0 else no_update
                 return data, selected_value
