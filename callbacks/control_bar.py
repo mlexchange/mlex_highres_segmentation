@@ -853,6 +853,16 @@ def open_controls_drawer(n_clicks, is_opened):
     return no_update, no_update
 
 
+@callback(Output("project-name-src", "data"), Input("refresh-tiled", "n_clicks"))
+def refresh_data_client(refresh_tiled):
+    if refresh_tiled:
+        tiled_datasets.refresh_data_client()
+    data_options = [
+        item for item in tiled_datasets.get_data_project_names() if "seg" not in item
+    ]
+    return data_options
+
+
 @callback(
     Output("result-selector", "data"),
     Output("result-selector", "value"),
@@ -860,22 +870,15 @@ def open_controls_drawer(n_clicks, is_opened):
     Output("show-result-overlay-toggle", "checked"),
     Output("show-result-overlay-toggle", "disabled"),
     Output("seg-result-opacity-slider", "disabled"),
-    Output("project-name-src", "data"),
     Input("project-name-src", "value"),
-    Input("refresh-tiled", "n_clicks"),
     Input("show-result-overlay-toggle", "checked"),
     State("result-selector", "disabled"),
     State("seg-result-opacity-slider", "disabled"),
 )
 def populate_classification_results(
-    image_src, refresh_tiled, toggle, dropdown_enabled, slider_enabled
+    image_src, toggle, dropdown_enabled, slider_enabled
 ):
-    if refresh_tiled:
-        tiled_datasets.refresh_data_client()
 
-    data_options = [
-        item for item in tiled_datasets.get_data_project_names() if "seg" not in item
-    ]
     results = []
     value = None
     checked = False
@@ -910,7 +913,6 @@ def populate_classification_results(
         checked,
         disabled_toggle,
         disabled_slider,
-        data_options,
     )
 
 
