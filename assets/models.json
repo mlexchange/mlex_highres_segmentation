@@ -48,7 +48,9 @@
                     "name": "dilation_array",
                     "title": "Dilation Array",
                     "param_key": "dilation_array",
-                    "value": "[1, 2, 4]",
+                    "placeholder": "e.g. [1, 2, 4]",
+                    "error": "Provide a list of ints for dilation",
+                    "debounce": 1000,
                     "comp_group": "train_model"
                 },
                 {
@@ -228,7 +230,9 @@
                     "name": "weights",
                     "title": "Class Weights",
                     "param_key": "weights",
-                    "value": "[1.0, 1.0, 1.0]",
+                    "placeholder": "e.g [0.1, 0.4, 0.5]",
+                    "error": "Provide a list with a float for each class",
+                    "debounce": 1000,
                     "comp_group": "train_model"
                 },
                 {
@@ -267,6 +271,39 @@
                             "value": "Softmax"
                         }
                     ],
+                    "comp_group": "train_model"
+                },
+                {
+                    "type": "int",
+                    "name": "qlty_window",
+                    "title": "Qlty Window",
+                    "param_key": "qlty_window",
+                    "value": 64,
+                    "min": 0,
+                    "max": 4096,
+                    "step": 1,
+                    "comp_group": "train_model"
+                },
+                {
+                    "type": "int",
+                    "name": "qlty_step",
+                    "title": "Qlty Step",
+                    "param_key": "qlty_step",
+                    "value": 32,
+                    "min": 0,
+                    "max": 4096,
+                    "step": 1,
+                    "comp_group": "train_model"
+                },
+                {
+                    "type": "int",
+                    "name": "qlty_border",
+                    "title": "Qlty Border",
+                    "param_key": "qlty_border",
+                    "value": 8,
+                    "min": 0,
+                    "max": 4096,
+                    "step": 1,
                     "comp_group": "train_model"
                 },
                 {
@@ -616,7 +653,9 @@
                     "name": "weights",
                     "title": "Class Weights",
                     "param_key": "weights",
-                    "value": "[1.0, 1.0, 1.0]",
+                    "placeholder": "e.g [0.1, 0.4, 0.5]",
+                    "error": "Provide a list with a float for each class",
+                    "debounce": 1000,
                     "comp_group": "train_model"
                 },
                 {
@@ -655,6 +694,39 @@
                             "value": "Softmax"
                         }
                     ],
+                    "comp_group": "train_model"
+                },
+                {
+                    "type": "int",
+                    "name": "qlty_window",
+                    "title": "Qlty Window",
+                    "param_key": "qlty_window",
+                    "value": 64,
+                    "min": 0,
+                    "max": 4096,
+                    "step": 1,
+                    "comp_group": "train_model"
+                },
+                {
+                    "type": "int",
+                    "name": "qlty_step",
+                    "title": "Qlty Step",
+                    "param_key": "qlty_step",
+                    "value": 32,
+                    "min": 0,
+                    "max": 4096,
+                    "step": 1,
+                    "comp_group": "train_model"
+                },
+                {
+                    "type": "int",
+                    "name": "qlty_border",
+                    "title": "Qlty Border",
+                    "param_key": "qlty_border",
+                    "value": 8,
+                    "min": 0,
+                    "max": 4096,
+                    "step": 1,
                     "comp_group": "train_model"
                 },
                 {
@@ -1008,7 +1080,9 @@
                     "name": "weights",
                     "title": "Class Weights",
                     "param_key": "weights",
-                    "value": "[1.0, 1.0, 1.0]",
+                    "placeholder": "e.g [0.1, 0.4, 0.5]",
+                    "error": "Provide a list with a float for each class",
+                    "debounce": 1000,
                     "comp_group": "train_model"
                 },
                 {
@@ -1047,6 +1121,39 @@
                             "value": "Softmax"
                         }
                     ],
+                    "comp_group": "train_model"
+                },
+                {
+                    "type": "int",
+                    "name": "qlty_window",
+                    "title": "Qlty Window",
+                    "param_key": "qlty_window",
+                    "value": 64,
+                    "min": 0,
+                    "max": 4096,
+                    "step": 1,
+                    "comp_group": "train_model"
+                },
+                {
+                    "type": "int",
+                    "name": "qlty_step",
+                    "title": "Qlty Step",
+                    "param_key": "qlty_step",
+                    "value": 32,
+                    "min": 0,
+                    "max": 4096,
+                    "step": 1,
+                    "comp_group": "train_model"
+                },
+                {
+                    "type": "int",
+                    "name": "qlty_border",
+                    "title": "Qlty Border",
+                    "param_key": "qlty_border",
+                    "value": 8,
+                    "min": 0,
+                    "max": 4096,
+                    "step": 1,
                     "comp_group": "train_model"
                 },
                 {

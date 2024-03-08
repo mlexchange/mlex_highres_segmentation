@@ -334,6 +334,10 @@ def open_annotation_class_modal(
             disable_class_creation = True
             error_msg.append("Label Already in Use!")
             error_msg.append(html.Br())
+        if new_label == "":
+            disable_class_creation = True
+            error_msg.append("Label name cannot be empty!")
+            error_msg.append(html.Br())
         if new_label == "Unlabeled":
             disable_class_creation = True
             error_msg.append("Label name cannot be 'Unlabeled'")
@@ -412,6 +416,14 @@ def open_edit_class_modal(
         error_msg = []
         if new_label in current_classes:
             error_msg.append("Label Already in Use!")
+            error_msg.append(html.Br())
+            edit_disabled = True
+        if new_label == "":
+            error_msg.append("Label name cannot be empty!")
+            error_msg.append(html.Br())
+            edit_disabled = True
+        if new_label == "Unlabeled":
+            error_msg.append("Label name cannot be 'Unlabeled'!")
             error_msg.append(html.Br())
             edit_disabled = True
         if new_color in current_colors:
@@ -935,3 +947,62 @@ def update_model_parameters(model_name):
         return item_list
     else:
         return html.Div("Model has no parameters")
+
+
+@callback(
+    Output(
+        {"type": MATCH, "param_key": "weights", "layer": "input", "name": "weights"},
+        "error",
+    ),
+    State({"type": "annotation-class-store", "index": ALL}, "data"),
+    Input(
+        {"type": MATCH, "param_key": "weights", "layer": "input", "name": "weights"},
+        "value",
+    ),
+)
+def validate_class_weights(all_annotation_classes, weights):
+    parsed_weights = weights.strip("[]").split(",")
+    try:
+        parsed_weights = [float(weight.strip()) for weight in parsed_weights]
+        # All elements are floats, check if there are the correct number
+        # (number of classes)
+        if len(parsed_weights) != len(all_annotation_classes):
+            return "This list of floats has the wrong number of entries"
+        # All good
+        return False
+    except ValueError:
+        # If there's any error in parsing or validation, return False
+        return "Provide a list with a float for each class"
+
+
+@callback(
+    Output(
+        {
+            "type": MATCH,
+            "param_key": "dilation_array",
+            "layer": "input",
+            "name": "dilation_array",
+        },
+        "error",
+    ),
+    Input(
+        {
+            "type": MATCH,
+            "param_key": "dilation_array",
+            "layer": "input",
+            "name": "dilation_array",
+        },
+        "value",
+    ),
+)
+def validate_dilation_array(dilation_array):
+    parsed_dilation_array = dilation_array.strip("[]").split(",")
+    try:
+        parsed_dilation_array = [
+            int(array_entry.strip()) for array_entry in parsed_dilation_array
+        ]
+        # Check if all elements in the list are floats
+        return False
+    except ValueError:
+        # If there's any error in parsing or validation, return False
+        return "Provide a list of ints for dilation"
