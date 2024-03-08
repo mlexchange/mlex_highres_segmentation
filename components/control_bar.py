@@ -758,8 +758,6 @@ def drawer_section(children):
             dmc.NotificationsProvider(html.Div(id="notifications-container")),
             dcc.Download(id="export-annotation-metadata"),
             dcc.Download(id="export-annotation-mask"),
-            dcc.Store(id="project-data"),
-            dcc.Store(id="submitted-job-id"),
             dcc.Interval(
                 id="model-check", interval=5000
             ),  # TODO: May want to increase frequency
