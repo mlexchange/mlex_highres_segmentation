@@ -99,6 +99,15 @@ class TiledDataLoader:
             return project_container.uri
         return None
 
+    def get_data_by_trimmed_uri(self, trimmed_uri, slice=None):
+        """
+        Retrieve data by a trimmed uri (not containing the base uri) and slice id
+        """
+        if slice is None:
+            return self.data_client[trimmed_uri]
+        else:
+            return self.data_client[trimmed_uri][slice]
+
 
 tiled_datasets = TiledDataLoader(
     data_tiled_uri=DATA_TILED_URI, data_tiled_api_key=DATA_TILED_API_KEY

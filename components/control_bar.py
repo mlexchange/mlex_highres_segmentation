@@ -44,9 +44,7 @@ def layout():
     """
     Returns the layout for the control panel in the app UI
     """
-    DATA_OPTIONS = [
-        item for item in tiled_datasets.get_data_project_names() if "seg" not in item
-    ]
+    DATA_OPTIONS = [item for item in tiled_datasets.get_data_project_names()]
     return drawer_section(
         dmc.Stack(
             style={"width": "400px"},
@@ -658,15 +656,7 @@ def layout():
                                     disabled=True,
                                     styles={"trackLabel": {"cursor": "pointer"}},
                                 ),
-                                dmc.Space(h=25),
-                                ControlItem(
-                                    "Results",
-                                    "",
-                                    dmc.Select(
-                                        id="result-selector",
-                                        placeholder="Select an ML result...",
-                                    ),
-                                ),
+                                dcc.Store("seg-result-store"),
                                 dmc.Space(h=25),
                                 ControlItem(
                                     "Opacity",

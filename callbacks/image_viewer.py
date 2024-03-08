@@ -16,7 +16,7 @@ from dash import (
 from dash.exceptions import PreventUpdate
 
 from constants import ANNOT_ICONS, ANNOT_NOTIFICATION_MSGS, KEYBINDS
-from utils.data_utils import tiled_datasets, tiled_masks, tiled_results
+from utils.data_utils import tiled_datasets, tiled_results
 from utils.plot_utils import (
     create_viewfinder,
     downscale_view,
@@ -70,7 +70,7 @@ def hide_show_segmentation_overlay(toggle_seg_result, opacity):
     State("image-metadata", "data"),
     State("screen-size", "data"),
     State("current-class-selection", "data"),
-    State("result-selector", "value"),
+    State("seg-result-store", "data"),
     State("seg-result-opacity-slider", "value"),
     State("image-viewer", "figure"),
     prevent_initial_call=True,
@@ -85,7 +85,7 @@ def render_image(
     image_metadata,
     screen_size,
     current_color,
-    seg_result_selection,
+    seg_result,
     opacity,
     fig,
 ):
@@ -118,13 +118,25 @@ def render_image(
                 and ctx.triggered_id == "show-result-overlay-toggle"
             ):
                 return [dash.no_update] * 7 + ["hidden"]
-            annotation_indices = tiled_masks.get_annotated_segmented_results()
-            if str(image_idx + 1) in annotation_indices:
-                # Will not return an error since we already checked if image_idx+1 is in the list
-                mapped_index = annotation_indices.index(str(image_idx + 1))
-                result = tiled_results.get_data_sequence_by_name(seg_result_selection)[
-                    mapped_index
-                ]
+            # Check if the stored results are for the current project and image
+            if (
+                "project_name" in seg_result
+                and seg_result["project_name"] == project_name
+            ):
+                if "mask_idx" in seg_result:
+                    annotation_indices = seg_result["mask_idx"]
+                    if str(image_idx) in annotation_indices:
+                        # Will not return an error since we already checked if image_idx is in the list
+                        mapped_index = annotation_indices.index(str(image_idx))
+                        result = tiled_results.get_data_by_trimmed_uri(
+                            seg_result["seg_result_trimmed_uri"], slice=mapped_index
+                        )
+                    else:
+                        result = None
+                else:
+                    result = tiled_results.get_data_by_trimmed_uri(
+                        seg_result["seg_result_trimmed_uri"], slice=image_idx
+                    )
             else:
                 result = None
     else:

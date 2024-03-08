@@ -28,7 +28,7 @@ from components.annotation_class import annotation_class_item
 from components.parameter_items import ParameterItems
 from constants import ANNOT_ICONS, ANNOT_NOTIFICATION_MSGS, KEY_MODES, KEYBINDS
 from utils.annotations import Annotations
-from utils.data_utils import models, tiled_datasets, tiled_masks, tiled_results
+from utils.data_utils import models, tiled_datasets, tiled_masks
 from utils.plot_utils import generate_notification, generate_notification_bg_icon_col
 
 # TODO - temporary local file path and user for annotation saving and exporting
@@ -864,55 +864,33 @@ def refresh_data_client(refresh_tiled):
 
 
 @callback(
-    Output("result-selector", "data"),
-    Output("result-selector", "value"),
-    Output("result-selector", "disabled"),
     Output("show-result-overlay-toggle", "checked"),
     Output("show-result-overlay-toggle", "disabled"),
     Output("seg-result-opacity-slider", "disabled"),
-    Input("project-name-src", "value"),
     Input("show-result-overlay-toggle", "checked"),
-    State("result-selector", "disabled"),
+    Input("project-name-src", "value"),
+    Input("seg-result-store", "data"),
     State("seg-result-opacity-slider", "disabled"),
 )
-def populate_classification_results(
-    image_src, toggle, dropdown_enabled, slider_enabled
-):
-
-    results = []
-    value = None
+def update_result_controls(toggle, seg_result, slider_disabled, image_src):
     checked = False
-    disabled_dropdown = True
-    disabled_toggle = True
-    disabled_slider = True
+    disable_toggle = True
+    disable_slider = True
+    # Disable opacity slider if result overlay is unchecked
     if ctx.triggered_id == "show-result-overlay-toggle":
-        results = no_update
-        value = no_update
         checked = no_update
-        disabled_dropdown = dropdown_enabled
-        disabled_toggle = False
-        disabled_slider = slider_enabled
+        # Must have been enabled to be source of trigger
+        disable_toggle = no_update
+        disable_slider = not slider_disabled
     else:
-        # TODO: Match by mask uid instead of image_src
-        results = [
-            item
-            for item in tiled_results.get_data_project_names()
-            if ("seg" in item and image_src in item)
-        ]
-        if results:
-            value = results[0]
-            disabled_dropdown = False
-            checked = False
-            disabled_toggle = False
-            disabled_slider = False
-
+        if "project_name" in seg_result and seg_result["project_name"] == image_src:
+            checked = no_update
+            disable_toggle = False
+            disable_slider = False
     return (
-        results,
-        value,
-        disabled_dropdown,
         checked,
-        disabled_toggle,
-        disabled_slider,
+        disable_toggle,
+        disable_slider,
     )
 
 
