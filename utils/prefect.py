@@ -59,7 +59,9 @@ def get_flow_run_name(flow_run_id):
     return asyncio.run(_get_name(flow_run_id))
 
 
-async def _flow_run_query(tags=None, flow_run_name=None, parent_flow_run_id=None):
+async def _flow_run_query(
+    tags=None, flow_run_name=None, parent_flow_run_id=None, sort="START_TIME_DESC"
+):
     flow_run_filter_parent_flow_run_id = (
         FlowRunFilterParentFlowRunId(any_=[parent_flow_run_id])
         if parent_flow_run_id
@@ -72,7 +74,7 @@ async def _flow_run_query(tags=None, flow_run_name=None, parent_flow_run_id=None
                 parent_flow_run_id=flow_run_filter_parent_flow_run_id,
                 tags=FlowRunFilterTags(all_=tags),
             ),
-            sort="START_TIME_DESC",
+            sort=sort,
         )
         return flow_runs
 
@@ -91,11 +93,11 @@ def get_flow_runs_statuses(flow_run_name=None, tags=None):
     return flow_runs_by_name
 
 
-def get_children_flows_run_ids(parent_flow_run_id):
+def get_children_flows_run_ids(parent_flow_run_id, sort="START_TIME_ASC"):
     children_flow_runs = asyncio.run(
-        _flow_run_query(parent_flow_run_id=parent_flow_run_id)
+        _flow_run_query(parent_flow_run_id=parent_flow_run_id, sort=sort)
     )
     children_flow_run_ids = [
-        children_flow_run.id for children_flow_run in children_flow_runs
+        str(children_flow_run.id) for children_flow_run in children_flow_runs
     ]
     return children_flow_run_ids
