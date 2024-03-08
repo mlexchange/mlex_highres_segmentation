@@ -868,11 +868,13 @@ def refresh_data_client(refresh_tiled):
     Output("show-result-overlay-toggle", "disabled"),
     Output("seg-result-opacity-slider", "disabled"),
     Input("show-result-overlay-toggle", "checked"),
-    Input("project-name-src", "value"),
-    Input("seg-result-store", "data"),
+    Input("seg-results-train-store", "data"),
+    Input("seg-results-inference-store", "data"),
     State("seg-result-opacity-slider", "disabled"),
 )
-def update_result_controls(toggle, seg_result, slider_disabled, image_src):
+def update_result_controls(
+    toggle, seg_result_train, seg_result_inference, slider_disabled
+):
     checked = False
     disable_toggle = True
     disable_slider = True
@@ -883,8 +885,8 @@ def update_result_controls(toggle, seg_result, slider_disabled, image_src):
         disable_toggle = no_update
         disable_slider = not slider_disabled
     else:
-        if "project_name" in seg_result and seg_result["project_name"] == image_src:
-            checked = no_update
+        if seg_result_train or seg_result_inference:
+            checked = False
             disable_toggle = False
             disable_slider = False
     return (

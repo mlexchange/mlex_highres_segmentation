@@ -70,7 +70,8 @@ def hide_show_segmentation_overlay(toggle_seg_result, opacity):
     State("image-metadata", "data"),
     State("screen-size", "data"),
     State("current-class-selection", "data"),
-    State("seg-result-store", "data"),
+    State("seg-results-train-store", "data"),
+    State("seg-results-inference-store", "data"),
     State("seg-result-opacity-slider", "value"),
     State("image-viewer", "figure"),
     prevent_initial_call=True,
@@ -85,7 +86,8 @@ def render_image(
     image_metadata,
     screen_size,
     current_color,
-    seg_result,
+    seg_result_train,
+    seg_result_inference,
     opacity,
     fig,
 ):
@@ -119,11 +121,11 @@ def render_image(
             ):
                 return [dash.no_update] * 7 + ["hidden"]
             # Check if the stored results are for the current project and image
-            if (
-                "project_name" in seg_result
-                and seg_result["project_name"] == project_name
-            ):
-                if "mask_idx" in seg_result:
+            if seg_result_train or seg_result_inference:
+                seg_result = (
+                    seg_result_inference if seg_result_inference else seg_result_train
+                )
+                if "mask_idx" in seg_result and seg_result["mask_idx"] is not None:
                     annotation_indices = seg_result["mask_idx"]
                     if str(image_idx) in annotation_indices:
                         # Will not return an error since we already checked if image_idx is in the list

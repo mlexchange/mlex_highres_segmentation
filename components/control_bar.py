@@ -673,7 +673,8 @@ def layout():
                                     disabled=True,
                                     styles={"trackLabel": {"cursor": "pointer"}},
                                 ),
-                                dcc.Store("seg-result-store"),
+                                dcc.Store("seg-results-train-store"),
+                                dcc.Store("seg-results-inference-store"),
                                 dmc.Space(h=25),
                                 ControlItem(
                                     "Opacity",
