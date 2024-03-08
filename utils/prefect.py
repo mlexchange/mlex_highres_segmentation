@@ -83,10 +83,12 @@ def get_flow_runs_by_name(flow_run_name=None, tags=None):
     flow_runs_by_name = []
     flow_runs = asyncio.run(_flow_run_query(tags, flow_run_name=flow_run_name))
     for flow_run in flow_runs:
-        if flow_run.state_name == "Failed":
+        if flow_run.state_name in {"Failed", "Crashed"}:
             flow_name = f"❌ {flow_run.name}"
         elif flow_run.state_name == "Completed":
             flow_name = f"✅ {flow_run.name}"
+        elif flow_run.state_name == "Cancelled":
+            flow_name = f"🚫 {flow_run.name}"
         else:
             flow_name = f"🕑 {flow_run.name}"
         flow_runs_by_name.append({"label": flow_name, "value": str(flow_run.id)})
