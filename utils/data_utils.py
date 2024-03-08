@@ -187,7 +187,7 @@ class TiledMaskHandler:
                 else None
             )
             if data_shape is None:
-                return None, "Image shape could not be determined."
+                return None, None, "Image shape could not be determined."
             image_shape = (data_shape[1], data_shape[2])
 
         annotations = Annotations(all_annotations, image_shape)
@@ -215,7 +215,7 @@ class TiledMaskHandler:
         try:
             mask = np.stack(mask)
         except ValueError:
-            return None, "No annotations to process."
+            return None, None, "No annotations to process."
 
         # Store the mask in the Tiled server under /username/project_name/uuid/mask"
         container_keys = [USER_NAME, project_name]
@@ -235,7 +235,11 @@ class TiledMaskHandler:
             mask = last_container.write_array(key="mask", array=mask)
         else:
             last_container = last_container[annotations_hash]
-        return last_container.uri, "Annotations saved successfully."
+        return (
+            last_container.uri,
+            len(annotation_classes),
+            "Annotations saved successfully.",
+        )
 
 
 tiled_masks = TiledMaskHandler(

@@ -108,9 +108,10 @@ def run_train(
                 "Model parameters are not valid!",
             )
             return notification, no_update
-        mask_uri, mask_error_message = tiled_masks.save_annotations_data(
+        mask_uri, num_classes, mask_error_message = tiled_masks.save_annotations_data(
             global_store, all_annotations, project_name
         )
+        model_parameters["num_classes"] = num_classes
         if mask_uri is None:
             notification = generate_notification(
                 "Mask Export", "red", ANNOT_ICONS["export"], mask_error_message
