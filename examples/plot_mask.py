@@ -60,7 +60,7 @@ def plot_mask(mask_uri, api_key, slice_idx, output_path):
 
 if __name__ == "__main__":
     """
-    Example usage: python3 plot_mask.py http://localhost:8000/api/v1/metadata/mlex_store/mlex_store/username/dataset/uuid
+    Example usage: python3 plot_mask.py http://localhost:8000/api/v1/metadata/mlex_store/username/dataset/hash
     """
 
     load_dotenv()
