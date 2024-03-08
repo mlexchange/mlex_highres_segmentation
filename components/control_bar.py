@@ -1,3 +1,5 @@
+import os
+
 import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
 from dash import dcc, html
@@ -8,6 +10,8 @@ from components.annotation_class import annotation_class_item
 from components.parameter_items import ControlItem
 from constants import ANNOT_ICONS, KEYBINDS
 from utils.data_utils import models, tiled_datasets
+
+RESULTS_DIR = os.getenv("RESULTS_DIR", "")
 
 
 def _tooltip(text, children):
@@ -627,6 +631,19 @@ def layout():
                                     dmc.Select(
                                         placeholder="Select a job...",
                                         id="train-job-selector",
+                                    ),
+                                ),
+                                dmc.Space(h=25),
+                                # Maybe add icon: fluent:window-new-20-filled
+                                ControlItem(
+                                    "Training Stats",
+                                    "dvc-training-stats",
+                                    dmc.Anchor(
+                                        dmc.Text("Open in new window"),
+                                        # href=RESULTS_DIR + uid from store "report.html",
+                                        href="assets/report.html",
+                                        target="_blank",
+                                        size="sm",
                                     ),
                                 ),
                                 dmc.Space(h=10),
