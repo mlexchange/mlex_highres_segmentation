@@ -7,7 +7,12 @@ import pytz
 from dash import ALL, Input, Output, State, callback, no_update
 
 from constants import ANNOT_ICONS
-from utils.data_utils import extract_parameters_from_html, tiled_masks
+from utils.data_utils import (
+    assemble_io_parameters_from_uris,
+    extract_parameters_from_html,
+    tiled_datasets,
+    tiled_masks,
+)
 from utils.plot_utils import generate_notification
 from utils.prefect import (
     get_flow_run_name,
@@ -76,7 +81,12 @@ INFERENCE_PARAMS_EXAMPLE = {
     prevent_initial_call=True,
 )
 def run_train(
-    n_clicks, global_store, all_annotations, project_name, model_parameters, job_name
+    n_clicks,
+    global_store,
+    all_annotations,
+    project_name,
+    model_parameter_container,
+    job_name,
 ):
     """
     This callback collects parameters from the UI and submits a training job to Prefect.
@@ -85,22 +95,46 @@ def run_train(
     # TODO: Appropriately paramaterize the job json depending on user inputs
     and relevant file paths
     """
-    input_params = {}
     if n_clicks:
-        input_params = extract_parameters_from_html(model_parameters)
-        # return the input values in dictionary and save to the model parameter store
-        print(f"input_param:\n{input_params}")
-        if MODE == "dev":
-            mask_uri = tiled_masks.save_annotations_data(
-                global_store, all_annotations, project_name
+        model_parameters, parameter_errors = extract_parameters_from_html(
+            model_parameter_container
+        )
+        # Check if the model parameters are valid
+        if parameter_errors:
+            notification = generate_notification(
+                "Model Parameters",
+                "red",
+                ANNOT_ICONS["parameters"],
+                "Model parameters are not valid!",
             )
+            return notification, no_update
+        mask_uri, mask_error_message = tiled_masks.save_annotations_data(
+            global_store, all_annotations, project_name
+        )
+        if mask_uri is None:
+            notification = generate_notification(
+                "Mask Export", "red", ANNOT_ICONS["export"], mask_error_message
+            )
+            return notification, model_parameters
+
+        # Set io_parameters for both training and partial inference
+        # Uid retrieve is set to None because the partial inference job will be
+        # populated with the the uid_save of the training job
+        # This is handled in the Prefect worker
+        data_uri = tiled_datasets.get_data_uri_by_name(project_name)
+        io_parameters = assemble_io_parameters_from_uris(data_uri, mask_uri)
+        io_parameters["uid_retrieve"] = None
+
+        TRAIN_PARAMS_EXAMPLE[0]["params"]["io_parameters"] = io_parameters
+        TRAIN_PARAMS_EXAMPLE[1]["params"]["io_parameters"] = io_parameters
+        TRAIN_PARAMS_EXAMPLE[0]["params"]["model_parameters"] = model_parameters
+        TRAIN_PARAMS_EXAMPLE[1]["params"]["model_parameters"] = model_parameters
+
+        if MODE == "dev":
             job_uid = str(uuid.uuid4())
-            job_message = f"Workflow has been succesfully submitted with uid: {job_uid} and mask uri: {mask_uri}"
+            job_message = f"Dev Mode: Job has been succesfully submitted with uid: {job_uid} and mask uri: {mask_uri}"
             notification_color = "indigo"
         else:
-            mask_uri = tiled_masks.save_annotations_data(
-                global_store, all_annotations, project_name
-            )
             try:
                 # Schedule job
                 current_time = datetime.now(pytz.timezone(TIMEZONE)).strftime(
@@ -125,7 +159,7 @@ def run_train(
             "Job Submission", notification_color, ANNOT_ICONS["submit"], job_message
         )
 
-        return notification, input_params
+        return notification, model_parameters
     return no_update, no_update
 
 
