@@ -15,6 +15,7 @@ from utils.data_utils import (
 )
 from utils.plot_utils import generate_notification
 from utils.prefect import (
+    get_children_flow_run_ids,
     get_flow_run_name,
     get_flow_runs_by_name,
     schedule_prefect_flow,
@@ -92,8 +93,6 @@ def run_train(
     This callback collects parameters from the UI and submits a training job to Prefect.
     If the app is run from "dev" mode, then only a placeholder job_uid will be created.
 
-    # TODO: Appropriately paramaterize the job json depending on user inputs
-    and relevant file paths
     """
     if n_clicks:
         model_parameters, parameter_errors = extract_parameters_from_html(
@@ -176,9 +175,10 @@ def run_train(
     Input("run-inference", "n_clicks"),
     State("train-job-selector", "value"),
     State("project-name-src", "value"),
+    State("model-parameters", "children"),
     prevent_initial_call=True,
 )
-def run_inference(n_clicks, train_job_id, project_name):
+def run_inference(n_clicks, train_job_id, project_name, model_parameter_container):
     """
     This callback collects parameters from the UI and submits an inference job to Prefect.
     If the app is run from "dev" mode, then only a placeholder job_uid will be created.
@@ -187,6 +187,31 @@ def run_inference(n_clicks, train_job_id, project_name):
     and relevant file paths
     """
     if n_clicks:
+        model_parameters, parameter_errors = extract_parameters_from_html(
+            model_parameter_container
+        )
+        # Check if the model parameters are valid
+        if parameter_errors:
+            notification = generate_notification(
+                "Model Parameters",
+                "red",
+                ANNOT_ICONS["parameters"],
+                "Model parameters are not valid!",
+            )
+            return notification, no_update
+
+        # Set io_parameters for inference, there will be no mask
+        data_uri = tiled_datasets.get_data_uri_by_name(project_name)
+        io_parameters = assemble_io_parameters_from_uris(data_uri, "")
+        io_parameters["uid_retrieve"] = ""
+
+        INFERENCE_PARAMS_EXAMPLE["params_list"][0]["params"][
+            "io_parameters"
+        ] = io_parameters
+        INFERENCE_PARAMS_EXAMPLE["params_list"][0]["params"][
+            "model_parameters"
+        ] = model_parameters
+
         if MODE == "dev":
             job_uid = str(uuid.uuid4())
             job_message = f"Job has been succesfully submitted with uid: {job_uid}"
@@ -195,6 +220,15 @@ def run_inference(n_clicks, train_job_id, project_name):
             if train_job_id is not None:
                 job_name = get_flow_run_name(train_job_id)
                 if job_name is not None:
+                    children_flows = get_children_flow_run_ids(train_job_id)
+                    # The first child flow is the training portion of the parent flow
+                    # TODO: Maybe check number of children and type in the future
+                    train_job_id = children_flows[0]
+                    # Set the uid_retrieve of the inference job to the uid of the training job
+                    INFERENCE_PARAMS_EXAMPLE["params_list"][0]["params"][
+                        "io_parameters"
+                    ]["uid_retrieve"] = train_job_id
+                    # TODO: Check if the architecture parameters are the same, as the one used in training
                     try:
                         # Schedule job
                         current_time = datetime.now(pytz.timezone(TIMEZONE)).strftime(
@@ -273,7 +307,7 @@ def check_inference_job(n_intervals, train_job_id, project_name):
             {"label": "🕑 DLSIA XYC 03/11/2024 14:21PM", "value": "uid0002"},
             {"label": "✅ DLSIA CBA 03/11/2024 10:02AM", "value": "uid0003"},
         ]
-        return data, None
+        return data, no_update
     else:
         if train_job_id is not None:
             job_name = get_flow_run_name(train_job_id)
