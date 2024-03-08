@@ -123,12 +123,20 @@ def run_train(
         # This is handled in the Prefect worker
         data_uri = tiled_datasets.get_data_uri_by_name(project_name)
         io_parameters = assemble_io_parameters_from_uris(data_uri, mask_uri)
-        io_parameters["uid_retrieve"] = None
+        io_parameters["uid_retrieve"] = ""
 
-        TRAIN_PARAMS_EXAMPLE[0]["params"]["io_parameters"] = io_parameters
-        TRAIN_PARAMS_EXAMPLE[1]["params"]["io_parameters"] = io_parameters
-        TRAIN_PARAMS_EXAMPLE[0]["params"]["model_parameters"] = model_parameters
-        TRAIN_PARAMS_EXAMPLE[1]["params"]["model_parameters"] = model_parameters
+        TRAIN_PARAMS_EXAMPLE["params_list"][0]["params"][
+            "io_parameters"
+        ] = io_parameters
+        TRAIN_PARAMS_EXAMPLE["params_list"][1]["params"][
+            "io_parameters"
+        ] = io_parameters
+        TRAIN_PARAMS_EXAMPLE["params_list"][0]["params"][
+            "model_parameters"
+        ] = model_parameters
+        TRAIN_PARAMS_EXAMPLE["params_list"][1]["params"][
+            "model_parameters"
+        ] = model_parameters
 
         if MODE == "dev":
             job_uid = str(uuid.uuid4())
