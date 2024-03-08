@@ -31,6 +31,7 @@ ANNOT_ICONS = {
     "export": "entypo:export",
     "submit": "formkit:submit",
     "parameters": "fluent-mdl2:machine-learning",
+    "results": "entypo:download",
 }
 
 ANNOT_NOTIFICATION_MSGS = {

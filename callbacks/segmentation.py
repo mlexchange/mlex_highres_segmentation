@@ -12,6 +12,7 @@ from utils.data_utils import (
     extract_parameters_from_html,
     tiled_datasets,
     tiled_masks,
+    tiled_results,
 )
 from utils.plot_utils import generate_notification
 from utils.prefect import (
@@ -335,3 +336,82 @@ def check_inference_job(n_intervals, train_job_id, project_name):
                     selected_value = None if len(data) == 0 else no_update
                 return data, selected_value
         return [], None
+
+
+def populate_segmentation_results(
+    job_id,
+    project_name,
+    job_type="training",
+):
+    """
+    This function populates the segmentation results store based on the uids
+    of the training job orinference job.
+    """
+    data_uri = tiled_datasets.get_data_uri_by_name(project_name)
+    if job_id is not None:
+        job_name = get_flow_run_name(job_id)
+        if job_name is not None:
+            if job_type == "training":
+                # Get second child to retrieve results
+                children_flows = get_children_flow_run_ids(job_id)
+                job_id = children_flows[1]
+            expected_result_uri = f"{job_id}/seg_result"
+            try:
+                result_container = tiled_results.get_data_by_trimmed_uri(
+                    expected_result_uri
+                )
+            except Exception:
+                notification = generate_notification(
+                    "Segmentation Results",
+                    "red",
+                    ANNOT_ICONS["results"],
+                    f"Could not retrieve result from {job_type} job!",
+                )
+                return notification, None
+            result_metadata = result_container.metadata
+            if result_metadata["data_uri"] == data_uri:
+                result_store = {
+                    "seg_result_trimmed_uri": expected_result_uri,
+                    "mask_idx": result_metadata["mask_idx"],
+                    "data_uri": result_metadata["data_uri"],
+                }
+                notification = generate_notification(
+                    "Segmentation Results",
+                    "green",
+                    ANNOT_ICONS["results"],
+                    f"Retrieved result from {job_type} job!",
+                )
+                return notification, result_store
+            else:
+                return no_update, None
+    return no_update, no_update
+
+
+@callback(
+    Output("notifications-container", "children", allow_duplicate=True),
+    Output("seg-results-train-store", "data"),
+    Input("train-job-selector", "value"),
+    Input("project-name-src", "value"),
+    prevent_initial_call=True,
+)
+def populate_segmentation_results_train(train_job_id, project_name):
+    """
+    This callback populates the segmentation results store based on the uids
+    if the training job and the inference job.
+    """
+    return populate_segmentation_results(train_job_id, project_name, "training")
+
+
+@callback(
+    Output("notifications-container", "children", allow_duplicate=True),
+    Output("seg-results-inference-store", "data"),
+    Input("inference-job-selector", "value"),
+    Input("project-name-src", "value"),
+    prevent_initial_call=True,
+)
+def populate_segmentation_results_inference(inference_job_id, project_name):
+    """
+    This callback populates the segmentation results store based on the uids
+    if the training job and the inference job.
+    """
+    return populate_segmentation_results(inference_job_id, project_name, "inference")
