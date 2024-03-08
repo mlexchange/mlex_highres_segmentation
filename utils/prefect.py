@@ -79,7 +79,7 @@ async def _flow_run_query(
         return flow_runs
 
 
-def get_flow_runs_statuses(flow_run_name=None, tags=None):
+def get_flow_runs_by_name(flow_run_name=None, tags=None):
     flow_runs_by_name = []
     flow_runs = asyncio.run(_flow_run_query(tags, flow_run_name=flow_run_name))
     for flow_run in flow_runs:
@@ -93,7 +93,7 @@ def get_flow_runs_statuses(flow_run_name=None, tags=None):
     return flow_runs_by_name
 
 
-def get_children_flows_run_ids(parent_flow_run_id, sort="START_TIME_ASC"):
+def get_children_flow_run_ids(parent_flow_run_id, sort="START_TIME_ASC"):
     children_flow_runs = asyncio.run(
         _flow_run_query(parent_flow_run_id=parent_flow_run_id, sort=sort)
     )
