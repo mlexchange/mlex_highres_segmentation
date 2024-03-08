@@ -60,9 +60,11 @@ def get_flow_run_name(flow_run_id):
 
 
 async def _flow_run_query(tags=None, flow_run_name=None, parent_flow_run_id=None):
-    flow_run_filter_parent_flow_run_id = FlowRunFilterParentFlowRunId(
-        any_=[parent_flow_run_id]
-        ) if parent_flow_run_id else None
+    flow_run_filter_parent_flow_run_id = (
+        FlowRunFilterParentFlowRunId(any_=[parent_flow_run_id])
+        if parent_flow_run_id
+        else None
+    )
     async with get_client() as client:
         flow_runs = await client.read_flow_runs(
             flow_run_filter=FlowRunFilter(
@@ -90,6 +92,10 @@ def get_flow_runs_statuses(flow_run_name=None, tags=None):
 
 
 def get_children_flows_run_ids(parent_flow_run_id):
-    children_flow_runs = asyncio.run(_flow_run_query(parent_flow_run_id=parent_flow_run_id))
-    children_flow_run_ids = [children_flow_run.id for children_flow_run in children_flow_runs]
+    children_flow_runs = asyncio.run(
+        _flow_run_query(parent_flow_run_id=parent_flow_run_id)
+    )
+    children_flow_run_ids = [
+        children_flow_run.id for children_flow_run in children_flow_runs
+    ]
     return children_flow_run_ids
