@@ -1,7 +1,7 @@
 {
     "contents": [
         {
-            "model_name": "DSLIA MSDNet",
+            "model_name": "MSDNet",
             "version": "0.0.1",
             "type": "supervised",
             "user": "mlexchange team",
@@ -434,7 +434,7 @@
             "reference": "https://dlsia.readthedocs.io/en/latest/"
         },
         {
-            "model_name": "DSLIA TUNet",
+            "model_name": "TUNet",
             "version": "0.0.1",
             "type": "supervised",
             "user": "mlexchange team",
@@ -853,7 +853,7 @@
             "reference": "https://dlsia.readthedocs.io/en/latest/"
         },
         {
-            "model_name": "DSLIA TUNet3+",
+            "model_name": "TUNet3+",
             "version": "0.0.1",
             "type": "supervised",
             "user": "mlexchange team",

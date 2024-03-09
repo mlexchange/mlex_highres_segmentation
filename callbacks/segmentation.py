@@ -116,6 +116,7 @@ INFERENCE_PARAMS_EXAMPLE = {
     State({"type": "annotation-class-store", "index": ALL}, "data"),
     State("project-name-src", "value"),
     State("model-parameters", "children"),
+    State("model-list", "value"),
     State("job-name", "value"),
     prevent_initial_call=True,
 )
@@ -125,6 +126,7 @@ def run_train(
     all_annotations,
     project_name,
     model_parameter_container,
+    model_name,
     job_name,
 ):
     """
@@ -149,6 +151,7 @@ def run_train(
             global_store, all_annotations, project_name
         )
         model_parameters["num_classes"] = num_classes
+        model_parameters["network"] = model_name
         if mask_uri is None:
             notification = generate_notification(
                 "Mask Export", "red", ANNOT_ICONS["export"], mask_error_message
@@ -192,7 +195,7 @@ def run_train(
                     flow_run_name=f"{job_name} {current_time}",
                     tags=PREFECT_TAGS + ["train", project_name],
                 )
-                job_message = f"Job has been succesfully submitted with uid: {job_uid}"
+                job_message = f"Job has been succesfully submitted with uid: {job_uid} and mask uri: {mask_uri}"
                 notification_color = "indigo"
             except Exception as e:
                 # Print the traceback to the console
@@ -215,9 +218,12 @@ def run_train(
     State("train-job-selector", "value"),
     State("project-name-src", "value"),
     State("model-parameters", "children"),
+    State("model-list", "value"),
     prevent_initial_call=True,
 )
-def run_inference(n_clicks, train_job_id, project_name, model_parameter_container):
+def run_inference(
+    n_clicks, train_job_id, project_name, model_parameter_container, model_name
+):
     """
     This callback collects parameters from the UI and submits an inference job to Prefect.
     If the app is run from "dev" mode, then only a placeholder job_uid will be created.
@@ -238,7 +244,7 @@ def run_inference(n_clicks, train_job_id, project_name, model_parameter_containe
                 "Model parameters are not valid!",
             )
             return notification, no_update
-
+        model_parameters["network"] = model_name
         # Set io_parameters for inference, there will be no mask
         data_uri = tiled_datasets.get_data_uri_by_name(project_name)
         io_parameters = assemble_io_parameters_from_uris(data_uri, "")
