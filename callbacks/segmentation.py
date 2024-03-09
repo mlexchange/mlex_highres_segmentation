@@ -26,6 +26,10 @@ MODE = os.getenv("MODE", "")
 RESULTS_DIR = os.getenv("RESULTS_DIR", "")
 FLOW_NAME = os.getenv("FLOW_NAME", "")
 PREFECT_TAGS = os.getenv("PREFECT_TAGS", ["high-res-segmentation"])
+CONDA_ENV_NAME = os.getenv("CONDA_ENV_NAME", "dlsia")
+TRAIN_SCRIPT_PATH = os.getenv("TRAIN_SCRIPT_PATH", "scr/train.py")
+SEGMENT_SCRIPT_PATH = os.getenv("SEGMENT_SCRIPT_PATH", "scr/segment.py")
+
 
 # TODO: Retrieve timezone from browser
 TIMEZONE = os.getenv("TIMEZONE", "US/Pacific")
@@ -66,6 +70,39 @@ INFERENCE_PARAMS_EXAMPLE = {
                 "io_parameters": {"uid_save": "uid0001", "uid_retrieve": "uid0001"}
             },
             "volumes": [f"{RESULTS_DIR}:/app/work/results"],
+        },
+    ],
+}
+
+TRAIN_PARAMS_EXAMPLE = {
+    "flow_type": "conda",
+    "params_list": [
+        {
+            "conda_env_name": f"{CONDA_ENV_NAME}",
+            "python_file_name": f"{TRAIN_SCRIPT_PATH}",
+            "params": {
+                "io_parameters": {"uid_save": "uid0001", "uid_retrieve": "uid0001"}
+            },
+        },
+        {
+            "conda_env_name": f"{CONDA_ENV_NAME}",
+            "python_file_name": f"{SEGMENT_SCRIPT_PATH}",
+            "params": {
+                "io_parameters": {"uid_save": "uid0001", "uid_retrieve": "uid0001"}
+            },
+        },
+    ],
+}
+
+INFERENCE_PARAMS_EXAMPLE = {
+    "flow_type": "conda",
+    "params_list": [
+        {
+            "conda_env_name": f"{CONDA_ENV_NAME}",
+            "python_file_name": f"{SEGMENT_SCRIPT_PATH}",
+            "params": {
+                "io_parameters": {"uid_save": "uid0001", "uid_retrieve": "uid0001"}
+            },
         },
     ],
 }
