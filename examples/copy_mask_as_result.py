@@ -12,7 +12,7 @@ SEG_TILED_URI = os.getenv("SEG_TILED_URI")
 SEG_TILED_API_KEY = os.getenv("SEG_TILED_API_KEY")
 
 
-def copy_mask_as_result(mask_uri, job_id, quick_inference=False):
+def copy_mask_as_result(mask_uri, job_id, quick_inference=True):
     mask_client = from_uri(mask_uri, api_key=SEG_TILED_API_KEY)
     mask = mask_client["mask"]
     mask_metadata = mask_client.metadata
@@ -60,8 +60,8 @@ if __name__ == "__main__":
     mask_uri = sys.argv[1]
     job_id = sys.argv[2]
     if len(sys.argv) < 4:
-        quick_inference = False
+        quick_inference = True
     else:
-        quick_inference = False if sys.argv[3] == 0 else True
+        quick_inference = True if sys.argv[3] == 0 else False
 
-    copy_mask_as_result(mask_uri, job_id, quick_inference=False)
+    copy_mask_as_result(mask_uri, job_id, quick_inference)
