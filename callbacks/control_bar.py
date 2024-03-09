@@ -943,6 +943,10 @@ def update_model_parameters(model_name):
     ),
 )
 def validate_class_weights(all_annotation_classes, weights):
+
+    if weights is None:
+        return "Provide a list with a float for each class"
+
     parsed_weights = weights.strip("[]").split(",")
     try:
         parsed_weights = [float(weight.strip()) for weight in parsed_weights]
@@ -978,11 +982,17 @@ def validate_class_weights(all_annotation_classes, weights):
     ),
 )
 def validate_dilation_array(dilation_array):
+
+    if dilation_array is None:
+        return "Provide a list of ints for dilation"
+
     parsed_dilation_array = dilation_array.strip("[]").split(",")
     try:
         parsed_dilation_array = [
             int(array_entry.strip()) for array_entry in parsed_dilation_array
         ]
+        if len(parsed_dilation_array) == 0:
+            return "Provide a list of ints for dilation"
         # Check if all elements in the list are floats
         return False
     except ValueError:
