@@ -352,10 +352,12 @@ def populate_segmentation_results(
     if job_id is not None:
         job_name = get_flow_run_name(job_id)
         if job_name is not None:
+            children_flows = get_children_flow_run_ids(job_id)
             if job_type == "training":
                 # Get second child to retrieve results
-                children_flows = get_children_flow_run_ids(job_id)
                 job_id = children_flows[1]
+            else:
+                job_id = children_flows[0]
             expected_result_uri = f"{job_id}/seg_result"
             try:
                 result_container = tiled_results.get_data_by_trimmed_uri(
