@@ -14,11 +14,15 @@ SEG_TILED_API_KEY = os.getenv("SEG_TILED_API_KEY")
 
 def copy_mask_as_result(mask_uri, job_id, quick_inference=True):
     mask_client = from_uri(mask_uri, api_key=SEG_TILED_API_KEY)
-    mask = mask_client["mask"]
+    mask = mask_client["mask"][:]
     mask_metadata = mask_client.metadata
 
+    print(
+        f"Copying mask with unique values: {np.unique(mask)} and shape: {mask.shape}."
+    )
+
     result_client = from_uri(SEG_TILED_URI, api_key=SEG_TILED_API_KEY)
-    print(result_client)
+
     result_container = result_client.create_container(key=job_id)
     result_metadata = {
         "data_uri": mask_metadata["data_uri"],
