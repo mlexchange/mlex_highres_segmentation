@@ -230,16 +230,18 @@ def annotation_mode(
             patched_figure["layout"]["dragmode"] = "drawrect"
             annotation_store["dragmode"] = "drawrect"
             styles[trigger] = active
-
         elif trigger == "pan-and-zoom" and pan_and_zoom > 0:
             patched_figure["layout"]["dragmode"] = "pan"
             annotation_store["dragmode"] = "pan"
             styles[trigger] = active
 
     # disable shape editing when in pan/zoom mode
-    for shape in fig["layout"]["shapes"]:
-        shape["editable"] = trigger != "pan-and-zoom" and pan_and_zoom > 0
-    patched_figure["layout"]["shapes"] = fig["layout"]["shapes"]
+    # if no shapes have been added yet,
+    # none need to be set to not editable
+    if "shapes" in fig["layout"]:
+        for shape in fig["layout"]["shapes"]:
+            shape["editable"] = trigger != "pan-and-zoom" and pan_and_zoom > 0
+        patched_figure["layout"]["shapes"] = fig["layout"]["shapes"]
     return (
         patched_figure,
         styles["closed-freeform"],
