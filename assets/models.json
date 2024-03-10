@@ -314,20 +314,21 @@
                     "title": "Validation %",
                     "param_key": "val_pct",
                     "min": 0,
-                    "max": 100,
-                    "step": 5,
-                    "value": 20,
+                    "max": 1,
+                    "step": 0.05,
+                    "value": 0.2,
+                    "precision": 2,
                     "marks": [
                         {
                             "value": 0,
                             "label": "0%"
                         },
                         {
-                            "value": 50,
+                            "value": 0.5,
                             "label": "50%"
                         },
                         {
-                            "value": 100,
+                            "value": 1,
                             "label": "100%"
                         }
                     ],
@@ -738,16 +739,21 @@
                     "title": "Validation %",
                     "param_key": "val_pct",
                     "min": 0,
-                    "max": 100,
-                    "step": 5,
-                    "value": 20,
+                    "max": 1,
+                    "step": 0.05,
+                    "value": 0.2,
+                    "precision": 2,
                     "marks": [
                         {
                             "value": 0,
                             "label": "0%"
                         },
                         {
-                            "value": 100,
+                            "value": 0.5,
+                            "label": "50%"
+                        },
+                        {
+                            "value": 1,
                             "label": "100%"
                         }
                     ],
@@ -1166,16 +1172,21 @@
                     "title": "Validation %",
                     "param_key": "val_pct",
                     "min": 0,
-                    "max": 100,
-                    "step": 5,
-                    "value": 20,
+                    "max": 1,
+                    "step": 0.05,
+                    "value": 0.2,
+                    "precision": 2,
                     "marks": [
                         {
                             "value": 0,
                             "label": "0%"
                         },
                         {
-                            "value": 100,
+                            "value": 0.5,
+                            "label": "50%"
+                        },
+                        {
+                            "value": 1,
                             "label": "100%"
                         }
                     ],
