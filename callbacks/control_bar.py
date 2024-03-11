@@ -28,7 +28,7 @@ from components.annotation_class import annotation_class_item
 from components.parameter_items import ParameterItems
 from constants import ANNOT_ICONS, ANNOT_NOTIFICATION_MSGS, KEY_MODES, KEYBINDS
 from utils.annotations import Annotations
-from utils.data_utils import models, tiled_datasets, tiled_masks, tiled_results
+from utils.data_utils import models, tiled_datasets, tiled_masks
 from utils.plot_utils import generate_notification, generate_notification_bg_icon_col
 
 # TODO - temporary local file path and user for annotation saving and exporting
@@ -230,16 +230,18 @@ def annotation_mode(
             patched_figure["layout"]["dragmode"] = "drawrect"
             annotation_store["dragmode"] = "drawrect"
             styles[trigger] = active
-
         elif trigger == "pan-and-zoom" and pan_and_zoom > 0:
             patched_figure["layout"]["dragmode"] = "pan"
             annotation_store["dragmode"] = "pan"
             styles[trigger] = active
 
     # disable shape editing when in pan/zoom mode
-    for shape in fig["layout"]["shapes"]:
-        shape["editable"] = trigger != "pan-and-zoom" and pan_and_zoom > 0
-    patched_figure["layout"]["shapes"] = fig["layout"]["shapes"]
+    # if no shapes have been added yet,
+    # none need to be set to not editable
+    if "shapes" in fig["layout"]:
+        for shape in fig["layout"]["shapes"]:
+            shape["editable"] = trigger != "pan-and-zoom" and pan_and_zoom > 0
+        patched_figure["layout"]["shapes"] = fig["layout"]["shapes"]
     return (
         patched_figure,
         styles["closed-freeform"],
@@ -853,64 +855,46 @@ def open_controls_drawer(n_clicks, is_opened):
     return no_update, no_update
 
 
-@callback(
-    Output("result-selector", "data"),
-    Output("result-selector", "value"),
-    Output("result-selector", "disabled"),
-    Output("show-result-overlay-toggle", "checked"),
-    Output("show-result-overlay-toggle", "disabled"),
-    Output("seg-result-opacity-slider", "disabled"),
-    Output("project-name-src", "data"),
-    Input("project-name-src", "value"),
-    Input("refresh-tiled", "n_clicks"),
-    Input("show-result-overlay-toggle", "checked"),
-    State("result-selector", "disabled"),
-    State("seg-result-opacity-slider", "disabled"),
-)
-def populate_classification_results(
-    image_src, refresh_tiled, toggle, dropdown_enabled, slider_enabled
-):
+@callback(Output("project-name-src", "data"), Input("refresh-tiled", "n_clicks"))
+def refresh_data_client(refresh_tiled):
     if refresh_tiled:
         tiled_datasets.refresh_data_client()
-
     data_options = [
         item for item in tiled_datasets.get_data_project_names() if "seg" not in item
     ]
-    results = []
-    value = None
-    checked = False
-    disabled_dropdown = True
-    disabled_toggle = True
-    disabled_slider = True
-    if ctx.triggered_id == "show-result-overlay-toggle":
-        results = no_update
-        value = no_update
-        checked = no_update
-        disabled_dropdown = dropdown_enabled
-        disabled_toggle = False
-        disabled_slider = slider_enabled
-    else:
-        # TODO: Match by mask uid instead of image_src
-        results = [
-            item
-            for item in tiled_results.get_data_project_names()
-            if ("seg" in item and image_src in item)
-        ]
-        if results:
-            value = results[0]
-            disabled_dropdown = False
-            checked = False
-            disabled_toggle = False
-            disabled_slider = False
+    return data_options
 
+
+@callback(
+    Output("show-result-overlay-toggle", "checked"),
+    Output("show-result-overlay-toggle", "disabled"),
+    Output("seg-result-opacity-slider", "disabled"),
+    Input("show-result-overlay-toggle", "checked"),
+    Input("seg-results-train-store", "data"),
+    Input("seg-results-inference-store", "data"),
+    State("seg-result-opacity-slider", "disabled"),
+)
+def update_result_controls(
+    toggle, seg_result_train, seg_result_inference, slider_disabled
+):
+    checked = False
+    disable_toggle = True
+    disable_slider = True
+    # Disable opacity slider if result overlay is unchecked
+    if ctx.triggered_id == "show-result-overlay-toggle":
+        checked = no_update
+        # Must have been enabled to be source of trigger
+        disable_toggle = no_update
+        disable_slider = not slider_disabled
+    else:
+        if seg_result_train or seg_result_inference:
+            checked = False
+            disable_toggle = False
+            disable_slider = False
     return (
-        results,
-        value,
-        disabled_dropdown,
         checked,
-        disabled_toggle,
-        disabled_slider,
-        data_options,
+        disable_toggle,
+        disable_slider,
     )
 
 
@@ -961,6 +945,10 @@ def update_model_parameters(model_name):
     ),
 )
 def validate_class_weights(all_annotation_classes, weights):
+
+    if weights is None:
+        return "Provide a list with a float for each class"
+
     parsed_weights = weights.strip("[]").split(",")
     try:
         parsed_weights = [float(weight.strip()) for weight in parsed_weights]
@@ -996,11 +984,17 @@ def validate_class_weights(all_annotation_classes, weights):
     ),
 )
 def validate_dilation_array(dilation_array):
+
+    if dilation_array is None:
+        return "Provide a list of ints for dilation"
+
     parsed_dilation_array = dilation_array.strip("[]").split(",")
     try:
         parsed_dilation_array = [
             int(array_entry.strip()) for array_entry in parsed_dilation_array
         ]
+        if len(parsed_dilation_array) == 0:
+            return "Provide a list of ints for dilation"
         # Check if all elements in the list are floats
         return False
     except ValueError:

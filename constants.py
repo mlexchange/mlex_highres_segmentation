@@ -30,6 +30,8 @@ ANNOT_ICONS = {
     "no-more-slices": "pajamas:warning-solid",
     "export": "entypo:export",
     "submit": "formkit:submit",
+    "parameters": "fluent-mdl2:machine-learning",
+    "results": "entypo:download",
 }
 
 ANNOT_NOTIFICATION_MSGS = {

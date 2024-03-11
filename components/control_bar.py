@@ -1,3 +1,5 @@
+import os
+
 import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
 from dash import dcc, html
@@ -8,6 +10,8 @@ from components.annotation_class import annotation_class_item
 from components.parameter_items import ControlItem
 from constants import ANNOT_ICONS, KEYBINDS
 from utils.data_utils import models, tiled_datasets
+
+RESULTS_DIR = os.getenv("RESULTS_DIR", "")
 
 
 def _tooltip(text, children):
@@ -44,9 +48,7 @@ def layout():
     """
     Returns the layout for the control panel in the app UI
     """
-    DATA_OPTIONS = [
-        item for item in tiled_datasets.get_data_project_names() if "seg" not in item
-    ]
+    DATA_OPTIONS = [item for item in tiled_datasets.get_data_project_names()]
     return drawer_section(
         dmc.Stack(
             style={"width": "400px"},
@@ -631,6 +633,19 @@ def layout():
                                         id="train-job-selector",
                                     ),
                                 ),
+                                dmc.Space(h=25),
+                                # Maybe add icon: fluent:window-new-20-filled
+                                ControlItem(
+                                    "Training Stats",
+                                    "dvc-training-stats",
+                                    dmc.Anchor(
+                                        dmc.Text("Open in new window"),
+                                        # href=RESULTS_DIR + uid from store "report.html",
+                                        href="assets/report.html",
+                                        target="_blank",
+                                        size="sm",
+                                    ),
+                                ),
                                 dmc.Space(h=10),
                                 dmc.Button(
                                     "Inference",
@@ -658,15 +673,8 @@ def layout():
                                     disabled=True,
                                     styles={"trackLabel": {"cursor": "pointer"}},
                                 ),
-                                dmc.Space(h=25),
-                                ControlItem(
-                                    "Results",
-                                    "",
-                                    dmc.Select(
-                                        id="result-selector",
-                                        placeholder="Select an ML result...",
-                                    ),
-                                ),
+                                dcc.Store("seg-results-train-store"),
+                                dcc.Store("seg-results-inference-store"),
                                 dmc.Space(h=25),
                                 ControlItem(
                                     "Opacity",
@@ -758,8 +766,6 @@ def drawer_section(children):
             dmc.NotificationsProvider(html.Div(id="notifications-container")),
             dcc.Download(id="export-annotation-metadata"),
             dcc.Download(id="export-annotation-mask"),
-            dcc.Store(id="project-data"),
-            dcc.Store(id="submitted-job-id"),
             dcc.Interval(
                 id="model-check", interval=5000
             ),  # TODO: May want to increase frequency

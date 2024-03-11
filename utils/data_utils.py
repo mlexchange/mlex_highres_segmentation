@@ -99,6 +99,15 @@ class TiledDataLoader:
             return project_container.uri
         return None
 
+    def get_data_by_trimmed_uri(self, trimmed_uri, slice=None):
+        """
+        Retrieve data by a trimmed uri (not containing the base uri) and slice id
+        """
+        if slice is None:
+            return self.data_client[trimmed_uri]
+        else:
+            return self.data_client[trimmed_uri][slice]
+
 
 tiled_datasets = TiledDataLoader(
     data_tiled_uri=DATA_TILED_URI, data_tiled_api_key=DATA_TILED_API_KEY
@@ -178,7 +187,7 @@ class TiledMaskHandler:
                 else None
             )
             if data_shape is None:
-                return "Image shape could not be determined."
+                return None, None, "Image shape could not be determined."
             image_shape = (data_shape[1], data_shape[2])
 
         annotations = Annotations(all_annotations, image_shape)
@@ -206,7 +215,7 @@ class TiledMaskHandler:
         try:
             mask = np.stack(mask)
         except ValueError:
-            return "No annotations to process."
+            return None, None, "No annotations to process."
 
         # Store the mask in the Tiled server under /username/project_name/uuid/mask"
         container_keys = [USER_NAME, project_name]
@@ -226,7 +235,11 @@ class TiledMaskHandler:
             mask = last_container.write_array(key="mask", array=mask)
         else:
             last_container = last_container[annotations_hash]
-        return last_container.uri
+        return (
+            last_container.uri,
+            len(annotation_classes),
+            "Annotations saved successfully.",
+        )
 
 
 tiled_masks = TiledMaskHandler(
@@ -262,8 +275,10 @@ models = Models()
 
 def extract_parameters_from_html(model_parameters_html):
     """
-    Extracts parameters from the children component of a
+    Extracts parameters from the children component of a ParameterItems component,
+    if there are any errors in the input, it will return an error status
     """
+    errors = False
     input_params = {}
     for param in model_parameters_html["props"]["children"]:
         # param["props"]["children"][0] is the label
@@ -276,5 +291,23 @@ def extract_parameters_from_html(model_parameters_html):
             value = parameter_item["value"]
         elif "checked" in parameter_item:
             value = parameter_item["checked"]
+        if "error" in parameter_item:
+            if parameter_item["error"] is not False:
+                errors = True
         input_params[key] = value
-    return input_params
+    return input_params, errors
+
+
+def assemble_io_parameters_from_uris(data_uri, mask_uri):
+    """
+    Assembles input and output Tiled information for the model
+    """
+    io_parameters = {
+        "data_tiled_uri": data_uri,
+        "data_tiled_api_key": DATA_TILED_API_KEY,
+        "mask_tiled_uri": mask_uri,
+        "mask_tiled_api_key": MASK_TILED_API_KEY,
+        "seg_tiled_uri": SEG_TILED_URI,
+        "seg_tiled_api_key": SEG_TILED_API_KEY,
+    }
+    return io_parameters

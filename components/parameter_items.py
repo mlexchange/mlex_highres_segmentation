@@ -107,6 +107,8 @@ class SliderItem(ControlItem):
         self.input = dmc.Slider(
             id={**base_id, "name": name, "param_key": param_key, "layer": "input"},
             labelAlwaysOn=False,
+            color="gray",
+            size="sm",
             **kwargs,
         )
 
@@ -206,6 +208,9 @@ class BoolItem(ControlItem):
         self.input = dmc.Switch(
             id={**base_id, "name": name, "param_key": param_key, "layer": "input"},
             label=title,
+            size="sm",
+            radius="lg",
+            color="gray",
             **kwargs,
         )
 
