@@ -216,13 +216,19 @@ def run_train(
     Output("notifications-container", "children", allow_duplicate=True),
     Input("run-inference", "n_clicks"),
     State("train-job-selector", "value"),
+    State({"type": "annotation-class-store", "index": ALL}, "data"),
     State("project-name-src", "value"),
     State("model-parameters", "children"),
     State("model-list", "value"),
     prevent_initial_call=True,
 )
 def run_inference(
-    n_clicks, train_job_id, project_name, model_parameter_container, model_name
+    n_clicks,
+    train_job_id,
+    all_annotations,
+    project_name,
+    model_parameter_container,
+    model_name,
 ):
     """
     This callback collects parameters from the UI and submits an inference job to Prefect.
@@ -244,6 +250,7 @@ def run_inference(
                 "Model parameters are not valid!",
             )
             return notification, no_update
+        model_parameters["num_classes"] = len(all_annotations)
         model_parameters["network"] = model_name
         # Set io_parameters for inference, there will be no mask
         data_uri = tiled_datasets.get_data_uri_by_name(project_name)
