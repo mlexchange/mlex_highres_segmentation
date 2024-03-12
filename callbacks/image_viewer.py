@@ -112,6 +112,10 @@ def render_image(
     if image_idx:
         image_idx -= 1  # slider starts at 1, so subtract 1 to get the correct index
         tf = tiled_datasets.get_data_sequence_by_name(project_name)[image_idx]
+        # Auto-scale data
+        low = np.percentile(tf.ravel(), 1)
+        high = np.percentile(tf.ravel(), 99)
+        tf_scaled = np.clip((tf - low) / (high - low), 0, 1)
         if toggle_seg_result:
             # if toggle is true and overlay exists already (2 images in data) this will
             # be handled in hide_show_segmentation_overlay callback
@@ -142,8 +146,9 @@ def render_image(
             else:
                 result = None
     else:
-        tf = np.zeros((500, 500))
-    fig = px.imshow(tf, binary_string=True)
+        tf_scaled = np.zeros((500, 500))
+
+    fig = px.imshow(tf_scaled, binary_string=True)
     if toggle_seg_result and result is not None:
         colorscale, max_class_id = generate_segmentation_colormap(
             all_annotation_class_store
