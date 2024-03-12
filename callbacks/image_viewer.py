@@ -151,7 +151,7 @@ def render_image(
         fig.add_trace(
             go.Heatmap(
                 z=result,
-                zmin=-0.5,
+                zmin=-1.5,
                 zmax=max_class_id + 0.5,
                 colorscale=colorscale,
                 showscale=False,
