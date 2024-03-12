@@ -127,9 +127,9 @@ def render_image(
                 )
                 if "mask_idx" in seg_result and seg_result["mask_idx"] is not None:
                     annotation_indices = seg_result["mask_idx"]
-                    if str(image_idx) in annotation_indices:
+                    if image_idx in annotation_indices:
                         # Will not return an error since we already checked if image_idx is in the list
-                        mapped_index = annotation_indices.index(str(image_idx))
+                        mapped_index = annotation_indices.index(image_idx)
                         result = tiled_results.get_data_by_trimmed_uri(
                             seg_result["seg_result_trimmed_uri"], slice=mapped_index
                         )
