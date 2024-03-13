@@ -182,17 +182,23 @@ def generate_segmentation_colormap(all_annotations_data):
     To account for numerical inaccuracies, it is best to center the plot range
     around the class ids, by setting cmin=-0.5 and cmax=max_class_id+0.5.
     """
-    max_class_id = max(
-        [annotation_class["class_id"] for annotation_class in all_annotations_data]
-    )
+    # On export to pixelized masks, we squeeze the class ids to the range 0 to number of classes -1
+    # While these ids are not reflected in the store, i.e.
+    # (annotation_class["class_id"] for annotation_class in all_annotations_data)
+    # may have larger ids than num_classes -1 and gaps
+    # this is not the case for segmented results or masks
+    max_class_id = len(all_annotations_data) - 1
     # heatmap requires a normalized range from 0 to 1
     # We need to specify color for at least the range limits (0 and 1)
     # as well for every additional class
     # due to using zero-based class ids, we need to add 2 to the max class id
-    normalized_range = np.linspace(0, 1, max_class_id + 2)
+    # the additional +1 is for the unlabeled pixels
+    normalized_range = np.linspace(0, 1, max_class_id + 2 + 1)
     color_list = [
         annotation_class["color"] for annotation_class in all_annotations_data
     ]
+    # Add color for unlabeled pixels
+    color_list = ["#D3D3D3"] + color_list
     # We need to repeat each color twice, to create discrete color segments
     # This loop contains the range limits 0 and 1 once,
     # but every other value in between twice
