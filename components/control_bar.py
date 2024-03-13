@@ -640,8 +640,8 @@ def layout():
                                     "dvc-training-stats",
                                     dmc.Anchor(
                                         dmc.Text("Open in new window"),
-                                        # href=RESULTS_DIR + uid from store "report.html",
-                                        href="assets/report.html",
+                                        id="dvc-training-stats-link",
+                                        href="",
                                         target="_blank",
                                         size="sm",
                                     ),
