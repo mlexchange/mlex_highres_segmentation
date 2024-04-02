@@ -424,7 +424,7 @@ def populate_segmentation_results(
                     ANNOT_ICONS["results"],
                     f"Could not retrieve result from {job_type} job!",
                 )
-                return notification, None, job_id
+                return notification, None, children_flows[0]
             result_metadata = result_container.metadata
             if result_metadata["data_uri"] == data_uri:
                 result_store = {
@@ -438,7 +438,8 @@ def populate_segmentation_results(
                     ANNOT_ICONS["results"],
                     f"Retrieved result from {job_type} job!",
                 )
-                return notification, result_store, job_id
+
+                return notification, result_store, children_flows[0]
             else:
                 return no_update, None, None
     return no_update, no_update, None
