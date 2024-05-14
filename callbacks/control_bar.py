@@ -872,25 +872,25 @@ def refresh_data_client(refresh_tiled):
     Input("show-result-overlay-toggle", "checked"),
     Input("seg-results-train-store", "data"),
     Input("seg-results-inference-store", "data"),
-    State("seg-result-opacity-slider", "disabled"),
 )
-def update_result_controls(
-    toggle, seg_result_train, seg_result_inference, slider_disabled
-):
-    checked = False
-    disable_toggle = True
-    disable_slider = True
+def update_result_controls(toggle, seg_result_train, seg_result_inference):
     # Disable opacity slider if result overlay is unchecked
     if ctx.triggered_id == "show-result-overlay-toggle":
         checked = no_update
         # Must have been enabled to be source of trigger
         disable_toggle = no_update
-        disable_slider = not slider_disabled
+        # Disable slider if toggle is unchecked
+        disable_slider = not toggle
+    # Trigger is a change in either a train or inference result
     else:
         if seg_result_train or seg_result_inference:
-            checked = False
+            checked = no_update
             disable_toggle = False
             disable_slider = False
+        else:
+            checked = False
+            disable_toggle = True
+            disable_slider = True
     return (
         checked,
         disable_toggle,
