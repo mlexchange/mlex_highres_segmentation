@@ -241,6 +241,7 @@ def render_image(
     State("image-selection-slider", "max"),
     State("generate-annotation-class-modal", "opened"),
     State({"type": "edit-annotation-class-modal", "index": ALL}, "opened"),
+    State("control-accordion", "value"),
     prevent_initial_call=True,
 )
 def keybind_image_slider(
@@ -250,11 +251,13 @@ def keybind_image_slider(
     max_slice,
     generate_modal_opened,
     edit_modal_opened,
+    control_accordion_state,
 ):
     """Allows user to use left/right arrow keys to navigate through images"""
     if generate_modal_opened or any(edit_modal_opened):
         raise PreventUpdate
-
+    if control_accordion_state is not None and "run-model" in control_accordion_state:
+        raise PreventUpdate
     pressed_key = (
         keybind_event_listener.get("key", None) if keybind_event_listener else None
     )

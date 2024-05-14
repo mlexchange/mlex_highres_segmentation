@@ -47,8 +47,9 @@ if not os.path.exists(EXPORT_FILE_PATH):
     Input("keybind-event-listener", "event"),
     State({"type": "annotation-class-store", "index": ALL}, "data"),
     State("generate-annotation-class-modal", "opened"),
-    State("current-class-selection", "data"),
+    State("control-accordion", "value"),
     State({"type": "edit-annotation-class-modal", "index": ALL}, "opened"),
+    State("current-class-selection", "data"),
     prevent_initial_call=True,
 )
 def update_current_class_selection(
@@ -57,6 +58,7 @@ def update_current_class_selection(
     all_annotation_classes,
     generate_modal_opened,
     previous_current_selection,
+    control_accordion_state,
     edit_modal_opened,
 ):
     """
@@ -68,6 +70,11 @@ def update_current_class_selection(
     if ctx.triggered_id == "keybind-event-listener":
         # user is going to type in the class creation/edit modals and we don't want to trigger this callback using keys
         if generate_modal_opened or any(edit_modal_opened):
+            raise PreventUpdate
+        if (
+            control_accordion_state is not None
+            and "run-model" in control_accordion_state
+        ):
             raise PreventUpdate
         pressed_key = (
             keybind_event_listener.get("key", None) if keybind_event_listener else None
@@ -162,6 +169,7 @@ def update_selected_class_style(selected_class, all_annotation_classes):
     State("annotation-store", "data"),
     State("generate-annotation-class-modal", "opened"),
     State({"type": "edit-annotation-class-modal", "index": ALL}, "opened"),
+    State("control-accordion", "value"),
     State("image-viewer", "figure"),
     prevent_initial_call=True,
 )
@@ -174,6 +182,7 @@ def annotation_mode(
     annotation_store,
     generate_modal_opened,
     edit_modal_opened,
+    control_accordion_state,
     fig,
 ):
     """
@@ -182,6 +191,8 @@ def annotation_mode(
     """
     if generate_modal_opened or any(edit_modal_opened):
         # user is going to type on this page (on a modal) and we don't want to trigger this callback using keys
+        raise PreventUpdate
+    if control_accordion_state is not None and "run-model" in control_accordion_state:
         raise PreventUpdate
 
     trigger = ctx.triggered_id
