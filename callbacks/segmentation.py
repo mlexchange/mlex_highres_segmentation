@@ -450,7 +450,7 @@ def populate_segmentation_results(
     Output("seg-results-train-store", "data"),
     Output("dvc-training-stats-link", "href"),
     Input("train-job-selector", "value"),
-    Input("project-name-src", "value"),
+    State("project-name-src", "value"),
     prevent_initial_call=True,
 )
 def populate_segmentation_results_train(train_job_id, project_name):
@@ -473,7 +473,7 @@ def populate_segmentation_results_train(train_job_id, project_name):
     Output("notifications-container", "children", allow_duplicate=True),
     Output("seg-results-inference-store", "data"),
     Input("inference-job-selector", "value"),
-    Input("project-name-src", "value"),
+    State("project-name-src", "value"),
     prevent_initial_call=True,
 )
 def populate_segmentation_results_inference(inference_job_id, project_name):
