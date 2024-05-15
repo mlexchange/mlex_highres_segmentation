@@ -54,6 +54,7 @@ def layout():
             style={"width": "400px"},
             children=[
                 dmc.AccordionMultiple(
+                    id="control-accordion",
                     value=["data-select", "image-transformations", "annotations"],
                     children=[
                         _accordion_item(
