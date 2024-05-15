@@ -30,7 +30,7 @@ def check_infra_state(n_intervals):
     infra_state["tiled_data_ready"] = tiled_data_ready
     if not tiled_data_ready:
         any_infra_down = True
-    tiled_masks_ready = tiled_masks.check_mask_handler()
+    tiled_masks_ready = tiled_masks.check_mask_handler_ready()
     infra_state["tiled_masks_ready"] = tiled_masks_ready
     if not tiled_masks_ready:
         any_infra_down = True

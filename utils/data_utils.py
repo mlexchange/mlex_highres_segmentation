@@ -1,5 +1,6 @@
 import json
 import os
+from urllib.parse import urlparse, urlunparse
 
 import httpx
 import numpy as np
@@ -19,6 +20,48 @@ MASK_TILED_API_KEY = os.getenv("MASK_TILED_API_KEY")
 SEG_TILED_URI = os.getenv("SEG_TILED_URI")
 SEG_TILED_API_KEY = os.getenv("SEG_TILED_API_KEY")
 USER_NAME = os.getenv("USER_NAME", "user1")
+
+
+def _create_or_return_containers(client, container_names):
+    """
+    Iterates through a list of container names and creates them if they do not exist.
+    For example, if the container_names are ["results", "segmentation"], it will return the Tiled client for
+    client["results"]["segmentation"], having created any containers that were missing.
+    """
+    for container_name in container_names:
+        if container_name not in client.keys():
+            client = client.create_container(key=container_name)
+        else:
+            client[container_name]
+    return client
+
+
+def _split_base_uri_containers(uri):
+    """
+    Splits the base uri from the containers and returns
+    """
+    parsed_url = urlparse(uri)
+    path = parsed_url.path
+    # Path is either empty or contains a leading slash
+    if len(path) < 2:
+        return uri, []
+    # Assumes that the given uri contains a api version string, metadata and container names
+    # separated by slashes, e.g. api/v1/metadata/masks/special_container
+    path_pieces = path.split("/metadata", 1)
+    base_uri = urlunparse(
+        (
+            parsed_url.scheme,
+            parsed_url.netloc,
+            path_pieces[0] + "/metadata",
+            parsed_url.params,
+            parsed_url.query,
+            parsed_url.fragment,
+        )
+    )
+    container_names = (
+        path_pieces[1].strip("/").split("/") if len(path_pieces) > 1 else []
+    )
+    return base_uri, container_names
 
 
 class TiledDataLoader:
@@ -131,23 +174,35 @@ class TiledMaskHandler:
     """
 
     def __init__(
-        self, mask_tiled_uri=MASK_TILED_URI, mask_tiled_api_key=MASK_TILED_API_KEY
+        self,
+        mask_tiled_uri=MASK_TILED_URI,
+        mask_tiled_api_key=MASK_TILED_API_KEY,
     ):
         self.mask_tiled_uri = mask_tiled_uri
         self.mask_tiled_api_key = mask_tiled_api_key
+
+        self.refresh_mask_handler()
+
+    def refresh_mask_handler(self):
+        base_uri, container_names = _split_base_uri_containers(self.mask_tiled_uri)
         try:
-            self.mask_client = from_uri(
-                self.mask_tiled_uri,
+            base_client = from_uri(
+                base_uri,
                 api_key=self.mask_tiled_api_key,
                 timeout=httpx.Timeout(30.0),
+            )
+            self.mask_client = _create_or_return_containers(
+                base_client, container_names
             )
         except Exception as e:
             print(f"Error connecting to Tiled: {e}")
             self.mask_client = None
 
-    def check_mask_handler(self):
+    def check_mask_handler_ready(self):
         if self.mask_client is None:
-            return False
+            # Try refreshing once
+            self.refresh_mask_handler()
+            return False if self.mask_client is None else True
         return True
 
     @staticmethod
@@ -263,11 +318,13 @@ class TiledMaskHandler:
 
 
 tiled_masks = TiledMaskHandler(
-    mask_tiled_uri=MASK_TILED_URI, mask_tiled_api_key=MASK_TILED_API_KEY
+    mask_tiled_uri=MASK_TILED_URI,
+    mask_tiled_api_key=MASK_TILED_API_KEY,
 )
 
 tiled_results = TiledDataLoader(
-    data_tiled_uri=SEG_TILED_URI, data_tiled_api_key=SEG_TILED_API_KEY
+    data_tiled_uri=SEG_TILED_URI,
+    data_tiled_api_key=SEG_TILED_API_KEY,
 )
 
 
