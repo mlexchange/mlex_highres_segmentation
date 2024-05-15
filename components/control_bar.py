@@ -930,7 +930,7 @@ def create_infra_state_details(
 ):
     not_ready_icon = "pajamas:warning-solid"
     not_ready_color = "red"
-    ready_icon = "pajamas:warning-solid"
+    ready_icon = "pajamas:check-circle-filled"
     ready_color = "green"
 
     children = [
