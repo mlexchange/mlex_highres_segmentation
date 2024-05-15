@@ -764,12 +764,15 @@ def drawer_section(children):
             create_reset_view_affix(),
             create_info_card_affix(),
             create_viewfinder_affix(),
+            create_infra_state_affix(),
             dmc.NotificationsProvider(html.Div(id="notifications-container")),
             dcc.Download(id="export-annotation-metadata"),
             dcc.Download(id="export-annotation-mask"),
             dcc.Interval(
                 id="model-check", interval=5000
             ),  # TODO: May want to increase frequency
+            dcc.Interval(id="infra-check", interval=60000),
+            dcc.Store(id="infra-state"),
             html.Div(id="dummy-output"),
             EventListener(
                 events=[
@@ -798,7 +801,7 @@ def create_keybind_row(keys, text):
 
 def create_reset_view_affix():
     return dmc.Affix(
-        position={"bottom": 60, "right": 20},
+        position={"bottom": 100, "right": 20},
         zIndex=9999999,
         children=_tooltip(
             text="Center the image",
@@ -835,7 +838,7 @@ def create_viewfinder_affix():
 
 def create_info_card_affix():
     return dmc.Affix(
-        position={"bottom": 20, "right": 20},
+        position={"bottom": 60, "right": 20},
         zIndex=9999999,
         children=dmc.HoverCard(
             shadow="md",
@@ -901,6 +904,110 @@ def create_info_card_affix():
                             p=0,
                         ),
                     ],
+                ),
+            ],
+        ),
+    )
+
+
+def create_infra_state_status(title, icon, id, color):
+    return dmc.Group(
+        position="left",
+        children=[
+            DashIconify(icon=icon, width=20, color=color, id=id),
+            dmc.Text(title, size="sm"),
+        ],
+    )
+
+
+def create_infra_state_details(
+    tiled_data_ready=False,
+    tiled_masks_ready=False,
+    tiled_results_ready=False,
+    prefect_ready=False,
+    prefect_worker_ready=False,
+    timestamp=None,
+):
+    not_ready_icon = "pajamas:warning-solid"
+    not_ready_color = "red"
+    ready_icon = "pajamas:warning-solid"
+    ready_color = "green"
+
+    children = [
+        dmc.Text(
+            "Infrastructure",
+            size="lg",
+            weight=700,
+        ),
+        dmc.Text(
+            "----/--/-- --:--:--" if timestamp is None else timestamp,
+            size="sm",
+            id="infra-state-last-checked",
+        ),
+        dmc.Stack(
+            [
+                dmc.Space(h=2),
+                dmc.Divider(variant="solid", color="gray"),
+                create_infra_state_status(
+                    "Tiled (Input)",
+                    icon=ready_icon if tiled_data_ready else not_ready_icon,
+                    color=ready_color if tiled_data_ready else not_ready_color,
+                    id="tiled-data-ready",
+                ),
+                create_infra_state_status(
+                    "Tiled (Masks)",
+                    icon=ready_icon if tiled_masks_ready else not_ready_icon,
+                    color=ready_color if tiled_masks_ready else not_ready_color,
+                    id="tiled-masks-ready",
+                ),
+                create_infra_state_status(
+                    "Tiled (Results)",
+                    icon=ready_icon if tiled_results_ready else not_ready_icon,
+                    color=ready_color if tiled_results_ready else not_ready_color,
+                    id="tiled-results-ready",
+                ),
+                dmc.Divider(variant="solid", color="gray"),
+                create_infra_state_status(
+                    "Prefect (Server)",
+                    icon=ready_icon if prefect_ready else not_ready_icon,
+                    color=ready_color if prefect_ready else not_ready_color,
+                    id="prefect-ready",
+                ),
+                create_infra_state_status(
+                    "Prefect (Worker)",
+                    icon=ready_icon if prefect_worker_ready else not_ready_icon,
+                    color=ready_color if prefect_worker_ready else not_ready_color,
+                    id="prefect-worker-ready",
+                ),
+            ],
+            p=0,
+        ),
+    ]
+    return children
+
+
+def create_infra_state_affix():
+    return dmc.Affix(
+        position={"bottom": 20, "right": 20},
+        zIndex=9999999,
+        children=dmc.HoverCard(
+            shadow="md",
+            position="top-start",
+            children=[
+                dmc.HoverCardTarget(
+                    dmc.ActionIcon(
+                        DashIconify(icon="ph:network-fill", id="infra-state-icon"),
+                        size="lg",
+                        radius="lg",
+                        variant="filled",
+                        mb=10,
+                        id="infra-state-summary",
+                    ),
+                ),
+                dmc.HoverCardDropdown(
+                    style={"marginRight": "20px"},
+                    id="infra-state-details",
+                    children=create_infra_state_details(),
                 ),
             ],
         ),

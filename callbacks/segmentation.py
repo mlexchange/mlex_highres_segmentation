@@ -324,8 +324,9 @@ def run_inference(
 @callback(
     Output("train-job-selector", "data"),
     Input("model-check", "n_intervals"),
+    State("infra-state", "data"),
 )
-def check_train_job(n_intervals):
+def check_train_job(n_intervals, infra_state):
     """
     This callback populates the train job selector dropdown with job names and ids from Prefect.
     This callback displays the current status of the job as part of the job name in the dropdown.
@@ -338,7 +339,10 @@ def check_train_job(n_intervals):
             {"label": "✅ DLSIA CBA 03/11/2024 10:02AM", "value": "uid0003"},
         ]
     else:
-        data = get_flow_runs_by_name(tags=PREFECT_TAGS + ["train"])
+        if infra_state is not None and infra_state["prefect_ready"]:
+            data = get_flow_runs_by_name(tags=PREFECT_TAGS + ["train"])
+        else:
+            data = []
     return data
 
 
