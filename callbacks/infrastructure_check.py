@@ -54,6 +54,8 @@ def check_infra_state(n_intervals):
         infra_state["prefect_worker_ready"] = False
     if any_infra_down:
         infra_state["any_infra_down"] = True
+    else:
+        infra_state["any_infra_down"] = False
     return infra_state
 
 
