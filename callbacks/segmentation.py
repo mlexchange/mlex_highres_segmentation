@@ -404,17 +404,21 @@ def populate_segmentation_results(
 ):
     """
     This function populates the segmentation results store based on the uids
-    of the training job orinference job.
+    of the training job or inference job.
     """
-    data_uri = tiled_datasets.get_data_uri_by_name(project_name)
+    # Nothing has been selected is job_id is None
     if job_id is not None:
+        data_uri = tiled_datasets.get_data_uri_by_name(project_name)
+        # Only returns the name if the job finished successfully
         job_name = get_flow_run_name(job_id)
         if job_name is not None:
             children_flows = get_children_flow_run_ids(job_id)
             if job_type == "training":
                 # Get second child to retrieve results
+                # (inference on just annotated slices for the training job)
                 job_id = children_flows[1]
             else:
+                # There will be only one child
                 job_id = children_flows[0]
             expected_result_uri = f"{job_id}/seg_result"
             try:
