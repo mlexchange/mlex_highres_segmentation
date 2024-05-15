@@ -8,6 +8,7 @@ from prefect.client.schemas.filters import (
     FlowRunFilterParentFlowRunId,
     FlowRunFilterTags,
 )
+from prefect.client.schemas.objects import DeploymentStatus
 
 
 async def _check_prefect_ready():
@@ -27,7 +28,7 @@ async def _check_prefect_worker_ready(deployment_name: str):
         assert (
             deployment
         ), f"No deployment found in config for deployment_name {deployment_name}"
-        if deployment.status != "Ready":
+        if deployment.status != DeploymentStatus.READY:
             raise Exception("Deployment used for training and inference is not ready.")
 
 
