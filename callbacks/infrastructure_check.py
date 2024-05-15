@@ -26,7 +26,7 @@ def check_infra_state(n_intervals):
     any_infra_down = False
 
     # Tiled: Check if data, masks, and results are reachable (from_uri did not raise an exception)
-    tiled_data_ready = tiled_datasets.check_loader()
+    tiled_data_ready = tiled_datasets.check_dataloader_ready()
     infra_state["tiled_data_ready"] = tiled_data_ready
     if not tiled_data_ready:
         any_infra_down = True
@@ -34,7 +34,8 @@ def check_infra_state(n_intervals):
     infra_state["tiled_masks_ready"] = tiled_masks_ready
     if not tiled_masks_ready:
         any_infra_down = True
-    tiled_results_ready = tiled_results.check_loader()
+    # The segmentation application will make sure that all containers that are needed exist
+    tiled_results_ready = tiled_results.check_dataloader_ready(base_uri_only=True)
     infra_state["tiled_results_ready"] = tiled_results_ready
     if not tiled_results_ready:
         any_infra_down = True

@@ -38,15 +38,16 @@ def _create_or_return_containers(client, container_names):
 
 def _split_base_uri_containers(uri):
     """
-    Splits the base uri from the containers and returns
+    Splits the base uri from the containers and returns both base uri and a container list.
+    This assumes that the given uri contains an api version string, metadata and container names
+    # separated by slashes, e.g. api/v1/metadata/masks/special_container
     """
     parsed_url = urlparse(uri)
     path = parsed_url.path
     # Path is either empty or contains a leading slash
     if len(path) < 2:
         return uri, []
-    # Assumes that the given uri contains a api version string, metadata and container names
-    # separated by slashes, e.g. api/v1/metadata/masks/special_container
+
     path_pieces = path.split("/metadata", 1)
     base_uri = urlunparse(
         (
@@ -66,8 +67,13 @@ def _split_base_uri_containers(uri):
 
 class TiledDataLoader:
     def __init__(
-        self, data_tiled_uri=DATA_TILED_URI, data_tiled_api_key=DATA_TILED_API_KEY
+        self,
+        data_tiled_uri=DATA_TILED_URI,
+        data_tiled_api_key=DATA_TILED_API_KEY,
     ):
+        """
+        Initialize a Tiled data loader with the given uri and api key.
+        """
         self.data_tiled_uri = data_tiled_uri
         self.data_tiled_api_key = data_tiled_api_key
         self.refresh_data_client()
@@ -83,11 +89,28 @@ class TiledDataLoader:
             print(f"Error connecting to Tiled: {e}")
             self.data_client = None
 
-    def check_loader(self):
+    def check_dataloader_ready(self, base_uri_only=False):
+        """
+        Check if the data client is available and ready to be used.
+        If base_only is True, only check the base uri.
+        """
         if self.data_client is None:
-            # Try refreshing once
-            self.refresh_data_client()
-            return False if self.data_client is None else True
+            if base_uri_only:
+                base_uri, _ = _split_base_uri_containers(self.data_tiled_uri)
+                try:
+                    from_uri(
+                        base_uri,
+                        api_key=self.data_tiled_api_key,
+                        timeout=httpx.Timeout(30.0),
+                    )
+                    return True
+                except Exception as e:
+                    print(f"Error connecting to Tiled: {e}")
+                    return False
+            else:
+                # Try refreshing once
+                self.refresh_data_client()
+                return False if self.data_client is None else True
         return True
 
     def get_data_project_names(self):
