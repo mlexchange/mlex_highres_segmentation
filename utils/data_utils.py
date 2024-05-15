@@ -27,24 +27,33 @@ class TiledDataLoader:
     ):
         self.data_tiled_uri = data_tiled_uri
         self.data_tiled_api_key = data_tiled_api_key
-        self.data_client = from_uri(
-            self.data_tiled_uri,
-            api_key=self.data_tiled_api_key,
-            timeout=httpx.Timeout(30.0),
-        )
+        self.refresh_data_client()
 
     def refresh_data_client(self):
-        self.data_client = from_uri(
-            self.data_tiled_uri,
-            api_key=self.data_tiled_api_key,
-            timeout=httpx.Timeout(30.0),
-        )
+        try:
+            self.data_client = from_uri(
+                self.data_tiled_uri,
+                api_key=self.data_tiled_api_key,
+                timeout=httpx.Timeout(30.0),
+            )
+        except Exception as e:
+            print(f"Error connecting to Tiled: {e}")
+            self.data_client = None
+
+    def check_loader(self):
+        if self.data_client is None:
+            # Try refreshing once
+            self.refresh_data_client()
+            return False if self.data_client is None else True
+        return True
 
     def get_data_project_names(self):
         """
         Get available project names from the main Tiled container,
         filtered by types that can be processed (Container and ArrayClient)
         """
+        if self.data_client is None:
+            return []
         project_names = [
             project
             for project in list(self.data_client)
@@ -58,6 +67,8 @@ class TiledDataLoader:
         but can also be additionally encapsulated in a folder, multiple container or in a .nxs file.
         We make use of specs to figure out the path to the 3d data.
         """
+        if self.data_client is None or project_name is None:
+            return None
         project_client = self.data_client[project_name]
         # If the project directly points to an array, directly return it
         if isinstance(project_client, ArrayClient):
@@ -124,11 +135,20 @@ class TiledMaskHandler:
     ):
         self.mask_tiled_uri = mask_tiled_uri
         self.mask_tiled_api_key = mask_tiled_api_key
-        self.mask_client = from_uri(
-            self.mask_tiled_uri,
-            api_key=self.mask_tiled_api_key,
-            timeout=httpx.Timeout(30.0),
-        )
+        try:
+            self.mask_client = from_uri(
+                self.mask_tiled_uri,
+                api_key=self.mask_tiled_api_key,
+                timeout=httpx.Timeout(30.0),
+            )
+        except Exception as e:
+            print(f"Error connecting to Tiled: {e}")
+            self.mask_client = None
+
+    def check_mask_handler(self):
+        if self.mask_client is None:
+            return False
+        return True
 
     @staticmethod
     def get_annotated_segmented_results(json_file_path="exported_annotation_data.json"):
