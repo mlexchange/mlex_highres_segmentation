@@ -422,6 +422,9 @@ def populate_segmentation_results(
                 job_id = children_flows[0]
             expected_result_uri = f"{job_id}/seg_result"
             try:
+                # First refresh the data client,
+                # the root container may not yet have existed on startup
+                tiled_results.refresh_data_client()
                 result_container = tiled_results.get_data_by_trimmed_uri(
                     expected_result_uri
                 )
