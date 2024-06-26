@@ -47,7 +47,6 @@ if not os.path.exists(EXPORT_FILE_PATH):
     Input("keybind-event-listener", "event"),
     State({"type": "annotation-class-store", "index": ALL}, "data"),
     State("generate-annotation-class-modal", "opened"),
-    State("control-accordion", "value"),
     State({"type": "edit-annotation-class-modal", "index": ALL}, "opened"),
     State("current-class-selection", "data"),
     State("control-accordion", "value"),
@@ -703,7 +702,9 @@ clientside_callback(
     prevent_initial_call=True,
 )
 def export_annotation(n_clicks, all_annotations, global_store):
-    annotations = Annotations(all_annotations, global_store)
+
+    image_shape = global_store["image_shapes"][0]
+    annotations = Annotations(all_annotations, image_shape)
     EXPORT_AS_SPARSE = False  # todo replace with input
 
     if annotations.has_annotations():
