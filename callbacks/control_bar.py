@@ -50,6 +50,7 @@ if not os.path.exists(EXPORT_FILE_PATH):
     State("control-accordion", "value"),
     State({"type": "edit-annotation-class-modal", "index": ALL}, "opened"),
     State("current-class-selection", "data"),
+    State("control-accordion", "value"),
     prevent_initial_call=True,
 )
 def update_current_class_selection(
@@ -57,9 +58,9 @@ def update_current_class_selection(
     keybind_event_listener,
     all_annotation_classes,
     generate_modal_opened,
-    previous_current_selection,
-    control_accordion_state,
     edit_modal_opened,
+    control_accordion_state,
+    previous_current_selection,
 ):
     """
     This callback is responsible for updating the current class selection when a class is clicked on,
