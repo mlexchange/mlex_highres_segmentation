@@ -195,6 +195,7 @@ def annotation_mode(
     if control_accordion_state is not None and "run-model" in control_accordion_state:
         raise PreventUpdate
 
+    # trigger can be either one of the four buttons (closed-freeform, circle, rectangle, pan-and-zoom or a key press
     trigger = ctx.triggered_id
     pressed_key = (
         keybind_event_listener.get("key", None) if keybind_event_listener else None
@@ -228,6 +229,7 @@ def annotation_mode(
             ANNOT_NOTIFICATION_MSGS[trigger], "indigo", ANNOT_ICONS[trigger]
         )
     else:
+        # Trigger was a button press
         notification = no_update
         if trigger == "closed-freeform" and closed > 0:
             patched_figure["layout"]["dragmode"] = "drawclosedpath"
@@ -251,7 +253,7 @@ def annotation_mode(
     # none need to be set to not editable
     if "shapes" in fig["layout"]:
         for shape in fig["layout"]["shapes"]:
-            shape["editable"] = trigger != "pan-and-zoom" and pan_and_zoom > 0
+            shape["editable"] = trigger != "pan-and-zoom"
         patched_figure["layout"]["shapes"] = fig["layout"]["shapes"]
     return (
         patched_figure,
