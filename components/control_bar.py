@@ -54,6 +54,7 @@ def layout():
             style={"width": "400px"},
             children=[
                 dmc.AccordionMultiple(
+                    id="control-accordion",
                     value=["data-select", "image-transformations", "annotations"],
                     children=[
                         _accordion_item(
@@ -640,8 +641,8 @@ def layout():
                                     "dvc-training-stats",
                                     dmc.Anchor(
                                         dmc.Text("Open in new window"),
-                                        # href=RESULTS_DIR + uid from store "report.html",
-                                        href="assets/report.html",
+                                        id="dvc-training-stats-link",
+                                        href="",
                                         target="_blank",
                                         size="sm",
                                     ),

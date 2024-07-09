@@ -112,6 +112,10 @@ def render_image(
     if image_idx:
         image_idx -= 1  # slider starts at 1, so subtract 1 to get the correct index
         tf = tiled_datasets.get_data_sequence_by_name(project_name)[image_idx]
+        # Auto-scale data
+        low = np.percentile(tf.ravel(), 1)
+        high = np.percentile(tf.ravel(), 99)
+        tf = np.clip((tf - low) / (high - low), 0, 1)
         if toggle_seg_result:
             # if toggle is true and overlay exists already (2 images in data) this will
             # be handled in hide_show_segmentation_overlay callback
@@ -127,9 +131,9 @@ def render_image(
                 )
                 if "mask_idx" in seg_result and seg_result["mask_idx"] is not None:
                     annotation_indices = seg_result["mask_idx"]
-                    if str(image_idx) in annotation_indices:
+                    if image_idx in annotation_indices:
                         # Will not return an error since we already checked if image_idx is in the list
-                        mapped_index = annotation_indices.index(str(image_idx))
+                        mapped_index = annotation_indices.index(image_idx)
                         result = tiled_results.get_data_by_trimmed_uri(
                             seg_result["seg_result_trimmed_uri"], slice=mapped_index
                         )
@@ -143,6 +147,7 @@ def render_image(
                 result = None
     else:
         tf = np.zeros((500, 500))
+
     fig = px.imshow(tf, binary_string=True)
     if toggle_seg_result and result is not None:
         colorscale, max_class_id = generate_segmentation_colormap(
@@ -151,7 +156,7 @@ def render_image(
         fig.add_trace(
             go.Heatmap(
                 z=result,
-                zmin=-0.5,
+                zmin=-1.5,
                 zmax=max_class_id + 0.5,
                 colorscale=colorscale,
                 showscale=False,
@@ -236,6 +241,7 @@ def render_image(
     State("image-selection-slider", "max"),
     State("generate-annotation-class-modal", "opened"),
     State({"type": "edit-annotation-class-modal", "index": ALL}, "opened"),
+    State("control-accordion", "value"),
     prevent_initial_call=True,
 )
 def keybind_image_slider(
@@ -245,11 +251,13 @@ def keybind_image_slider(
     max_slice,
     generate_modal_opened,
     edit_modal_opened,
+    control_accordion_state,
 ):
     """Allows user to use left/right arrow keys to navigate through images"""
     if generate_modal_opened or any(edit_modal_opened):
         raise PreventUpdate
-
+    if control_accordion_state is not None and "run-model" in control_accordion_state:
+        raise PreventUpdate
     pressed_key = (
         keybind_event_listener.get("key", None) if keybind_event_listener else None
     )

@@ -47,8 +47,9 @@ if not os.path.exists(EXPORT_FILE_PATH):
     Input("keybind-event-listener", "event"),
     State({"type": "annotation-class-store", "index": ALL}, "data"),
     State("generate-annotation-class-modal", "opened"),
-    State("current-class-selection", "data"),
     State({"type": "edit-annotation-class-modal", "index": ALL}, "opened"),
+    State("current-class-selection", "data"),
+    State("control-accordion", "value"),
     prevent_initial_call=True,
 )
 def update_current_class_selection(
@@ -56,8 +57,9 @@ def update_current_class_selection(
     keybind_event_listener,
     all_annotation_classes,
     generate_modal_opened,
-    previous_current_selection,
     edit_modal_opened,
+    control_accordion_state,
+    previous_current_selection,
 ):
     """
     This callback is responsible for updating the current class selection when a class is clicked on,
@@ -68,6 +70,11 @@ def update_current_class_selection(
     if ctx.triggered_id == "keybind-event-listener":
         # user is going to type in the class creation/edit modals and we don't want to trigger this callback using keys
         if generate_modal_opened or any(edit_modal_opened):
+            raise PreventUpdate
+        if (
+            control_accordion_state is not None
+            and "run-model" in control_accordion_state
+        ):
             raise PreventUpdate
         pressed_key = (
             keybind_event_listener.get("key", None) if keybind_event_listener else None
@@ -162,6 +169,7 @@ def update_selected_class_style(selected_class, all_annotation_classes):
     State("annotation-store", "data"),
     State("generate-annotation-class-modal", "opened"),
     State({"type": "edit-annotation-class-modal", "index": ALL}, "opened"),
+    State("control-accordion", "value"),
     State("image-viewer", "figure"),
     prevent_initial_call=True,
 )
@@ -174,6 +182,7 @@ def annotation_mode(
     annotation_store,
     generate_modal_opened,
     edit_modal_opened,
+    control_accordion_state,
     fig,
 ):
     """
@@ -183,7 +192,10 @@ def annotation_mode(
     if generate_modal_opened or any(edit_modal_opened):
         # user is going to type on this page (on a modal) and we don't want to trigger this callback using keys
         raise PreventUpdate
+    if control_accordion_state is not None and "run-model" in control_accordion_state:
+        raise PreventUpdate
 
+    # trigger can be either one of the four buttons (closed-freeform, circle, rectangle, pan-and-zoom or a key press
     trigger = ctx.triggered_id
     pressed_key = (
         keybind_event_listener.get("key", None) if keybind_event_listener else None
@@ -217,6 +229,7 @@ def annotation_mode(
             ANNOT_NOTIFICATION_MSGS[trigger], "indigo", ANNOT_ICONS[trigger]
         )
     else:
+        # Trigger was a button press
         notification = no_update
         if trigger == "closed-freeform" and closed > 0:
             patched_figure["layout"]["dragmode"] = "drawclosedpath"
@@ -240,7 +253,7 @@ def annotation_mode(
     # none need to be set to not editable
     if "shapes" in fig["layout"]:
         for shape in fig["layout"]["shapes"]:
-            shape["editable"] = trigger != "pan-and-zoom" and pan_and_zoom > 0
+            shape["editable"] = trigger != "pan-and-zoom"
         patched_figure["layout"]["shapes"] = fig["layout"]["shapes"]
     return (
         patched_figure,
@@ -689,7 +702,9 @@ clientside_callback(
     prevent_initial_call=True,
 )
 def export_annotation(n_clicks, all_annotations, global_store):
-    annotations = Annotations(all_annotations, global_store)
+
+    image_shape = global_store["image_shapes"][0]
+    annotations = Annotations(all_annotations, image_shape)
     EXPORT_AS_SPARSE = False  # todo replace with input
 
     if annotations.has_annotations():
@@ -872,25 +887,25 @@ def refresh_data_client(refresh_tiled):
     Input("show-result-overlay-toggle", "checked"),
     Input("seg-results-train-store", "data"),
     Input("seg-results-inference-store", "data"),
-    State("seg-result-opacity-slider", "disabled"),
 )
-def update_result_controls(
-    toggle, seg_result_train, seg_result_inference, slider_disabled
-):
-    checked = False
-    disable_toggle = True
-    disable_slider = True
+def update_result_controls(toggle, seg_result_train, seg_result_inference):
     # Disable opacity slider if result overlay is unchecked
     if ctx.triggered_id == "show-result-overlay-toggle":
         checked = no_update
         # Must have been enabled to be source of trigger
         disable_toggle = no_update
-        disable_slider = not slider_disabled
+        # Disable slider if toggle is unchecked
+        disable_slider = not toggle
+    # Trigger is a change in either a train or inference result
     else:
         if seg_result_train or seg_result_inference:
-            checked = False
+            checked = no_update
             disable_toggle = False
             disable_slider = False
+        else:
+            checked = False
+            disable_toggle = True
+            disable_slider = True
     return (
         checked,
         disable_toggle,

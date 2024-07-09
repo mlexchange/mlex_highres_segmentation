@@ -137,7 +137,7 @@
                     "name": "criterion",
                     "title": "Criterion",
                     "param_key": "criterion",
-                    "value": "MSELoss",
+                    "value": "CrossEntropyLoss",
                     "data": [
                         {
                             "label": "L1Loss",
@@ -562,7 +562,7 @@
                     "name": "criterion",
                     "title": "Criterion",
                     "param_key": "criterion",
-                    "value": "MSELoss",
+                    "value": "CrossEntropyLoss",
                     "data": [
                         {
                             "label": "L1Loss",
@@ -995,7 +995,7 @@
                     "name": "criterion",
                     "title": "Criterion",
                     "param_key": "criterion",
-                    "value": "MSELoss",
+                    "value": "CrossEntropyLoss",
                     "data": [
                         {
                             "label": "L1Loss",

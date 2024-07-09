@@ -204,7 +204,7 @@ class TiledMaskHandler:
             "project_name": project_name,
             "data_uri": tiled_datasets.get_data_uri_by_name(project_name),
             "image_shape": image_shape,
-            "mask_idx": list(annnotations_per_slice.keys()),
+            "mask_idx": [int(key) for key in annnotations_per_slice.keys()],
             "classes": annotation_classes,
             "annotations": annnotations_per_slice,
             "unlabeled_class_id": -1,
