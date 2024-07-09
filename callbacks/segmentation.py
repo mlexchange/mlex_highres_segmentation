@@ -462,7 +462,9 @@ def populate_segmentation_results_train(train_job_id, project_name):
         train_job_id, project_name, "training"
     )
     if segment_job_id is not None:
-        results_link = os.path.join(RESULTS_DIR, segment_job_id, "dvc_metrics/report.html")
+        results_link = os.path.join(
+            RESULTS_DIR, segment_job_id, "dvc_metrics/report.html"
+        )
     else:
         results_link = no_update
 
