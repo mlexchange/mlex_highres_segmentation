@@ -324,8 +324,9 @@ def run_inference(
 @callback(
     Output("train-job-selector", "data"),
     Input("model-check", "n_intervals"),
+    State("infra-state", "data"),
 )
-def check_train_job(n_intervals):
+def check_train_job(n_intervals, infra_state):
     """
     This callback populates the train job selector dropdown with job names and ids from Prefect.
     This callback displays the current status of the job as part of the job name in the dropdown.
@@ -338,7 +339,10 @@ def check_train_job(n_intervals):
             {"label": "✅ DLSIA CBA 03/11/2024 10:02AM", "value": "uid0003"},
         ]
     else:
-        data = get_flow_runs_by_name(tags=PREFECT_TAGS + ["train"])
+        if infra_state is not None and infra_state["prefect_ready"]:
+            data = get_flow_runs_by_name(tags=PREFECT_TAGS + ["train"])
+        else:
+            data = []
     return data
 
 
@@ -400,20 +404,27 @@ def populate_segmentation_results(
 ):
     """
     This function populates the segmentation results store based on the uids
-    of the training job orinference job.
+    of the training job or inference job.
     """
-    data_uri = tiled_datasets.get_data_uri_by_name(project_name)
+    # Nothing has been selected is job_id is None
     if job_id is not None:
+        data_uri = tiled_datasets.get_data_uri_by_name(project_name)
+        # Only returns the name if the job finished successfully
         job_name = get_flow_run_name(job_id)
         if job_name is not None:
             children_flows = get_children_flow_run_ids(job_id)
             if job_type == "training":
                 # Get second child to retrieve results
+                # (inference on just annotated slices for the training job)
                 job_id = children_flows[1]
             else:
+                # There will be only one child
                 job_id = children_flows[0]
             expected_result_uri = f"{job_id}/seg_result"
             try:
+                # First refresh the data client,
+                # the root container may not yet have existed on startup
+                tiled_results.refresh_data_client()
                 result_container = tiled_results.get_data_by_trimmed_uri(
                     expected_result_uri
                 )
