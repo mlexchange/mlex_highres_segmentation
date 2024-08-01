@@ -602,3 +602,117 @@ def reset_figure_view(n_clicks, annotation_store):
         "yaxis.range[1]": image_center_coor["y0"],
     }
     return new_figure, relayout_data
+
+@callback(
+    Output("image-viewer", "figure", allow_duplicate=True),
+    Output('tracer-slider', 'max'),
+    Input('tracer-slider', 'value'),
+    Input('Qlty-window', 'value'),
+    Input('Qlty-step', 'value'),
+    State("image-viewer", "figure"),
+    State("image-metadata", "data"),
+    prevent_initial_call=True,
+)    
+def update_figure_and_opacity(tracer_val ,window_size, step_size, fig, image_metadata):
+    """
+    This callback will update the slider value and the image to display the qlty 2D visualization 
+    when the slider, the window size, or the steps size is changed. It uses a slider to display 
+    the patches in a spriral pattern to better understand the overlap. It does not save the patches 
+    as shapes it only displays them.
+    """
+    if not(window_size)  or not(step_size) or not(fig):
+        raise PreventUpdate
+
+    # Deletes old display patches that have a name that starts with Patch 
+    # to restart when the slider, window size, or step size are updated
+    # Should not effect annotations
+    shapes = fig['layout'].get('shapes')
+
+    if shapes:
+        shapes = [shape for shape in shapes if shape.get('name') is None or not shape.get('name').startswith("Patch")]
+        fig['layout'].update(shapes=shapes)
+
+    new_shapes = fig['layout'].get('shapes', [])
+
+    
+    img_width, img_height = image_metadata["size"]
+
+    qlty_window = int(window_size)
+    qlty_step = int(step_size)
+    qlty_border = 0
+
+    qlty_object = qlty2D.NCYXQuilt(
+        X=img_width,
+        Y=img_height,
+        window=(qlty_window, qlty_window),
+        step=(qlty_step, qlty_step),
+        border=(qlty_border, qlty_border),
+    )
+
+    num_steps = qlty_object.get_times()
+    num_patches = num_steps[0] * num_steps[1]
+
+    # Returns the patch order so that they occur in a spiral and in the correct placemet
+    patches = spiral_coordinates(num_steps[0], num_steps[1], tracer_val)[:tracer_val]
+
+    colors = ['RoyalBlue', 'Red']
+    color_index = 0
+
+    # Changes the order because the orientation of the segmentation app is flipped 
+    for yy in range(num_steps[0] - 1, -1, -1):
+        for xx in range(num_steps[1] - 1, -1, -1):
+            color_index = 1 - color_index
+            if (yy, xx) in patches:
+                start_y = min(yy * qlty_step, img_height - qlty_window)
+                start_x = min(xx * qlty_step, img_width - qlty_window)
+                stop_y = start_y + qlty_window
+                stop_x = start_x + qlty_window
+
+                if start_y >= 0 and start_x >=0 and stop_y <= img_height and stop_x <= img_width:
+                    new_shapes.append(dict(
+                        type="rect",
+                        xref="x",
+                        yref="y",
+                        x0=-start_x + img_width,
+                        x1=-stop_x + img_width,
+                        y0=start_y,
+                        y1=stop_y,
+                        line=dict(color="Black", width=2),
+                        fillcolor=colors[color_index],
+                        opacity=0.2,
+                        name="Patch " + f"({yy},{xx})",
+                        layer="above"
+                    ))
+                    
+    fig['layout'].update(shapes=new_shapes)
+    return fig, num_patches
+
+def spiral_coordinates(rows, cols, tracer_val): 
+    center_x, center_y = rows // 2, cols // 2
+    # center_x, center_y = 0, 0
+
+    spiral_path = [(center_x, center_y)]
+
+    directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
+    direction_index = 0
+    
+    step_size = 1
+    steps_taken = 0
+    
+    while len(spiral_path) < tracer_val:
+        dx, dy = directions[direction_index]
+
+        for _ in range(step_size):
+            center_x += dx
+            center_y += dy
+            if 0 <= center_x < rows and 0 <= center_y < cols:
+                spiral_path.append((center_x, center_y))
+            if len(spiral_path) == tracer_val:
+                break
+        
+        direction_index = (direction_index + 1) % 4
+        steps_taken += 1
+        
+        if steps_taken % 2 == 0:
+            step_size += 1
+    return spiral_path
