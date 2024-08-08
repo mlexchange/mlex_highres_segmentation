@@ -658,6 +658,11 @@ def update_figure_and_opacity(tracer_val ,window_size, step_size, fig, image_met
     colors = ['RoyalBlue', 'Red']
     color_index = 0
 
+    # TODO:
+    # Uncomment once get_patch_boundries is a part of qlty
+    # start_y_list, stop_y_list, start_x_list, stop_x_list = qlty_object.get_patch_boundaries()
+
+
     # Changes the order because the orientation of the segmentation app is flipped 
     for yy in range(num_steps[0] - 1, -1, -1):
         for xx in range(num_steps[1] - 1, -1, -1):
@@ -666,7 +671,15 @@ def update_figure_and_opacity(tracer_val ,window_size, step_size, fig, image_met
                 start_y = min(yy * qlty_step, img_height - qlty_window)
                 start_x = min(xx * qlty_step, img_width - qlty_window)
                 stop_y = start_y + qlty_window
-                stop_x = start_x + qlty_window
+                stop_x = start_x + qlty_window    
+                # TODO:
+                # Uncomment once get_patch_boundries is a part of qlty
+                # start_y = start_y_list[yy]
+                # stop_y = stop_y_list[yy]
+                # start_x = start_x_list[xx]
+                # stop_x = stop_x_list[xx]
+
+
 
                 if start_y >= 0 and start_x >=0 and stop_y <= img_height and stop_x <= img_width:
                     new_shapes.append(dict(
