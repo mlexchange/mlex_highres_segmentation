@@ -4,7 +4,7 @@ import uuid
 from datetime import datetime
 
 import pytz
-from dash import ALL, Input, Output, State, callback, no_update
+from dash import ALL, Input, Output, Patch, State, callback, no_update
 
 from constants import ANNOT_ICONS
 from utils.data_utils import (
@@ -323,10 +323,11 @@ def run_inference(
 
 @callback(
     Output("train-job-selector", "data"),
+    Output("infra-state", "data", allow_duplicate=True),
     Input("model-check", "n_intervals"),
-    State("infra-state", "data"),
+    prevent_initial_call=True,
 )
-def check_train_job(n_intervals, infra_state):
+def check_train_job(n_intervals):
     """
     This callback populates the train job selector dropdown with job names and ids from Prefect.
     This callback displays the current status of the job as part of the job name in the dropdown.
@@ -338,20 +339,28 @@ def check_train_job(n_intervals, infra_state):
             {"label": "🕑 DLSIA XYC 03/11/2024 14:21PM", "value": "uid0002"},
             {"label": "✅ DLSIA CBA 03/11/2024 10:02AM", "value": "uid0003"},
         ]
-    else:
-        if infra_state is not None and infra_state["prefect_ready"]:
-            data = get_flow_runs_by_name(tags=PREFECT_TAGS + ["train"])
-        else:
-            data = []
-    return data
+        return data, no_update
+
+    data = []
+    infra_state = no_update
+    try:
+        data = get_flow_runs_by_name(tags=PREFECT_TAGS + ["train"])
+    except Exception:
+        # Communication with Prefect failed, update the infra_state
+        infra_state = Patch()
+        infra_state["prefect_ready"] = False
+
+    return data, infra_state
 
 
 @callback(
     Output("inference-job-selector", "data"),
     Output("inference-job-selector", "value"),
+    Output("infra-state", "data", allow_duplicate=True),
     Input("model-check", "n_intervals"),
     Input("train-job-selector", "value"),
     State("project-name-src", "value"),
+    prevent_initial_call=True,
 )
 def check_inference_job(n_intervals, train_job_id, project_name):
     """
@@ -363,38 +372,33 @@ def check_inference_job(n_intervals, train_job_id, project_name):
     """
     if MODE == "dev":
         data = [
-            {"label": "❌ DLSIA ABC 03/11/2024 15:38PM", "value": "uid0001"},
-            {"label": "🕑 DLSIA XYC 03/11/2024 14:21PM", "value": "uid0002"},
-            {"label": "✅ DLSIA CBA 03/11/2024 10:02AM", "value": "uid0003"},
+            {"label": "❌ DLSIA ABC 03/11/2024 15:38PM", "value": "uid0004"},
+            {"label": "🕑 DLSIA XYC 03/11/2024 14:21PM", "value": "uid0005"},
+            {"label": "✅ DLSIA CBA 03/11/2024 10:02AM", "value": "uid0006"},
         ]
-        return data, no_update
-    else:
-        if train_job_id is not None:
+        return data, no_update, no_update
+
+    data = []
+
+    if train_job_id is not None:
+        try:
             job_name = get_flow_run_name(train_job_id)
             if job_name is not None:
-                if MODE == "dev":
-                    data = [
-                        {
-                            "label": "❌ DLSIA ABC 03/11/2024 15:38PM",
-                            "value": "uid0001",
-                        },
-                        {
-                            "label": "🕑 DLSIA XYC 03/11/2024 14:21PM",
-                            "value": "uid0002",
-                        },
-                        {
-                            "label": "✅ DLSIA CBA 03/11/2024 10:02AM",
-                            "value": "uid0003",
-                        },
-                    ]
-                else:
-                    data = get_flow_runs_by_name(
-                        flow_run_name=job_name,
-                        tags=PREFECT_TAGS + ["inference", project_name],
-                    )
-                    selected_value = None if len(data) == 0 else no_update
-                return data, selected_value
-        return [], None
+                data = get_flow_runs_by_name(
+                    flow_run_name=job_name,
+                    tags=PREFECT_TAGS + ["inference", project_name],
+                )
+            infra_state = no_update
+
+        except Exception:
+            # Communication with Prefect failed, update the infra_state
+            infra_state = Patch()
+            infra_state["prefect_ready"] = False
+    else:
+        infra_state = no_update
+
+    selected_value = None if len(data) == 0 else no_update
+    return data, selected_value, infra_state
 
 
 def populate_segmentation_results(

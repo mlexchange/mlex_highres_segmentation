@@ -14,8 +14,9 @@ FLOW_NAME = os.getenv("FLOW_NAME", "")
 
 
 @callback(
-    Output("infra-state", "data"),
+    Output("infra-state", "data", allow_duplicate=True),
     Input("infra-check", "n_intervals"),
+    prevent_initial_call="initial_dupulicate",
 )
 def check_infra_state(n_intervals):
     infra_state = {}
