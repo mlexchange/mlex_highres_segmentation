@@ -44,10 +44,15 @@ def _split_base_uri_containers(uri):
     """
     parsed_url = urlparse(uri)
     path = parsed_url.path
-    # Path is either empty or contains a leading slash
+    # Path is either empty or contains a leading slash only
     if len(path) < 2:
         return uri, []
 
+    # Check if the path contain an api string that could be followed by containers
+    if "/api" not in path:
+        return uri, []
+
+    # TODO: Allow more flexible splitting of the path, using other api endpoints
     path_pieces = path.split("/metadata", 1)
     base_uri = urlunparse(
         (
