@@ -163,11 +163,15 @@ def run_train(
         # Uid retrieve is set to None because the partial inference job will be
         # populated with the the uid_save of the training job
         # This is handled in the Prefect worker
+        current_time = datetime.now(pytz.timezone(TIMEZONE)).strftime(
+            "%Y/%m/%d %H:%M:%S"
+        )
+        flow_run_name = f"{job_name} {current_time}"
         data_uri = tiled_datasets.get_data_uri_by_name(project_name)
         io_parameters = assemble_io_parameters_from_uris(data_uri, mask_uri)
         io_parameters["uid_retrieve"] = ""
         io_parameters["models_dir"] = RESULTS_DIR
-        io_parameters["job_name"] = job_name
+        io_parameters["job_name"] = flow_run_name
 
         TRAIN_PARAMS_EXAMPLE["params_list"][0]["params"][
             "io_parameters"
@@ -189,13 +193,10 @@ def run_train(
         else:
             try:
                 # Schedule job
-                current_time = datetime.now(pytz.timezone(TIMEZONE)).strftime(
-                    "%Y/%m/%d %H:%M:%S"
-                )
                 job_uid = schedule_prefect_flow(
                     FLOW_NAME,
                     parameters=TRAIN_PARAMS_EXAMPLE,
-                    flow_run_name=f"{job_name} {current_time}",
+                    flow_run_name=flow_run_name,
                     tags=PREFECT_TAGS + ["train", project_name],
                 )
                 job_message = f"Job has been succesfully submitted with uid: {job_uid} and mask uri: {mask_uri}"
@@ -281,23 +282,26 @@ def run_inference(
                     # The first child flow is the training portion of the parent flow
                     # TODO: Maybe check number of children and type in the future
                     train_job_id = children_flows[0]
+
+                    current_time = datetime.now(pytz.timezone(TIMEZONE)).strftime(
+                        "%Y/%m/%d %H:%M:%S"
+                    )
+                    flow_run_name = f"{job_name} {current_time}"
+
                     # Set the uid_retrieve of the inference job to the uid of the training job
                     INFERENCE_PARAMS_EXAMPLE["params_list"][0]["params"][
                         "io_parameters"
                     ]["uid_retrieve"] = train_job_id
                     INFERENCE_PARAMS_EXAMPLE["params_list"][0]["params"][
                         "io_parameters"
-                    ]["job_name"] = job_name
+                    ]["job_name"] = flow_run_name
                     # TODO: Check if the architecture parameters are the same, as the one used in training
                     try:
                         # Schedule job
-                        current_time = datetime.now(pytz.timezone(TIMEZONE)).strftime(
-                            "%Y/%m/%d %H:%M:%S"
-                        )
                         job_uid = schedule_prefect_flow(
                             FLOW_NAME,
                             parameters=INFERENCE_PARAMS_EXAMPLE,
-                            flow_run_name=f"{job_name} {current_time}",
+                            flow_run_name=flow_run_name,
                             tags=PREFECT_TAGS + ["inference", project_name],
                         )
                         job_message = (
@@ -428,8 +432,7 @@ def populate_segmentation_results(
             else:
                 # There will be only one child
                 job_id = children_flows[0]
-            job_name = get_flow_run_name(job_id)
-            expected_result_uri = f"{job_name}/seg_result"
+            expected_result_uri = f"{job_id}/seg_result"
             try:
                 # First refresh the data client,
                 # the root container may not yet have existed on startup
