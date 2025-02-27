@@ -18,6 +18,11 @@ services:
       PREFECT_API_URL: '${PREFECT_API_URL}'
       FLOW_NAME: '${FLOW_NAME}'
       TIMEZONE: "${TIMEZONE}"
+      FLOW_TYPE: "${FLOW_TYPE}"
+      IMAGE_NAME: "${IMAGE_NAME}"
+      IMAGE_TAG: "${IMAGE_TAG}"
+      TRAIN_SCRIPT_PATH: "${TRAIN_SCRIPT_PATH}"
+      SEGMENT_SCRIPT_PATH: "${SEGMENT_SCRIPT_PATH}"
     volumes:
       - ./app.py:/app/app.py
       - ./constants.py:/app/constants.py
