@@ -4,9 +4,9 @@ import uuid
 from datetime import datetime
 
 import pytz
-from dash import ALL, Input, Output, State, callback, no_update
 
 from constants import ANNOT_ICONS
+from dash import ALL, Input, Output, State, callback, no_update
 from utils.data_utils import (
     assemble_io_parameters_from_uris,
     extract_parameters_from_html,
@@ -167,6 +167,7 @@ def run_train(
         io_parameters = assemble_io_parameters_from_uris(data_uri, mask_uri)
         io_parameters["uid_retrieve"] = ""
         io_parameters["models_dir"] = RESULTS_DIR
+        io_parameters["job_name"] = job_name
 
         TRAIN_PARAMS_EXAMPLE["params_list"][0]["params"][
             "io_parameters"
@@ -284,6 +285,9 @@ def run_inference(
                     INFERENCE_PARAMS_EXAMPLE["params_list"][0]["params"][
                         "io_parameters"
                     ]["uid_retrieve"] = train_job_id
+                    INFERENCE_PARAMS_EXAMPLE["params_list"][0]["params"][
+                        "io_parameters"
+                    ]["job_name"] = job_name
                     # TODO: Check if the architecture parameters are the same, as the one used in training
                     try:
                         # Schedule job
