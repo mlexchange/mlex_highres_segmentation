@@ -412,7 +412,8 @@ def populate_segmentation_results(
                 job_id = children_flows[1]
             else:
                 job_id = children_flows[0]
-            expected_result_uri = f"{job_id}/seg_result"
+            job_name = get_flow_run_name(job_id)
+            expected_result_uri = f"{job_name}/seg_result"
             try:
                 result_container = tiled_results.get_data_by_trimmed_uri(
                     expected_result_uri
