@@ -424,7 +424,8 @@ def populate_segmentation_results(
             else:
                 # There will be only one child
                 job_id = children_flows[0]
-            expected_result_uri = f"{job_id}/seg_result"
+            job_name = get_flow_run_name(job_id)
+            expected_result_uri = f"{job_name}/seg_result"
             try:
                 # First refresh the data client,
                 # the root container may not yet have existed on startup
