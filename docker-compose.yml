@@ -14,13 +14,15 @@ services:
       SEG_TILED_API_KEY: '${SEG_TILED_API_KEY}'
       USER_NAME: '${USER_NAME}'
       USER_PASSWORD: '${USER_PASSWORD}'
-      RESULTS_DIR: '${RESULTS_DIR}'
+      RESULTS_DIR: "/app/work/results"
       PREFECT_API_URL: '${PREFECT_API_URL}'
       FLOW_NAME: '${FLOW_NAME}'
       TIMEZONE: "${TIMEZONE}"
       FLOW_TYPE: "${FLOW_TYPE}"
       IMAGE_NAME: "${IMAGE_NAME}"
       IMAGE_TAG: "${IMAGE_TAG}"
+      DOCKER_NETWORK: "${DOCKER_NETWORK}"
+      MOUNT_RESULTS_DIR: "${RESULTS_DIR}"
       TRAIN_SCRIPT_PATH: "${TRAIN_SCRIPT_PATH}"
       SEGMENT_SCRIPT_PATH: "${SEGMENT_SCRIPT_PATH}"
     volumes:
@@ -29,12 +31,13 @@ services:
       - ./callbacks:/app/callbacks
       - ./components:/app/components
       - ./utils:/app/utils
+      - ${RESULTS_DIR}:/app/work/results
     ports:
-      - '8075:8075'
+      - '127.0.0.1:8075:8075'
+    networks:
+      mlex_tomo_framework_mle_net:
 
-#     networks:
-#       - computing_api_default
-
-# networks:
-#   computing_api_default:
-#     external: true
+networks:
+  mlex_tomo_framework_mle_net:
+    driver: bridge
+    external: true
