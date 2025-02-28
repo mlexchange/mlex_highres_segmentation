@@ -32,8 +32,10 @@ TRAIN_SCRIPT_PATH = os.getenv("TRAIN_SCRIPT_PATH", "scr/train.py")
 SEGMENT_SCRIPT_PATH = os.getenv("SEGMENT_SCRIPT_PATH", "scr/segment.py")
 
 CONDA_ENV_NAME = os.getenv("CONDA_ENV_NAME", "dlsia")
-IMAGE_NAME = os.getenv("DOCKER_IMAGE_NAME", None)
-IMAGE_TAG = os.getenv("DOCKER_IMAGE_TAG", None)
+IMAGE_NAME = os.getenv("IMAGE_NAME", None)
+IMAGE_TAG = os.getenv("IMAGE_TAG", None)
+DOCKER_NETWORK = os.getenv("DOCKER_NETWORK", "")
+MOUNT_RESULTS_DIR = os.getenv("MOUNT_RESULTS_DIR", "")
 
 # TODO: Retrieve timezone from browser
 TIMEZONE = os.getenv("TIMEZONE", "US/Pacific")
@@ -50,7 +52,7 @@ if FLOW_TYPE == "podman":
                 "params": {
                     "io_parameters": {"uid_save": "uid0001", "uid_retrieve": "uid0001"}
                 },
-                "volumes": [f"{RESULTS_DIR}:/app/work/results"],
+                "volumes": [f"{MOUNT_RESULTS_DIR}:/app/work/results"],
             },
             {
                 "image_name": f"{IMAGE_NAME}",
@@ -59,7 +61,7 @@ if FLOW_TYPE == "podman":
                 "params": {
                     "io_parameters": {"uid_save": "uid0001", "uid_retrieve": "uid0001"}
                 },
-                "volumes": [f"{RESULTS_DIR}:/app/work/results"],
+                "volumes": [f"{MOUNT_RESULTS_DIR}:/app/work/results"],
             },
         ],
     }
@@ -74,7 +76,7 @@ if FLOW_TYPE == "podman":
                 "params": {
                     "io_parameters": {"uid_save": "uid0001", "uid_retrieve": "uid0001"}
                 },
-                "volumes": [f"{RESULTS_DIR}:/app/work/results"],
+                "volumes": [f"{MOUNT_RESULTS_DIR}:/app/work/results"],
             },
         ],
     }
@@ -124,7 +126,8 @@ else:
                 "params": {
                     "io_parameters": {"uid_save": "uid0001", "uid_retrieve": "uid0001"}
                 },
-                "volumes": [f"{RESULTS_DIR}:/app/work/results"],
+                "volumes": [f"{MOUNT_RESULTS_DIR}:/app/work/results"],
+                "network": DOCKER_NETWORK,
             },
             {
                 "image_name": f"{IMAGE_NAME}",
@@ -133,7 +136,8 @@ else:
                 "params": {
                     "io_parameters": {"uid_save": "uid0001", "uid_retrieve": "uid0001"}
                 },
-                "volumes": [f"{RESULTS_DIR}:/app/work/results"],
+                "volumes": [f"{MOUNT_RESULTS_DIR}:/app/work/results"],
+                "network": DOCKER_NETWORK,
             },
         ],
     }
@@ -148,7 +152,7 @@ else:
                 "params": {
                     "io_parameters": {"uid_save": "uid0001", "uid_retrieve": "uid0001"}
                 },
-                "volumes": [f"{RESULTS_DIR}:/app/work/results"],
+                "volumes": [f"{MOUNT_RESULTS_DIR}:/app/work/results"],
             },
         ],
     }
