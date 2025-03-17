@@ -58,8 +58,8 @@ def update_current_class_selection(
     all_annotation_classes,
     generate_modal_opened,
     edit_modal_opened,
-    control_accordion_state,
     previous_current_selection,
+    control_accordion_state,
 ):
     """
     This callback is responsible for updating the current class selection when a class is clicked on,
