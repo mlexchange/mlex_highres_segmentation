@@ -4,9 +4,9 @@ import uuid
 from datetime import datetime
 
 import pytz
+from dash import ALL, Input, Output, Patch, State, callback, no_update
 
 from constants import ANNOT_ICONS
-from dash import ALL, Input, Output, Patch, State, callback, no_update
 from utils.data_utils import (
     assemble_io_parameters_from_uris,
     extract_parameters_from_html,
