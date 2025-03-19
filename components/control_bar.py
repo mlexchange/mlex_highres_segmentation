@@ -606,7 +606,22 @@ def layout():
                                         placeholder="Select a model...",
                                     ),
                                 ),
-                                dmc.Space(h=15),
+                                dmc.Space(h=25),
+                                ControlItem(
+                                    "Model Info",
+                                    "model-info",
+                                    dmc.Anchor(
+                                        dmc.Image(
+                                            src="/assets/dlsia.png",
+                                            alt="dlsia-logo",
+                                            width=150,
+                                        ),
+                                        id="dlsia-reference",
+                                        href="https://dlsia.readthedocs.io/en/latest/",
+                                        target="_blank",
+                                        size="sm",
+                                    ),
+                                ),
                                 html.Div(id="model-parameters"),
                                 dcc.Store(id="model-parameter-values", data={}),
                                 dmc.Space(h=25),
