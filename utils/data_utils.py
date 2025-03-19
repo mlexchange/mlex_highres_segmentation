@@ -1,5 +1,6 @@
 import json
 import os
+from urllib.parse import urlparse, urlunparse
 
 import httpx
 import numpy as np
@@ -21,30 +22,109 @@ SEG_TILED_API_KEY = os.getenv("SEG_TILED_API_KEY")
 USER_NAME = os.getenv("USER_NAME", "user1")
 
 
+def _create_or_return_containers(client, container_names):
+    """
+    Iterates through a list of container names and creates them if they do not exist.
+    For example, if the container_names are ["results", "segmentation"], it will return the Tiled client for
+    client["results"]["segmentation"], having created any containers that were missing.
+    """
+    for container_name in container_names:
+        if container_name not in client.keys():
+            client = client.create_container(key=container_name)
+        else:
+            client[container_name]
+    return client
+
+
+def _split_base_uri_containers(uri):
+    """
+    Splits the base uri from the containers and returns both base uri and a container list.
+    This assumes that the given uri contains an api version string, metadata and container names
+    # separated by slashes, e.g. api/v1/metadata/masks/special_container
+    """
+    parsed_url = urlparse(uri)
+    path = parsed_url.path
+    # Path is either empty or contains a leading slash only
+    if len(path) < 2:
+        return uri, []
+
+    # Check if the path contain an api string that could be followed by containers
+    if "/api" not in path:
+        return uri, []
+
+    # TODO: Allow more flexible splitting of the path, using other api endpoints
+    path_pieces = path.split("/metadata", 1)
+    base_uri = urlunparse(
+        (
+            parsed_url.scheme,
+            parsed_url.netloc,
+            path_pieces[0] + "/metadata",
+            parsed_url.params,
+            parsed_url.query,
+            parsed_url.fragment,
+        )
+    )
+    container_names = (
+        path_pieces[1].strip("/").split("/") if len(path_pieces) > 1 else []
+    )
+    return base_uri, container_names
+
+
 class TiledDataLoader:
     def __init__(
-        self, data_tiled_uri=DATA_TILED_URI, data_tiled_api_key=DATA_TILED_API_KEY
+        self,
+        data_tiled_uri=DATA_TILED_URI,
+        data_tiled_api_key=DATA_TILED_API_KEY,
     ):
+        """
+        Initialize a Tiled data loader with the given uri and api key.
+        """
         self.data_tiled_uri = data_tiled_uri
         self.data_tiled_api_key = data_tiled_api_key
-        self.data_client = from_uri(
-            self.data_tiled_uri,
-            api_key=self.data_tiled_api_key,
-            timeout=httpx.Timeout(30.0),
-        )
+        self.refresh_data_client()
 
     def refresh_data_client(self):
-        self.data_client = from_uri(
-            self.data_tiled_uri,
-            api_key=self.data_tiled_api_key,
-            timeout=httpx.Timeout(30.0),
-        )
+        try:
+            self.data_client = from_uri(
+                self.data_tiled_uri,
+                api_key=self.data_tiled_api_key,
+                timeout=httpx.Timeout(30.0),
+            )
+        except Exception as e:
+            print(f"Error connecting to Tiled: {e}")
+            self.data_client = None
+
+    def check_dataloader_ready(self, base_uri_only=False):
+        """
+        Check if the data client is available and ready to be used.
+        If base_only is True, only check the base uri.
+        """
+        if self.data_client is None:
+            if base_uri_only:
+                base_uri, _ = _split_base_uri_containers(self.data_tiled_uri)
+                try:
+                    from_uri(
+                        base_uri,
+                        api_key=self.data_tiled_api_key,
+                        timeout=httpx.Timeout(30.0),
+                    )
+                    return True
+                except Exception as e:
+                    print(f"Error connecting to Tiled: {e}")
+                    return False
+            else:
+                # Try refreshing once
+                self.refresh_data_client()
+                return False if self.data_client is None else True
+        return True
 
     def get_data_project_names(self):
         """
         Get available project names from the main Tiled container,
         filtered by types that can be processed (Container and ArrayClient)
         """
+        if self.data_client is None:
+            return []
         project_names = [
             project
             for project in list(self.data_client)
@@ -58,6 +138,8 @@ class TiledDataLoader:
         but can also be additionally encapsulated in a folder, multiple container or in a .nxs file.
         We make use of specs to figure out the path to the 3d data.
         """
+        if self.data_client is None or project_name is None:
+            return None
         project_client = self.data_client[project_name]
         # If the project directly points to an array, directly return it
         if isinstance(project_client, ArrayClient):
@@ -120,15 +202,36 @@ class TiledMaskHandler:
     """
 
     def __init__(
-        self, mask_tiled_uri=MASK_TILED_URI, mask_tiled_api_key=MASK_TILED_API_KEY
+        self,
+        mask_tiled_uri=MASK_TILED_URI,
+        mask_tiled_api_key=MASK_TILED_API_KEY,
     ):
         self.mask_tiled_uri = mask_tiled_uri
         self.mask_tiled_api_key = mask_tiled_api_key
-        self.mask_client = from_uri(
-            self.mask_tiled_uri,
-            api_key=self.mask_tiled_api_key,
-            timeout=httpx.Timeout(30.0),
-        )
+
+        self.refresh_mask_handler()
+
+    def refresh_mask_handler(self):
+        base_uri, container_names = _split_base_uri_containers(self.mask_tiled_uri)
+        try:
+            base_client = from_uri(
+                base_uri,
+                api_key=self.mask_tiled_api_key,
+                timeout=httpx.Timeout(30.0),
+            )
+            self.mask_client = _create_or_return_containers(
+                base_client, container_names
+            )
+        except Exception as e:
+            print(f"Error connecting to Tiled: {e}")
+            self.mask_client = None
+
+    def check_mask_handler_ready(self):
+        if self.mask_client is None:
+            # Try refreshing once
+            self.refresh_mask_handler()
+            return False if self.mask_client is None else True
+        return True
 
     @staticmethod
     def get_annotated_segmented_results(json_file_path="exported_annotation_data.json"):
@@ -243,11 +346,13 @@ class TiledMaskHandler:
 
 
 tiled_masks = TiledMaskHandler(
-    mask_tiled_uri=MASK_TILED_URI, mask_tiled_api_key=MASK_TILED_API_KEY
+    mask_tiled_uri=MASK_TILED_URI,
+    mask_tiled_api_key=MASK_TILED_API_KEY,
 )
 
 tiled_results = TiledDataLoader(
-    data_tiled_uri=SEG_TILED_URI, data_tiled_api_key=SEG_TILED_API_KEY
+    data_tiled_uri=SEG_TILED_URI,
+    data_tiled_api_key=SEG_TILED_API_KEY,
 )
 
 

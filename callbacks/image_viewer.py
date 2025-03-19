@@ -129,6 +129,7 @@ def render_image(
                 seg_result = (
                     seg_result_inference if seg_result_inference else seg_result_train
                 )
+
                 if "mask_idx" in seg_result and seg_result["mask_idx"] is not None:
                     annotation_indices = seg_result["mask_idx"]
                     if image_idx in annotation_indices:
@@ -139,6 +140,8 @@ def render_image(
                         )
                     else:
                         result = None
+                # if mask_idx is not given in the results,
+                # then the result stems from inference on the full data set
                 else:
                     result = tiled_results.get_data_by_trimmed_uri(
                         seg_result["seg_result_trimmed_uri"], slice=image_idx

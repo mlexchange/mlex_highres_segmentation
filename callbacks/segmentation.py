@@ -4,7 +4,7 @@ import uuid
 from datetime import datetime
 
 import pytz
-from dash import ALL, Input, Output, State, callback, no_update
+from dash import ALL, Input, Output, Patch, State, callback, no_update
 
 from constants import ANNOT_ICONS
 from utils.data_utils import (
@@ -323,7 +323,9 @@ def run_inference(
 
 @callback(
     Output("train-job-selector", "data"),
+    Output("infra-state", "data", allow_duplicate=True),
     Input("model-check", "n_intervals"),
+    prevent_initial_call=True,
 )
 def check_train_job(n_intervals):
     """
@@ -337,17 +339,28 @@ def check_train_job(n_intervals):
             {"label": "🕑 DLSIA XYC 03/11/2024 14:21PM", "value": "uid0002"},
             {"label": "✅ DLSIA CBA 03/11/2024 10:02AM", "value": "uid0003"},
         ]
-    else:
+        return data, no_update
+
+    data = []
+    infra_state = no_update
+    try:
         data = get_flow_runs_by_name(tags=PREFECT_TAGS + ["train"])
-    return data
+    except Exception:
+        # Communication with Prefect failed, update the infra_state
+        infra_state = Patch()
+        infra_state["prefect_ready"] = False
+
+    return data, infra_state
 
 
 @callback(
     Output("inference-job-selector", "data"),
     Output("inference-job-selector", "value"),
+    Output("infra-state", "data", allow_duplicate=True),
     Input("model-check", "n_intervals"),
     Input("train-job-selector", "value"),
     State("project-name-src", "value"),
+    prevent_initial_call=True,
 )
 def check_inference_job(n_intervals, train_job_id, project_name):
     """
@@ -359,38 +372,33 @@ def check_inference_job(n_intervals, train_job_id, project_name):
     """
     if MODE == "dev":
         data = [
-            {"label": "❌ DLSIA ABC 03/11/2024 15:38PM", "value": "uid0001"},
-            {"label": "🕑 DLSIA XYC 03/11/2024 14:21PM", "value": "uid0002"},
-            {"label": "✅ DLSIA CBA 03/11/2024 10:02AM", "value": "uid0003"},
+            {"label": "❌ DLSIA ABC 03/11/2024 15:38PM", "value": "uid0004"},
+            {"label": "🕑 DLSIA XYC 03/11/2024 14:21PM", "value": "uid0005"},
+            {"label": "✅ DLSIA CBA 03/11/2024 10:02AM", "value": "uid0006"},
         ]
-        return data, no_update
-    else:
-        if train_job_id is not None:
+        return data, no_update, no_update
+
+    data = []
+
+    if train_job_id is not None:
+        try:
             job_name = get_flow_run_name(train_job_id)
             if job_name is not None:
-                if MODE == "dev":
-                    data = [
-                        {
-                            "label": "❌ DLSIA ABC 03/11/2024 15:38PM",
-                            "value": "uid0001",
-                        },
-                        {
-                            "label": "🕑 DLSIA XYC 03/11/2024 14:21PM",
-                            "value": "uid0002",
-                        },
-                        {
-                            "label": "✅ DLSIA CBA 03/11/2024 10:02AM",
-                            "value": "uid0003",
-                        },
-                    ]
-                else:
-                    data = get_flow_runs_by_name(
-                        flow_run_name=job_name,
-                        tags=PREFECT_TAGS + ["inference", project_name],
-                    )
-                    selected_value = None if len(data) == 0 else no_update
-                return data, selected_value
-        return [], None
+                data = get_flow_runs_by_name(
+                    flow_run_name=job_name,
+                    tags=PREFECT_TAGS + ["inference", project_name],
+                )
+            infra_state = no_update
+
+        except Exception:
+            # Communication with Prefect failed, update the infra_state
+            infra_state = Patch()
+            infra_state["prefect_ready"] = False
+    else:
+        infra_state = no_update
+
+    selected_value = None if len(data) == 0 else no_update
+    return data, selected_value, infra_state
 
 
 def populate_segmentation_results(
@@ -400,20 +408,27 @@ def populate_segmentation_results(
 ):
     """
     This function populates the segmentation results store based on the uids
-    of the training job orinference job.
+    of the training job or inference job.
     """
-    data_uri = tiled_datasets.get_data_uri_by_name(project_name)
+    # Nothing has been selected is job_id is None
     if job_id is not None:
+        data_uri = tiled_datasets.get_data_uri_by_name(project_name)
+        # Only returns the name if the job finished successfully
         job_name = get_flow_run_name(job_id)
         if job_name is not None:
             children_flows = get_children_flow_run_ids(job_id)
             if job_type == "training":
                 # Get second child to retrieve results
+                # (inference on just annotated slices for the training job)
                 job_id = children_flows[1]
             else:
+                # There will be only one child
                 job_id = children_flows[0]
             expected_result_uri = f"{job_id}/seg_result"
             try:
+                # First refresh the data client,
+                # the root container may not yet have existed on startup
+                tiled_results.refresh_data_client()
                 result_container = tiled_results.get_data_by_trimmed_uri(
                     expected_result_uri
                 )

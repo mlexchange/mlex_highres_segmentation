@@ -58,8 +58,8 @@ def update_current_class_selection(
     all_annotation_classes,
     generate_modal_opened,
     edit_modal_opened,
-    control_accordion_state,
     previous_current_selection,
+    control_accordion_state,
 ):
     """
     This callback is responsible for updating the current class selection when a class is clicked on,
@@ -189,11 +189,6 @@ def annotation_mode(
     This callback is responsible for changing the annotation mode and the style of the buttons.
     It also accepts keybinds to change the annotation mode.
     """
-    if generate_modal_opened or any(edit_modal_opened):
-        # user is going to type on this page (on a modal) and we don't want to trigger this callback using keys
-        raise PreventUpdate
-    if control_accordion_state is not None and "run-model" in control_accordion_state:
-        raise PreventUpdate
 
     # trigger can be either one of the four buttons (closed-freeform, circle, rectangle, pan-and-zoom or a key press
     trigger = ctx.triggered_id
@@ -202,6 +197,16 @@ def annotation_mode(
     )
     mode = None
     if trigger == "keybind-event-listener":
+
+        if generate_modal_opened or any(edit_modal_opened):
+            # user is going to type on this page (on a modal) and we don't want to trigger this callback using keys
+            raise PreventUpdate
+        if (
+            control_accordion_state is not None
+            and "run-model" in control_accordion_state
+        ):
+            raise PreventUpdate
+
         if pressed_key in KEY_MODES:
             mode, trigger = KEY_MODES[pressed_key]
         else:
