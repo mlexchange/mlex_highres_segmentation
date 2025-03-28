@@ -54,6 +54,7 @@ if FLOW_TYPE == "podman":
                     "io_parameters": {"uid_save": "uid0001", "uid_retrieve": "uid0001"}
                 },
                 "volumes": [f"{MOUNT_RESULTS_DIR}:/app/work/results"],
+                "network": CONTAINER_NETWORK,
             },
             {
                 "image_name": f"{IMAGE_NAME}",
@@ -63,6 +64,7 @@ if FLOW_TYPE == "podman":
                     "io_parameters": {"uid_save": "uid0001", "uid_retrieve": "uid0001"}
                 },
                 "volumes": [f"{MOUNT_RESULTS_DIR}:/app/work/results"],
+                "network": CONTAINER_NETWORK,
             },
         ],
     }
@@ -78,6 +80,7 @@ if FLOW_TYPE == "podman":
                     "io_parameters": {"uid_save": "uid0001", "uid_retrieve": "uid0001"}
                 },
                 "volumes": [f"{MOUNT_RESULTS_DIR}:/app/work/results"],
+                "network": CONTAINER_NETWORK,
             },
         ],
     }
