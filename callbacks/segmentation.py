@@ -32,9 +32,10 @@ TRAIN_SCRIPT_PATH = os.getenv("TRAIN_SCRIPT_PATH", "scr/train.py")
 SEGMENT_SCRIPT_PATH = os.getenv("SEGMENT_SCRIPT_PATH", "scr/segment.py")
 
 CONDA_ENV_NAME = os.getenv("CONDA_ENV_NAME", "dlsia")
+
 IMAGE_NAME = os.getenv("IMAGE_NAME", None)
 IMAGE_TAG = os.getenv("IMAGE_TAG", None)
-DOCKER_NETWORK = os.getenv("DOCKER_NETWORK", "")
+CONTAINER_NETWORK = os.getenv("CONTAINER_NETWORK", "")
 MOUNT_RESULTS_DIR = os.getenv("MOUNT_RESULTS_DIR", "")
 
 # TODO: Retrieve timezone from browser
@@ -127,7 +128,7 @@ else:
                     "io_parameters": {"uid_save": "uid0001", "uid_retrieve": "uid0001"}
                 },
                 "volumes": [f"{MOUNT_RESULTS_DIR}:/app/work/results"],
-                "network": DOCKER_NETWORK,
+                "network": CONTAINER_NETWORK,
             },
             {
                 "image_name": f"{IMAGE_NAME}",
@@ -137,7 +138,7 @@ else:
                     "io_parameters": {"uid_save": "uid0001", "uid_retrieve": "uid0001"}
                 },
                 "volumes": [f"{MOUNT_RESULTS_DIR}:/app/work/results"],
-                "network": DOCKER_NETWORK,
+                "network": CONTAINER_NETWORK,
             },
         ],
     }

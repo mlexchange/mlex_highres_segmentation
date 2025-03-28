@@ -14,6 +14,7 @@ services:
       SEG_TILED_API_KEY: '${SEG_TILED_API_KEY}'
       USER_NAME: '${USER_NAME}'
       USER_PASSWORD: '${USER_PASSWORD}'
+      # The application itself finds the local results directory as mounted below
       RESULTS_DIR: "/app/work/results"
       PREFECT_API_URL: '${PREFECT_API_URL}'
       FLOW_NAME: '${FLOW_NAME}'
@@ -21,7 +22,9 @@ services:
       FLOW_TYPE: "${FLOW_TYPE}"
       IMAGE_NAME: "${IMAGE_NAME}"
       IMAGE_TAG: "${IMAGE_TAG}"
-      DOCKER_NETWORK: "${DOCKER_NETWORK}"
+      CONTAINER_NETWORK: "${CONTAINER_NETWORK}"
+      # When scheduling flows through docker/podman, the container needs to
+      # mount the local results directory
       MOUNT_RESULTS_DIR: "${RESULTS_DIR}"
       TRAIN_SCRIPT_PATH: "${TRAIN_SCRIPT_PATH}"
       SEGMENT_SCRIPT_PATH: "${SEGMENT_SCRIPT_PATH}"
@@ -36,6 +39,7 @@ services:
       - '127.0.0.1:8075:8075'
     networks:
       mlex_tomo_framework_mle_net:
+
 
 networks:
   mlex_tomo_framework_mle_net:
