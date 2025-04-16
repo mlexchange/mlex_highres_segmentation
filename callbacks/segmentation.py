@@ -26,86 +26,140 @@ MODE = os.getenv("MODE", "")
 RESULTS_DIR = os.getenv("RESULTS_DIR", "")
 FLOW_NAME = os.getenv("FLOW_NAME", "")
 PREFECT_TAGS = os.getenv("PREFECT_TAGS", ["high-res-segmentation"])
-CONDA_ENV_NAME = os.getenv("CONDA_ENV_NAME", "dlsia")
+
+FLOW_TYPE = os.getenv("FLOW_TYPE", "conda")
 TRAIN_SCRIPT_PATH = os.getenv("TRAIN_SCRIPT_PATH", "scr/train.py")
 SEGMENT_SCRIPT_PATH = os.getenv("SEGMENT_SCRIPT_PATH", "scr/segment.py")
 
+CONDA_ENV_NAME = os.getenv("CONDA_ENV_NAME", "dlsia")
+
+IMAGE_NAME = os.getenv("IMAGE_NAME", None)
+IMAGE_TAG = os.getenv("IMAGE_TAG", None)
+CONTAINER_NETWORK = os.getenv("CONTAINER_NETWORK", "")
+MOUNT_RESULTS_DIR = os.getenv("MOUNT_RESULTS_DIR", "")
 
 # TODO: Retrieve timezone from browser
 TIMEZONE = os.getenv("TIMEZONE", "US/Pacific")
 
 # TODO: Get model parameters from UI
-TRAIN_PARAMS_EXAMPLE = {
-    "flow_type": "podman",
-    "params_list": [
-        {
-            "image_name": "ghcr.io/mlexchange/mlex_dlsia_segmentation_prototype",
-            "image_tag": "main",
-            "command": 'python -c \\"import time; time.sleep(30)\\"',
-            "params": {
-                "io_parameters": {"uid_save": "uid0001", "uid_retrieve": "uid0001"}
+if FLOW_TYPE == "podman":
+    TRAIN_PARAMS_EXAMPLE = {
+        "flow_type": "podman",
+        "params_list": [
+            {
+                "image_name": f"{IMAGE_NAME}",
+                "image_tag": f"{IMAGE_TAG}",
+                "command": f"python {TRAIN_SCRIPT_PATH}",
+                "params": {
+                    "io_parameters": {"uid_save": "uid0001", "uid_retrieve": "uid0001"}
+                },
+                "volumes": [f"{MOUNT_RESULTS_DIR}:/app/work/results"],
+                "network": CONTAINER_NETWORK,
             },
-            "volumes": [f"{RESULTS_DIR}:/app/work/results"],
-        },
-        {
-            "image_name": "ghcr.io/mlexchange/mlex_dlsia_segmentation_prototype",
-            "image_tag": "main",
-            "command": 'python -c \\"import time; time.sleep(10)\\"',
-            "params": {
-                "io_parameters": {"uid_save": "uid0001", "uid_retrieve": "uid0001"}
+            {
+                "image_name": f"{IMAGE_NAME}",
+                "image_tag": f"{IMAGE_TAG}",
+                "command": f"python {SEGMENT_SCRIPT_PATH}",
+                "params": {
+                    "io_parameters": {"uid_save": "uid0001", "uid_retrieve": "uid0001"}
+                },
+                "volumes": [f"{MOUNT_RESULTS_DIR}:/app/work/results"],
+                "network": CONTAINER_NETWORK,
             },
-            "volumes": [f"{RESULTS_DIR}:/app/work/results"],
-        },
-    ],
-}
+        ],
+    }
 
-INFERENCE_PARAMS_EXAMPLE = {
-    "flow_type": "podman",
-    "params_list": [
-        {
-            "image_name": "ghcr.io/mlexchange/mlex_dlsia_segmentation_prototype",
-            "image_tag": "main",
-            "command": 'python -c \\"import time; time.sleep(30)\\"',
-            "params": {
-                "io_parameters": {"uid_save": "uid0001", "uid_retrieve": "uid0001"}
+    INFERENCE_PARAMS_EXAMPLE = {
+        "flow_type": "podman",
+        "params_list": [
+            {
+                "image_name": f"{IMAGE_NAME}",
+                "image_tag": f"{IMAGE_TAG}",
+                "command": f"python {SEGMENT_SCRIPT_PATH}",
+                "params": {
+                    "io_parameters": {"uid_save": "uid0001", "uid_retrieve": "uid0001"}
+                },
+                "volumes": [f"{MOUNT_RESULTS_DIR}:/app/work/results"],
+                "network": CONTAINER_NETWORK,
             },
-            "volumes": [f"{RESULTS_DIR}:/app/work/results"],
-        },
-    ],
-}
+        ],
+    }
 
-TRAIN_PARAMS_EXAMPLE = {
-    "flow_type": "conda",
-    "params_list": [
-        {
-            "conda_env_name": f"{CONDA_ENV_NAME}",
-            "python_file_name": f"{TRAIN_SCRIPT_PATH}",
-            "params": {
-                "io_parameters": {"uid_save": "uid0001", "uid_retrieve": "uid0001"}
+elif FLOW_TYPE == "conda":
+    TRAIN_PARAMS_EXAMPLE = {
+        "flow_type": "conda",
+        "params_list": [
+            {
+                "conda_env_name": f"{CONDA_ENV_NAME}",
+                "python_file_name": f"{TRAIN_SCRIPT_PATH}",
+                "params": {
+                    "io_parameters": {"uid_save": "uid0001", "uid_retrieve": "uid0001"}
+                },
             },
-        },
-        {
-            "conda_env_name": f"{CONDA_ENV_NAME}",
-            "python_file_name": f"{SEGMENT_SCRIPT_PATH}",
-            "params": {
-                "io_parameters": {"uid_save": "uid0001", "uid_retrieve": "uid0001"}
+            {
+                "conda_env_name": f"{CONDA_ENV_NAME}",
+                "python_file_name": f"{SEGMENT_SCRIPT_PATH}",
+                "params": {
+                    "io_parameters": {"uid_save": "uid0001", "uid_retrieve": "uid0001"}
+                },
             },
-        },
-    ],
-}
+        ],
+    }
 
-INFERENCE_PARAMS_EXAMPLE = {
-    "flow_type": "conda",
-    "params_list": [
-        {
-            "conda_env_name": f"{CONDA_ENV_NAME}",
-            "python_file_name": f"{SEGMENT_SCRIPT_PATH}",
-            "params": {
-                "io_parameters": {"uid_save": "uid0001", "uid_retrieve": "uid0001"}
+    INFERENCE_PARAMS_EXAMPLE = {
+        "flow_type": "conda",
+        "params_list": [
+            {
+                "conda_env_name": f"{CONDA_ENV_NAME}",
+                "python_file_name": f"{SEGMENT_SCRIPT_PATH}",
+                "params": {
+                    "io_parameters": {"uid_save": "uid0001", "uid_retrieve": "uid0001"}
+                },
             },
-        },
-    ],
-}
+        ],
+    }
+
+else:
+    TRAIN_PARAMS_EXAMPLE = {
+        "flow_type": "docker",
+        "params_list": [
+            {
+                "image_name": f"{IMAGE_NAME}",
+                "image_tag": f"{IMAGE_TAG}",
+                "command": f"python {TRAIN_SCRIPT_PATH}",
+                "params": {
+                    "io_parameters": {"uid_save": "uid0001", "uid_retrieve": "uid0001"}
+                },
+                "volumes": [f"{MOUNT_RESULTS_DIR}:/app/work/results"],
+                "network": CONTAINER_NETWORK,
+            },
+            {
+                "image_name": f"{IMAGE_NAME}",
+                "image_tag": f"{IMAGE_TAG}",
+                "command": f"python {SEGMENT_SCRIPT_PATH}",
+                "params": {
+                    "io_parameters": {"uid_save": "uid0001", "uid_retrieve": "uid0001"}
+                },
+                "volumes": [f"{MOUNT_RESULTS_DIR}:/app/work/results"],
+                "network": CONTAINER_NETWORK,
+            },
+        ],
+    }
+
+    INFERENCE_PARAMS_EXAMPLE = {
+        "flow_type": "docker",
+        "params_list": [
+            {
+                "image_name": f"{IMAGE_NAME}",
+                "image_tag": f"{IMAGE_TAG}",
+                "command": f"python {SEGMENT_SCRIPT_PATH}",
+                "params": {
+                    "io_parameters": {"uid_save": "uid0001", "uid_retrieve": "uid0001"}
+                },
+                "volumes": [f"{MOUNT_RESULTS_DIR}:/app/work/results"],
+            },
+        ],
+    }
 
 
 @callback(
