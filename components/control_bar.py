@@ -2,6 +2,7 @@ import os
 
 import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
+import tiled_viewer
 from dash import dcc, html
 from dash_extensions import EventListener
 from dash_iconify import DashIconify
@@ -48,7 +49,9 @@ def layout():
     """
     Returns the layout for the control panel in the app UI
     """
-    DATA_OPTIONS = [item for item in tiled_datasets.get_data_project_names()]
+
+    tiled_base_url, initial_path = tiled_datasets.get_base_uri_initial_path()
+
     return drawer_section(
         dmc.Stack(
             style={"width": "400px"},
@@ -69,31 +72,21 @@ def layout():
                                     "image-selector",
                                     dmc.Grid(
                                         [
-                                            dmc.Select(
-                                                id="project-name-src",
-                                                data=DATA_OPTIONS,
-                                                value=(
-                                                    DATA_OPTIONS[0]
-                                                    if DATA_OPTIONS
-                                                    else None
-                                                ),
-                                                placeholder="Select an image to view...",
+                                            # TiledViewer component for data set selection
+                                            tiled_viewer.TiledViewer(
+                                                id="tiled-image-selector",
+                                                tiledBaseUrl=tiled_base_url,
+                                                isPopup=True,
+                                                isButtonMode=True,
+                                                closeOnSelect=False,
+                                                buttonModeText="Select",
+                                                inButtonModeShowSelectedData=False,
+                                                initialPath=initial_path,
                                             ),
-                                            dmc.ActionIcon(
-                                                _tooltip(
-                                                    "Refresh dataset",
-                                                    children=[
-                                                        DashIconify(
-                                                            icon="mdi:refresh-circle",
-                                                            width=20,
-                                                        ),
-                                                    ],
-                                                ),
-                                                size="xs",
-                                                variant="subtle",
-                                                id="refresh-tiled",
-                                                n_clicks=0,
-                                                style={"margin": "auto"},
+                                            dmc.TextInput(
+                                                id="image-uri",
+                                                value="",
+                                                disabled=True,
                                             ),
                                         ],
                                         style={"margin": "0px"},

@@ -65,7 +65,7 @@ def hide_show_segmentation_overlay(toggle_seg_result, opacity):
     Input("show-result-overlay-toggle", "checked"),
     Input("annotated-slices-selector", "value"),
     State({"type": "annotation-class-store", "index": ALL}, "data"),
-    State("project-name-src", "value"),
+    State("image-uri", "value"),
     State("annotation-store", "data"),
     State("image-metadata", "data"),
     State("screen-size", "data"),
@@ -81,7 +81,7 @@ def render_image(
     toggle_seg_result,
     slice_selection,
     all_annotation_class_store,
-    project_name,
+    image_uri,
     annotation_store,
     image_metadata,
     screen_size,
@@ -111,7 +111,7 @@ def render_image(
 
     if image_idx:
         image_idx -= 1  # slider starts at 1, so subtract 1 to get the correct index
-        tf = tiled_datasets.get_data_sequence_by_name(project_name)[image_idx]
+        tf = tiled_datasets.get_data_sequence_by_trimmed_uri(image_uri)[image_idx]
         # Auto-scale data
         low = np.percentile(tf.ravel(), 1)
         high = np.percentile(tf.ravel(), 99)
@@ -219,8 +219,8 @@ def render_image(
 
     # No update is needed for the 'children' of the control components
     # since we just want to trigger the loading overlay with this callback
-    if project_name != image_metadata["name"] or image_metadata["name"] is None:
-        curr_image_metadata = {"size": tf.shape, "name": project_name}
+    if image_uri != image_metadata["name"] or image_metadata["name"] is None:
+        curr_image_metadata = {"size": tf.shape, "name": image_uri}
     else:
         curr_image_metadata = dash.no_update
     return (
@@ -393,7 +393,7 @@ clientside_callback(
     }
     """,
     Output("image-viewer-loading", "className", allow_duplicate=True),
-    Input("project-name-src", "value"),
+    Input("image-uri", "value"),
     prevent_initial_call=True,
 )
 clientside_callback(
@@ -478,7 +478,7 @@ def locally_store_annotations(
     Output(
         {"type": "annotation-class-store", "index": ALL}, "data", allow_duplicate=True
     ),
-    Input("project-name-src", "value"),
+    Input("image-uri", "value"),
     State({"type": "annotation-class-store", "index": ALL}, "data"),
     prevent_initial_call=True,
 )
@@ -498,17 +498,17 @@ def clear_annotations_on_dataset_change(change_project, all_annotation_class_sto
     Output("image-selection-slider", "value"),
     Output("image-selection-slider", "disabled"),
     Output("annotation-store", "data"),
-    Input("project-name-src", "value"),
+    Input("image-uri", "value"),
     State("annotation-store", "data"),
 )
-def update_slider_values(project_name, annotation_store):
+def update_slider_values(image_uri, annotation_store):
     """
     When the data source is loaded, this callback will set the slider values and chain call
     "update_selection_and_image" callback which will update image and slider selection component.
     """
-    # Retrieve data shape if project_name is valid and points to a 3d array
+    # Retrieve data shape if image_uri is valid and points to a 3d array
     data_shape = (
-        tiled_datasets.get_data_shape_by_name(project_name) if project_name else None
+        tiled_datasets.get_data_shape_by_trimmed_uri(image_uri) if image_uri else None
     )
     disable_slider = data_shape is None
     if not disable_slider:

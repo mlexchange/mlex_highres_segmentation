@@ -36,3 +36,4 @@ dash-bootstrap-components==1.5.0
 dash_auth==2.0.0
 canonicaljson
 griffe >= 0.49.0, <1.0.0
+tiled_viewer==0.0.12

@@ -1,5 +1,6 @@
 import json
 import os
+import traceback
 from urllib.parse import urlparse, urlunparse
 
 import httpx
@@ -58,7 +59,7 @@ def _split_base_uri_containers(uri):
         (
             parsed_url.scheme,
             parsed_url.netloc,
-            path_pieces[0] + "/metadata",
+            path_pieces[0],
             parsed_url.params,
             parsed_url.query,
             parsed_url.fragment,
@@ -92,6 +93,7 @@ class TiledDataLoader:
             )
         except Exception as e:
             print(f"Error connecting to Tiled: {e}")
+            traceback.print_exc()
             self.data_client = None
 
     def check_dataloader_ready(self, base_uri_only=False):
@@ -118,6 +120,15 @@ class TiledDataLoader:
                 return False if self.data_client is None else True
         return True
 
+    def get_base_uri_initial_path(self):
+        """
+        Get the base uri of the Tiled server,
+        without any container names and the path to the root container
+        """
+        base_uri, root_path = _split_base_uri_containers(self.data_tiled_uri)
+        root_path = "/".join(root_path)
+        return base_uri, root_path
+
     def get_data_project_names(self):
         """
         Get available project names from the main Tiled container,
@@ -132,56 +143,56 @@ class TiledDataLoader:
         ]
         return project_names
 
-    def get_data_sequence_by_name(self, project_name):
+    def get_data_sequence_by_trimmed_uri(self, trimmed_uri):
         """
         Data sequences may be given directly inside the main client container,
         but can also be additionally encapsulated in a folder, multiple container or in a .nxs file.
         We make use of specs to figure out the path to the 3d data.
         """
-        if self.data_client is None or project_name is None:
+        if self.data_client is None or trimmed_uri is None:
             return None
-        project_client = self.data_client[project_name]
+        sequence_client = self.data_client[trimmed_uri]
         # If the project directly points to an array, directly return it
-        if isinstance(project_client, ArrayClient):
-            return project_client
-        # If project_name points to a container
-        elif isinstance(project_client, Container):
+        if isinstance(sequence_client, ArrayClient):
+            return sequence_client
+        # If sequence_client points to a container
+        elif isinstance(sequence_client, Container):
             # Check if the specs give us information about which sub-container to access
-            specs = project_client.specs
+            specs = sequence_client.specs
             # TODO: Read yaml file with spec to path mapping
             if any(spec.name == "NXtomoproc" for spec in specs):
                 # Example for how to access data if the project container corresponds to a
                 # nexus-file following the NXtomoproc definition
                 # TODO: This assumes that a validator has checked the file on ingestion
                 # Otherwise we should first test if the path holds data
-                return project_client["entry/data/data"]
+                return sequence_client["entry/data/data"]
             # Enter the container and return first element
             # if it represents an array
-            if len(list(project_client)) == 1:
-                sequence_client = project_client.values()[0]
+            if len(list(sequence_client)) == 1:
+                sequence_client = sequence_client.values()[0]
                 if isinstance(sequence_client, ArrayClient):
                     return sequence_client
         return None
 
-    def get_data_shape_by_name(self, project_name):
+    def get_data_shape_by_trimmed_uri(self, trimmed_uri):
         """
         Retrieve shape of the data
         """
-        project_container = self.get_data_sequence_by_name(project_name)
-        if project_container:
-            return project_container.shape
+        sequence_client = self.get_data_sequence_by_trimmed_uri(trimmed_uri)
+        if sequence_client:
+            return sequence_client.shape
         return None
 
-    def get_data_uri_by_name(self, project_name):
+    def get_data_uri_by_trimmed_uri(self, trimmed_uri):
         """
-        Retrieve uri of the data
+        Retrieve full uri of the data from the trimmed uri
         """
-        project_container = self.get_data_sequence_by_name(project_name)
-        if project_container:
-            return project_container.uri
+        sequence_client = self.get_data_sequence_by_trimmed_uri(trimmed_uri)
+        if sequence_client:
+            return sequence_client.uri
         return None
 
-    def get_data_by_trimmed_uri(self, trimmed_uri, slice=None):
+    def get_data_slice_by_trimmed_uri(self, trimmed_uri, slice=None):
         """
         Retrieve data by a trimmed uri (not containing the base uri) and slice id
         """
@@ -224,6 +235,7 @@ class TiledMaskHandler:
             )
         except Exception as e:
             print(f"Error connecting to Tiled: {e}")
+            traceback.print_exc()
             self.mask_client = None
 
     def check_mask_handler_ready(self):
@@ -277,7 +289,7 @@ class TiledMaskHandler:
     def DEV_filter_json_data_by_timestamp(data, timestamp):
         return [data for data in data if data["time"] == timestamp]
 
-    def save_annotations_data(self, global_store, all_annotations, project_name):
+    def save_annotations_data(self, global_store, all_annotations, trimmed_uri):
         """
         Transforms annotations data to a pixelated mask and outputs to the Tiled server
         """
@@ -285,8 +297,8 @@ class TiledMaskHandler:
             image_shape = global_store["image_shapes"][0]
         else:
             data_shape = (
-                tiled_datasets.get_data_shape_by_name(project_name)
-                if project_name
+                tiled_datasets.get_data_shape_by_trimmed_uri(trimmed_uri)
+                if trimmed_uri
                 else None
             )
             if data_shape is None:
@@ -304,8 +316,8 @@ class TiledMaskHandler:
         annotations_hash = annotations.get_annotations_hash()
 
         metadata = {
-            "project_name": project_name,
-            "data_uri": tiled_datasets.get_data_uri_by_name(project_name),
+            "project_name": trimmed_uri,
+            "data_uri": tiled_datasets.get_data_uri_by_trimmed_uri(trimmed_uri),
             "image_shape": image_shape,
             "mask_idx": [int(key) for key in annnotations_per_slice.keys()],
             "classes": annotation_classes,
@@ -320,8 +332,9 @@ class TiledMaskHandler:
         except ValueError:
             return None, None, "No annotations to process."
 
-        # Store the mask in the Tiled server under /username/project_name/uuid/mask"
-        container_keys = [USER_NAME, project_name]
+        # Store the mask in the Tiled server under /username/<trimmed_uri>/uuid/mask"
+        # This replicates the structure of the data uri under the user name
+        container_keys = [USER_NAME] + trimmed_uri.strip("/").split("/")
         last_container = self.mask_client
         for key in container_keys:
             if key not in last_container.keys():

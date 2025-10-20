@@ -168,7 +168,7 @@ else:
     Input("run-train", "n_clicks"),
     State("annotation-store", "data"),
     State({"type": "annotation-class-store", "index": ALL}, "data"),
-    State("project-name-src", "value"),
+    State("image-uri", "value"),
     State("model-parameters", "children"),
     State("model-list", "value"),
     State("job-name", "value"),
@@ -178,7 +178,7 @@ def run_train(
     n_clicks,
     global_store,
     all_annotations,
-    project_name,
+    image_uri,
     model_parameter_container,
     model_name,
     job_name,
@@ -202,7 +202,7 @@ def run_train(
             )
             return notification, no_update
         mask_uri, num_classes, mask_error_message = tiled_masks.save_annotations_data(
-            global_store, all_annotations, project_name
+            global_store, all_annotations, image_uri
         )
         model_parameters["num_classes"] = num_classes
         model_parameters["network"] = model_name
@@ -221,7 +221,7 @@ def run_train(
             "%Y/%m/%d %H:%M:%S"
         )
         flow_run_name = f"{job_name} {current_time}"
-        data_uri = tiled_datasets.get_data_uri_by_name(project_name)
+        data_uri = tiled_datasets.get_data_uri_by_trimmed_uri(image_uri)
         io_parameters = assemble_io_parameters_from_uris(data_uri, mask_uri)
         io_parameters["uid_retrieve"] = ""
         io_parameters["models_dir"] = RESULTS_DIR
@@ -251,7 +251,7 @@ def run_train(
                     FLOW_NAME,
                     parameters=TRAIN_PARAMS_EXAMPLE,
                     flow_run_name=flow_run_name,
-                    tags=PREFECT_TAGS + ["train", project_name],
+                    tags=PREFECT_TAGS + ["train", image_uri],
                 )
                 job_message = f"Job has been succesfully submitted with uid: {job_uid} and mask uri: {mask_uri}"
                 notification_color = "indigo"
@@ -275,7 +275,7 @@ def run_train(
     Input("run-inference", "n_clicks"),
     State("train-job-selector", "value"),
     State({"type": "annotation-class-store", "index": ALL}, "data"),
-    State("project-name-src", "value"),
+    State("image-uri", "value"),
     State("model-parameters", "children"),
     State("model-list", "value"),
     prevent_initial_call=True,
@@ -284,7 +284,7 @@ def run_inference(
     n_clicks,
     train_job_id,
     all_annotations,
-    project_name,
+    image_uri,
     model_parameter_container,
     model_name,
 ):
@@ -312,7 +312,7 @@ def run_inference(
         model_parameters["network"] = model_name
 
         # Set io_parameters for inference, there will be no mask
-        data_uri = tiled_datasets.get_data_uri_by_name(project_name)
+        data_uri = tiled_datasets.get_data_uri_by_trimmed_uri(image_uri)
         io_parameters = assemble_io_parameters_from_uris(data_uri, "")
         io_parameters["uid_retrieve"] = ""
         io_parameters["models_dir"] = RESULTS_DIR
@@ -356,7 +356,7 @@ def run_inference(
                             FLOW_NAME,
                             parameters=INFERENCE_PARAMS_EXAMPLE,
                             flow_run_name=flow_run_name,
-                            tags=PREFECT_TAGS + ["inference", project_name],
+                            tags=PREFECT_TAGS + ["inference", image_uri],
                         )
                         job_message = (
                             f"Job has been succesfully submitted with uid: {job_uid}"
@@ -421,10 +421,10 @@ def check_train_job(n_intervals):
     Output("infra-state", "data", allow_duplicate=True),
     Input("model-check", "n_intervals"),
     Input("train-job-selector", "value"),
-    State("project-name-src", "value"),
+    State("image-uri", "value"),
     prevent_initial_call=True,
 )
-def check_inference_job(n_intervals, train_job_id, project_name):
+def check_inference_job(n_intervals, train_job_id, image_uri):
     """
     This callback populates the inference job selector dropdown with job names and ids from Prefect.
     The list of jobs is filtered by the selected train job in the train job selector dropdown.
@@ -448,7 +448,7 @@ def check_inference_job(n_intervals, train_job_id, project_name):
             if job_name is not None:
                 data = get_flow_runs_by_name(
                     flow_run_name=job_name,
-                    tags=PREFECT_TAGS + ["inference", project_name],
+                    tags=PREFECT_TAGS + ["inference", image_uri],
                 )
             infra_state = no_update
 
@@ -465,7 +465,7 @@ def check_inference_job(n_intervals, train_job_id, project_name):
 
 def populate_segmentation_results(
     job_id,
-    project_name,
+    image_uri,
     job_type="training",
 ):
     """
@@ -474,7 +474,7 @@ def populate_segmentation_results(
     """
     # Nothing has been selected is job_id is None
     if job_id is not None:
-        data_uri = tiled_datasets.get_data_uri_by_name(project_name)
+        data_uri = tiled_datasets.get_data_uri_by_trimmed_uri(image_uri)
         # Only returns the name if the job finished successfully
         job_name = get_flow_run_name(job_id)
         if job_name is not None:
@@ -491,7 +491,7 @@ def populate_segmentation_results(
                 # First refresh the data client,
                 # the root container may not yet have existed on startup
                 tiled_results.refresh_data_client()
-                result_container = tiled_results.get_data_by_trimmed_uri(
+                result_container = tiled_results.get_data_slice_by_trimmed_uri(
                     expected_result_uri
                 )
             except Exception:
@@ -527,16 +527,16 @@ def populate_segmentation_results(
     Output("seg-results-train-store", "data"),
     Output("dvc-training-stats-link", "href"),
     Input("train-job-selector", "value"),
-    State("project-name-src", "value"),
+    State("image-uri", "value"),
     prevent_initial_call=True,
 )
-def populate_segmentation_results_train(train_job_id, project_name):
+def populate_segmentation_results_train(train_job_id, image_uri):
     """
     This callback populates the segmentation results store based on the uids
     if the training job and the inference job.
     """
     notification, result_store, segment_job_id = populate_segmentation_results(
-        train_job_id, project_name, "training"
+        train_job_id, image_uri, "training"
     )
     if segment_job_id is not None:
         results_link = os.path.join(
@@ -552,16 +552,16 @@ def populate_segmentation_results_train(train_job_id, project_name):
     Output("notifications-container", "children", allow_duplicate=True),
     Output("seg-results-inference-store", "data"),
     Input("inference-job-selector", "value"),
-    State("project-name-src", "value"),
+    State("image-uri", "value"),
     prevent_initial_call=True,
 )
-def populate_segmentation_results_inference(inference_job_id, project_name):
+def populate_segmentation_results_inference(inference_job_id, image_uri):
     """
     This callback populates the segmentation results store based on the uids
     if the training job and the inference job.
     """
     notification, result_store, _ = populate_segmentation_results(
-        inference_job_id, project_name, "inference"
+        inference_job_id, image_uri, "inference"
     )
     return (
         notification,
