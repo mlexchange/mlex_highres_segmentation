@@ -1,4 +1,5 @@
 import os
+from flask import send_from_directory
 
 import dash_auth
 import dash_mantine_components as dmc
@@ -13,6 +14,7 @@ from components.image_viewer import layout as image_viewer_layout
 
 USER_NAME = os.getenv("USER_NAME")
 USER_PASSWORD = os.getenv("USER_PASSWORD")
+RESULTS_DIR = os.getenv("RESULTS_DIR", "/app/work/results")
 
 VALID_USER_NAME_PASSWORD_PAIRS = {USER_NAME: USER_PASSWORD}
 
@@ -33,6 +35,11 @@ app.layout = dmc.MantineProvider(
         image_viewer_layout(),
     ],
 )
+
+@server.route('/results/<path:filename>')
+def serve_results(filename):
+    """Serve files from container's results directory"""
+    return send_from_directory(RESULTS_DIR, filename)  # ← Container path
 
 if __name__ == "__main__":
     app.run_server(host="0.0.0.0", port=8075, debug=True)

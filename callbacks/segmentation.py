@@ -157,6 +157,7 @@ else:
                     "io_parameters": {"uid_save": "uid0001", "uid_retrieve": "uid0001"}
                 },
                 "volumes": [f"{MOUNT_RESULTS_DIR}:/app/work/results"],
+                "network": CONTAINER_NETWORK,
             },
         ],
     }
@@ -539,9 +540,7 @@ def populate_segmentation_results_train(train_job_id, project_name):
         train_job_id, project_name, "training"
     )
     if segment_job_id is not None:
-        results_link = os.path.join(
-            RESULTS_DIR, segment_job_id, "dvc_metrics/report.html"
-        )
+        results_link = f"/results/{segment_job_id}/dvc_metrics/report.html"
     else:
         results_link = no_update
 
