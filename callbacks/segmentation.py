@@ -38,6 +38,11 @@ IMAGE_TAG = os.getenv("IMAGE_TAG", None)
 CONTAINER_NETWORK = os.getenv("CONTAINER_NETWORK", "")
 MOUNT_RESULTS_DIR = os.getenv("MOUNT_RESULTS_DIR", "")
 
+# NEW: MLflow environment variables
+MLFLOW_URI = os.getenv("MLFLOW_URI", "http://mlflow:5000")
+MLFLOW_TRACKING_USERNAME = os.getenv("MLFLOW_TRACKING_USERNAME", "admin")
+MLFLOW_TRACKING_PASSWORD = os.getenv("MLFLOW_TRACKING_PASSWORD", "passwd")
+
 # TODO: Retrieve timezone from browser
 TIMEZONE = os.getenv("TIMEZONE", "US/Pacific")
 
@@ -227,6 +232,12 @@ def run_train(
         io_parameters["uid_retrieve"] = ""
         io_parameters["models_dir"] = RESULTS_DIR
         io_parameters["job_name"] = flow_run_name
+        
+        # NEW: Add MLflow parameters
+        io_parameters["mlflow_uri"] = MLFLOW_URI
+        io_parameters["mlflow_tracking_username"] = MLFLOW_TRACKING_USERNAME
+        io_parameters["mlflow_tracking_password"] = MLFLOW_TRACKING_PASSWORD
+        io_parameters["mlflow_model"] = None
 
         TRAIN_PARAMS_EXAMPLE["params_list"][0]["params"][
             "io_parameters"
@@ -317,6 +328,12 @@ def run_inference(
         io_parameters = assemble_io_parameters_from_uris(data_uri, "")
         io_parameters["uid_retrieve"] = ""
         io_parameters["models_dir"] = RESULTS_DIR
+        
+        # NEW: Add MLflow parameters
+        io_parameters["mlflow_uri"] = MLFLOW_URI
+        io_parameters["mlflow_tracking_username"] = MLFLOW_TRACKING_USERNAME
+        io_parameters["mlflow_tracking_password"] = MLFLOW_TRACKING_PASSWORD
+        io_parameters["mlflow_model"] = None
 
         INFERENCE_PARAMS_EXAMPLE["params_list"][0]["params"][
             "io_parameters"
@@ -350,6 +367,12 @@ def run_inference(
                     INFERENCE_PARAMS_EXAMPLE["params_list"][0]["params"][
                         "io_parameters"
                     ]["job_name"] = flow_run_name
+                    
+                    # NEW: Set mlflow_model to enable loading from MLflow registry
+                    INFERENCE_PARAMS_EXAMPLE["params_list"][0]["params"][
+                        "io_parameters"
+                    ]["mlflow_model"] = train_job_id
+                    
                     # TODO: Check if the architecture parameters are the same, as the one used in training
                     try:
                         # Schedule job
