@@ -8,6 +8,7 @@ from components.control_bar import create_infra_state_details
 from utils.data_utils import tiled_datasets, tiled_masks, tiled_results
 from utils.plot_utils import generate_notification
 from utils.prefect import check_prefect_ready, check_prefect_worker_ready
+from utils.mlflow_utils import MLflowClient
 
 TIMEZONE = os.getenv("TIMEZONE", "US/Pacific")
 FLOW_NAME = os.getenv("FLOW_NAME", "")
@@ -54,6 +55,17 @@ def check_infra_state(n_intervals):
     except Exception:
         any_infra_down = True
         infra_state["prefect_worker_ready"] = False
+    
+    # MLFLOW: Check MLFlow is reachable
+    try:
+        mlflow_client = MLflowClient()
+        infra_state["mlflow_ready"] = mlflow_client.check_mlflow_ready()
+        if not infra_state["mlflow_ready"]:
+            any_infra_down = True
+    except Exception:
+        any_infra_down = True
+        infra_state["mlflow_ready"] = False
+    
     if any_infra_down:
         infra_state["any_infra_down"] = True
     else:
@@ -83,6 +95,7 @@ def update_infra_state(infra_state):
         tiled_results_ready=infra_state["tiled_results_ready"],
         prefect_ready=infra_state["prefect_ready"],
         prefect_worker_ready=infra_state["prefect_worker_ready"],
+        mlflow_ready=infra_state["mlflow_ready"],
         timestamp=last_checked,
     )
 

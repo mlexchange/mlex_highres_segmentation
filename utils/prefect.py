@@ -129,3 +129,15 @@ def get_children_flow_run_ids(parent_flow_run_id, sort="START_TIME_ASC"):
         str(children_flow_run.id) for children_flow_run in children_flow_runs
     ]
     return children_flow_run_ids
+
+
+async def _get_flow_run_parent_id(flow_run_id):
+    async with get_client() as client:
+        child_flow_run = await client.read_flow_run(flow_run_id)
+        parent_task_run_id = child_flow_run.parent_task_run_id
+        parent_task_run = await client.read_task_run(parent_task_run_id)
+        return parent_task_run.flow_run_id
+
+
+def get_flow_run_parent_id(flow_run_id):
+    return asyncio.run(_get_flow_run_parent_id(flow_run_id))

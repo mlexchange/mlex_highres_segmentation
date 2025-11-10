@@ -941,6 +941,7 @@ def create_infra_state_details(
     tiled_results_ready=False,
     prefect_ready=False,
     prefect_worker_ready=False,
+    mlflow_ready=False,
     timestamp=None,
 ):
     not_ready_icon = "pajamas:warning-solid"
@@ -993,6 +994,13 @@ def create_infra_state_details(
                     icon=ready_icon if prefect_worker_ready else not_ready_icon,
                     color=ready_color if prefect_worker_ready else not_ready_color,
                     id="prefect-worker-ready",
+                ),
+                dmc.Divider(variant="solid", color="gray"),
+                create_infra_state_status(
+                    "MLflow (Tracking)",
+                    icon=ready_icon if mlflow_ready else not_ready_icon,
+                    color=ready_color if mlflow_ready else not_ready_color,
+                    id="mlflow-ready",
                 ),
             ],
             p=0,
