@@ -1,9 +1,9 @@
 import os
-from flask import send_from_directory
 
 import dash_auth
 import dash_mantine_components as dmc
 from dash import Dash
+from flask import send_from_directory
 
 from callbacks.control_bar import *  # noqa: F403, F401
 from callbacks.image_viewer import *  # noqa: F403, F401
@@ -36,10 +36,12 @@ app.layout = dmc.MantineProvider(
     ],
 )
 
-@server.route('/results/<path:filename>')
+
+@server.route("/results/<path:filename>")
 def serve_results(filename):
     """Serve files from container's results directory"""
     return send_from_directory(RESULTS_DIR, filename)  # ← Container path
+
 
 if __name__ == "__main__":
     app.run_server(host="0.0.0.0", port=8075, debug=True)
