@@ -232,7 +232,7 @@ def run_train(
         io_parameters["uid_retrieve"] = ""
         io_parameters["models_dir"] = RESULTS_DIR
         io_parameters["job_name"] = flow_run_name
-        
+
         # NEW: Add MLflow parameters
         io_parameters["mlflow_uri"] = MLFLOW_URI
         io_parameters["mlflow_tracking_username"] = MLFLOW_TRACKING_USERNAME
@@ -328,7 +328,7 @@ def run_inference(
         io_parameters = assemble_io_parameters_from_uris(data_uri, "")
         io_parameters["uid_retrieve"] = ""
         io_parameters["models_dir"] = RESULTS_DIR
-        
+
         # NEW: Add MLflow parameters
         io_parameters["mlflow_uri"] = MLFLOW_URI
         io_parameters["mlflow_tracking_username"] = MLFLOW_TRACKING_USERNAME
@@ -367,12 +367,12 @@ def run_inference(
                     INFERENCE_PARAMS_EXAMPLE["params_list"][0]["params"][
                         "io_parameters"
                     ]["job_name"] = flow_run_name
-                    
+
                     # NEW: Set mlflow_model to enable loading from MLflow registry
                     INFERENCE_PARAMS_EXAMPLE["params_list"][0]["params"][
                         "io_parameters"
                     ]["mlflow_model"] = train_job_id
-                    
+
                     # TODO: Check if the architecture parameters are the same, as the one used in training
                     try:
                         # Schedule job
