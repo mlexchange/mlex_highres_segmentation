@@ -28,6 +28,7 @@ async def _check_prefect_worker_ready(deployment_name: str):
 def check_prefect_worker_ready(deployment_name: str):
     return asyncio.run(_check_prefect_worker_ready(deployment_name))
 
+
 async def _get_flow_run_parent_id(flow_run_id):
     async with get_client() as client:
         child_flow_run = await client.read_flow_run(flow_run_id)
