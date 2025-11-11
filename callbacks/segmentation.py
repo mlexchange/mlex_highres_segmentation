@@ -15,10 +15,10 @@ from utils.data_utils import (
     tiled_results,
 )
 from utils.plot_utils import generate_notification
-from utils.prefect import (
+from mlex_utils.prefect_utils.core import (
     get_children_flow_run_ids,
     get_flow_run_name,
-    get_flow_runs_by_name,
+    query_flow_runs,
     schedule_prefect_flow,
 )
 
@@ -430,7 +430,7 @@ def check_train_job(n_intervals):
     data = []
     infra_state = no_update
     try:
-        data = get_flow_runs_by_name(tags=PREFECT_TAGS + ["train"])
+        data = query_flow_runs(tags=PREFECT_TAGS + ["train"])
     except Exception:
         # Communication with Prefect failed, update the infra_state
         infra_state = Patch()
@@ -470,7 +470,7 @@ def check_inference_job(n_intervals, train_job_id, project_name):
         try:
             job_name = get_flow_run_name(train_job_id)
             if job_name is not None:
-                data = get_flow_runs_by_name(
+                data = query_flow_runs(
                     flow_run_name=job_name,
                     tags=PREFECT_TAGS + ["inference", project_name],
                 )
