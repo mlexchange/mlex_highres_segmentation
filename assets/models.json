@@ -3,9 +3,12 @@
         {
             "model_name": "DLSIA MSDNet",
             "version": "0.0.1",
-            "type": "supervised",
-            "user": "mlexchange team",
-            "uri": "ghcr.io/mlexchange/mlex_dlsia_segmentation:main",
+            "type": "segmentation",
+            "owner": "mlexchange team",
+            "image_name": "ghcr.io/mlexchange/mlex_dlsia_segmentation_prototype",
+            "image_tag": "main",
+            "source": "https://github.com/mlexchange/mlex_dlsia_segmentation",
+            "is_gpu_enabled": true,
             "application": [
                 "segmentation"
             ],
@@ -84,7 +87,7 @@
                     "title": "Optimizer",
                     "param_key": "optimizer",
                     "value": "Adam",
-                    "data": [
+                    "options": [
                         {
                             "label": "Adadelta",
                             "value": "Adadelta"
@@ -138,7 +141,7 @@
                     "title": "Criterion",
                     "param_key": "criterion",
                     "value": "CrossEntropyLoss",
-                    "data": [
+                    "options": [
                         {
                             "label": "L1Loss",
                             "value": "L1Loss"
@@ -255,7 +258,7 @@
                     "title": "Activation",
                     "param_key": "activation",
                     "value": "Sigmoid",
-                    "data": [
+                    "options": [
                         {
                             "label": "ReLU",
                             "value": "ReLU"
@@ -430,18 +433,20 @@
                     "comp_group": "prediction_model"
                 }
             ],
-            "cmd": [
-                "python3 src/train_model.py",
-                "python3 src/segment.py"
-            ],
-            "reference": "https://dlsia.readthedocs.io/en/latest/"
+            "python_file_name": {
+                "train": "src/train.py",
+                "inference": "src/segment.py"
+            }
         },
         {
             "model_name": "DLSIA TUNet",
             "version": "0.0.1",
-            "type": "supervised",
-            "user": "mlexchange team",
-            "uri": "ghcr.io/mlexchange/mlex_dlsia_segmentation:main",
+            "type": "segmentation",
+            "owner": "mlexchange team",
+            "image_name": "ghcr.io/mlexchange/mlex_dlsia_segmentation_prototype",
+            "image_tag": "main",
+            "source": "https://github.com/mlexchange/mlex_dlsia_segmentation_prototype",
+            "is_gpu_enabled": true,
             "application": [
                 "segmentation"
             ],
@@ -509,7 +514,7 @@
                     "title": "Optimizer",
                     "param_key": "optimizer",
                     "value": "Adam",
-                    "data": [
+                    "options": [
                         {
                             "label": "Adadelta",
                             "value": "Adadelta"
@@ -563,7 +568,7 @@
                     "title": "Criterion",
                     "param_key": "criterion",
                     "value": "CrossEntropyLoss",
-                    "data": [
+                    "options": [
                         {
                             "label": "L1Loss",
                             "value": "L1Loss"
@@ -680,7 +685,7 @@
                     "title": "Activation",
                     "param_key": "activation",
                     "value": "Sigmoid",
-                    "data": [
+                    "options": [
                         {
                             "label": "ReLU",
                             "value": "ReLU"
@@ -855,18 +860,20 @@
                     "comp_group": "prediction_model"
                 }
             ],
-            "cmd": [
-                "python3 src/train_model.py",
-                "python3 src/segment.py"
-            ],
-            "reference": "https://dlsia.readthedocs.io/en/latest/"
+            "python_file_name": {
+                "train": "src/train.py",
+                "inference": "src/segment.py"
+            }
         },
         {
             "model_name": "DLSIA TUNet3+",
             "version": "0.0.1",
-            "type": "supervised",
-            "user": "mlexchange team",
-            "uri": "ghcr.io/mlexchange/mlex_dlsia_segmentation:main",
+            "type": "segmentation",
+            "owner": "mlexchange team",
+            "image_name": "ghcr.io/mlexchange/mlex_dlsia_segmentation_prototype",
+            "image_tag": "main",
+            "source": "https://github.com/mlexchange/mlex_dlsia_segmentation_prototype",
+            "is_gpu_enabled": true,
             "application": [
                 "segmentation"
             ],
@@ -942,7 +949,7 @@
                     "title": "Optimizer",
                     "param_key": "optimizer",
                     "value": "Adam",
-                    "data": [
+                    "options": [
                         {
                             "label": "Adadelta",
                             "value": "Adadelta"
@@ -996,7 +1003,7 @@
                     "title": "Criterion",
                     "param_key": "criterion",
                     "value": "CrossEntropyLoss",
-                    "data": [
+                    "options": [
                         {
                             "label": "L1Loss",
                             "value": "L1Loss"
@@ -1113,7 +1120,7 @@
                     "title": "Activation",
                     "param_key": "activation",
                     "value": "Sigmoid",
-                    "data": [
+                    "options": [
                         {
                             "label": "ReLU",
                             "value": "ReLU"
@@ -1288,11 +1295,10 @@
                     "comp_group": "prediction_model"
                 }
             ],
-            "cmd": [
-                "python3 src/train_model.py",
-                "python3 src/segment.py"
-            ],
-            "reference": "https://dlsia.readthedocs.io/en/latest/"
+            "python_file_name": {
+                "train": "src/train.py",
+                "inference": "src/segment.py"
+            }
         }
     ]
 }
