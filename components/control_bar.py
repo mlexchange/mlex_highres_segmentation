@@ -76,6 +76,7 @@ def layout():
                                             tiled_viewer.TiledViewer(
                                                 id="tiled-image-selector",
                                                 tiledBaseUrl=tiled_base_url,
+                                                apiKey=tiled_datasets.data_tiled_api_key,
                                                 isPopup=True,
                                                 isButtonMode=True,
                                                 closeOnSelect=False,
