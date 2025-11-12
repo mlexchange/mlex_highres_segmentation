@@ -5,11 +5,11 @@ from urllib.parse import urlparse, urlunparse
 import httpx
 import numpy as np
 from dotenv import load_dotenv
+from mlex_utils.mlflow_utils.mlflow_algorithm_client import MlflowAlgorithmClient
 from tiled.client import from_uri
 from tiled.client.array import ArrayClient
 from tiled.client.container import Container
 
-from mlex_utils.mlflow_utils.mlflow_algorithm_client import MlflowAlgorithmClient
 from utils.annotations import Annotations
 
 load_dotenv()
