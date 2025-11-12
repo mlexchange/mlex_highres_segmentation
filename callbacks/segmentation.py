@@ -26,18 +26,6 @@ MODE = os.getenv("MODE", "")
 RESULTS_DIR = os.getenv("RESULTS_DIR", "")
 FLOW_NAME = os.getenv("FLOW_NAME", "")
 PREFECT_TAGS = os.getenv("PREFECT_TAGS", ["high-res-segmentation"])
-
-FLOW_TYPE = os.getenv("FLOW_TYPE", "conda")
-TRAIN_SCRIPT_PATH = os.getenv("TRAIN_SCRIPT_PATH", "scr/train.py")
-SEGMENT_SCRIPT_PATH = os.getenv("SEGMENT_SCRIPT_PATH", "scr/segment.py")
-
-CONDA_ENV_NAME = os.getenv("CONDA_ENV_NAME", "dlsia")
-
-IMAGE_NAME = os.getenv("IMAGE_NAME", None)
-IMAGE_TAG = os.getenv("IMAGE_TAG", None)
-CONTAINER_NETWORK = os.getenv("CONTAINER_NETWORK", "")
-MOUNT_RESULTS_DIR = os.getenv("MOUNT_RESULTS_DIR", "")
-
 # NEW: MLflow environment variables
 MLFLOW_URI = os.getenv("MLFLOW_URI", "http://mlflow:5000")
 MLFLOW_TRACKING_USERNAME = os.getenv("MLFLOW_TRACKING_USERNAME", "admin")
@@ -45,127 +33,6 @@ MLFLOW_TRACKING_PASSWORD = os.getenv("MLFLOW_TRACKING_PASSWORD", "passwd")
 
 # TODO: Retrieve timezone from browser
 TIMEZONE = os.getenv("TIMEZONE", "US/Pacific")
-
-# TODO: Get model parameters from UI
-if FLOW_TYPE == "podman":
-    TRAIN_PARAMS_EXAMPLE = {
-        "flow_type": "podman",
-        "params_list": [
-            {
-                "image_name": f"{IMAGE_NAME}",
-                "image_tag": f"{IMAGE_TAG}",
-                "command": f"python {TRAIN_SCRIPT_PATH}",
-                "params": {
-                    "io_parameters": {"uid_save": "uid0001", "uid_retrieve": "uid0001"}
-                },
-                "volumes": [f"{MOUNT_RESULTS_DIR}:/app/work/results"],
-                "network": CONTAINER_NETWORK,
-            },
-            {
-                "image_name": f"{IMAGE_NAME}",
-                "image_tag": f"{IMAGE_TAG}",
-                "command": f"python {SEGMENT_SCRIPT_PATH}",
-                "params": {
-                    "io_parameters": {"uid_save": "uid0001", "uid_retrieve": "uid0001"}
-                },
-                "volumes": [f"{MOUNT_RESULTS_DIR}:/app/work/results"],
-                "network": CONTAINER_NETWORK,
-            },
-        ],
-    }
-
-    INFERENCE_PARAMS_EXAMPLE = {
-        "flow_type": "podman",
-        "params_list": [
-            {
-                "image_name": f"{IMAGE_NAME}",
-                "image_tag": f"{IMAGE_TAG}",
-                "command": f"python {SEGMENT_SCRIPT_PATH}",
-                "params": {
-                    "io_parameters": {"uid_save": "uid0001", "uid_retrieve": "uid0001"}
-                },
-                "volumes": [f"{MOUNT_RESULTS_DIR}:/app/work/results"],
-                "network": CONTAINER_NETWORK,
-            },
-        ],
-    }
-
-elif FLOW_TYPE == "conda":
-    TRAIN_PARAMS_EXAMPLE = {
-        "flow_type": "conda",
-        "params_list": [
-            {
-                "conda_env_name": f"{CONDA_ENV_NAME}",
-                "python_file_name": f"{TRAIN_SCRIPT_PATH}",
-                "params": {
-                    "io_parameters": {"uid_save": "uid0001", "uid_retrieve": "uid0001"}
-                },
-            },
-            {
-                "conda_env_name": f"{CONDA_ENV_NAME}",
-                "python_file_name": f"{SEGMENT_SCRIPT_PATH}",
-                "params": {
-                    "io_parameters": {"uid_save": "uid0001", "uid_retrieve": "uid0001"}
-                },
-            },
-        ],
-    }
-
-    INFERENCE_PARAMS_EXAMPLE = {
-        "flow_type": "conda",
-        "params_list": [
-            {
-                "conda_env_name": f"{CONDA_ENV_NAME}",
-                "python_file_name": f"{SEGMENT_SCRIPT_PATH}",
-                "params": {
-                    "io_parameters": {"uid_save": "uid0001", "uid_retrieve": "uid0001"}
-                },
-            },
-        ],
-    }
-
-else:
-    TRAIN_PARAMS_EXAMPLE = {
-        "flow_type": "docker",
-        "params_list": [
-            {
-                "image_name": f"{IMAGE_NAME}",
-                "image_tag": f"{IMAGE_TAG}",
-                "command": f"python {TRAIN_SCRIPT_PATH}",
-                "params": {
-                    "io_parameters": {"uid_save": "uid0001", "uid_retrieve": "uid0001"}
-                },
-                "volumes": [f"{MOUNT_RESULTS_DIR}:/app/work/results"],
-                "network": CONTAINER_NETWORK,
-            },
-            {
-                "image_name": f"{IMAGE_NAME}",
-                "image_tag": f"{IMAGE_TAG}",
-                "command": f"python {SEGMENT_SCRIPT_PATH}",
-                "params": {
-                    "io_parameters": {"uid_save": "uid0001", "uid_retrieve": "uid0001"}
-                },
-                "volumes": [f"{MOUNT_RESULTS_DIR}:/app/work/results"],
-                "network": CONTAINER_NETWORK,
-            },
-        ],
-    }
-
-    INFERENCE_PARAMS_EXAMPLE = {
-        "flow_type": "docker",
-        "params_list": [
-            {
-                "image_name": f"{IMAGE_NAME}",
-                "image_tag": f"{IMAGE_TAG}",
-                "command": f"python {SEGMENT_SCRIPT_PATH}",
-                "params": {
-                    "io_parameters": {"uid_save": "uid0001", "uid_retrieve": "uid0001"}
-                },
-                "volumes": [f"{MOUNT_RESULTS_DIR}:/app/work/results"],
-                "network": CONTAINER_NETWORK,
-            },
-        ],
-    }
 
 
 @callback(
@@ -221,7 +88,7 @@ def run_train(
 
         # Set io_parameters for both training and partial inference
         # Uid retrieve is set to None because the partial inference job will be
-        # populated with the the uid_save of the training job
+        # populated with the uid_save of the training job
         # This is handled in the Prefect worker
         current_time = datetime.now(pytz.timezone(TIMEZONE)).strftime(
             "%Y/%m/%d %H:%M:%S"
@@ -239,18 +106,28 @@ def run_train(
         io_parameters["mlflow_tracking_password"] = MLFLOW_TRACKING_PASSWORD
         io_parameters["mlflow_model"] = None
 
-        TRAIN_PARAMS_EXAMPLE["params_list"][0]["params"][
-            "io_parameters"
-        ] = io_parameters
-        TRAIN_PARAMS_EXAMPLE["params_list"][1]["params"][
-            "io_parameters"
-        ] = io_parameters
-        TRAIN_PARAMS_EXAMPLE["params_list"][0]["params"][
-            "model_parameters"
-        ] = model_parameters
-        TRAIN_PARAMS_EXAMPLE["params_list"][1]["params"][
-            "model_parameters"
-        ] = model_parameters
+        # Simplified params - only send model_name, task_name, and parameters
+        # The Prefect worker will fetch algorithm details from MLflow
+        TRAIN_PARAMS_EXAMPLE = {
+            "params_list": [
+                {
+                    "model_name": model_name,
+                    "task_name": "train",
+                    "params": {
+                        "io_parameters": io_parameters,
+                        "model_parameters": model_parameters,
+                    },
+                },
+                {
+                    "model_name": model_name,
+                    "task_name": "inference",
+                    "params": {
+                        "io_parameters": io_parameters,
+                        "model_parameters": model_parameters,
+                    },
+                },
+            ],
+        }
 
         if MODE == "dev":
             job_uid = str(uuid.uuid4())
@@ -335,12 +212,20 @@ def run_inference(
         io_parameters["mlflow_tracking_password"] = MLFLOW_TRACKING_PASSWORD
         io_parameters["mlflow_model"] = None
 
-        INFERENCE_PARAMS_EXAMPLE["params_list"][0]["params"][
-            "io_parameters"
-        ] = io_parameters
-        INFERENCE_PARAMS_EXAMPLE["params_list"][0]["params"][
-            "model_parameters"
-        ] = model_parameters
+        # Simplified inference params - only send model_name, task_name, and parameters
+        # The Prefect worker will fetch algorithm details from MLflow
+        INFERENCE_PARAMS_EXAMPLE = {
+            "params_list": [
+                {
+                    "model_name": model_name,
+                    "task_name": "inference",
+                    "params": {
+                        "io_parameters": io_parameters,
+                        "model_parameters": model_parameters,
+                    },
+                },
+            ],
+        }
 
         if MODE == "dev":
             job_uid = str(uuid.uuid4())
@@ -373,7 +258,7 @@ def run_inference(
                         "io_parameters"
                     ]["mlflow_model"] = train_job_id
 
-                    # TODO: Check if the architecture parameters are the same, as the one used in training
+                    # TODO: Check if the architecture parameters are the same as the one used in training
                     try:
                         # Schedule job
                         job_uid = schedule_prefect_flow(
