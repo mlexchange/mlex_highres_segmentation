@@ -14,27 +14,16 @@ services:
       SEG_TILED_API_KEY: '${SEG_TILED_API_KEY}'
       USER_NAME: '${USER_NAME}'
       USER_PASSWORD: '${USER_PASSWORD}'
-      # The application itself finds the local results directory as mounted below
-      RESULTS_DIR: "/app/work/results"
+      RESULTS_DIR: '${RESULTS_DIR}'
       PREFECT_API_URL: '${PREFECT_API_URL}'
       FLOW_NAME: '${FLOW_NAME}'
-      TIMEZONE: "${TIMEZONE}"
-      FLOW_TYPE: "${FLOW_TYPE}"
-      IMAGE_NAME: "${IMAGE_NAME}"
-      IMAGE_TAG: "${IMAGE_TAG}"
-      CONTAINER_NETWORK: "${CONTAINER_NETWORK}"
-      # When scheduling flows through docker/podman, the container needs to
-      # mount the local results directory
-      MOUNT_RESULTS_DIR: "${RESULTS_DIR}"
-      TRAIN_SCRIPT_PATH: "${TRAIN_SCRIPT_PATH}"
-      SEGMENT_SCRIPT_PATH: "${SEGMENT_SCRIPT_PATH}"
+      TIMEZONE: '${TIMEZONE}'
+      # MLflow
+      MLFLOW_TRACKING_URI: '${MLFLOW_TRACKING_URI}'
+      MLFLOW_TRACKING_USERNAME: '${MLFLOW_TRACKING_USERNAME}'
+      MLFLOW_TRACKING_PASSWORD: '${MLFLOW_TRACKING_PASSWORD}'
     volumes:
-      - ./app.py:/app/app.py
-      - ./constants.py:/app/constants.py
-      - ./callbacks:/app/callbacks
-      - ./components:/app/components
-      - ./utils:/app/utils
-      - ${RESULTS_DIR}:/app/work/results
+      - ${MOUNT_RESULTS_DIR}:/app/work/results
     ports:
       - '127.0.0.1:8075:8075'
     networks:
