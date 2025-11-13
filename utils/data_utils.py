@@ -422,10 +422,7 @@ def assemble_io_parameters_from_uris(data_uri, mask_uri):
     """
     io_parameters = {
         "data_tiled_uri": data_uri,
-        "data_tiled_api_key": DATA_TILED_API_KEY,
         "mask_tiled_uri": mask_uri,
-        "mask_tiled_api_key": MASK_TILED_API_KEY,
         "seg_tiled_uri": SEG_TILED_URI,
-        "seg_tiled_api_key": SEG_TILED_API_KEY,
     }
     return io_parameters
