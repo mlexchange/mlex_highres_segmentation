@@ -1,4 +1,4 @@
-FROM python:3.9
+FROM python:3.11
 
 # Create and set working directory
 WORKDIR /app

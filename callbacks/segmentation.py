@@ -5,6 +5,12 @@ from datetime import datetime
 
 import pytz
 from dash import ALL, Input, Output, Patch, State, callback, no_update
+from mlex_utils.prefect_utils.core import (
+    get_children_flow_run_ids,
+    get_flow_run_name,
+    query_flow_runs,
+    schedule_prefect_flow,
+)
 
 from constants import ANNOT_ICONS
 from utils.data_utils import (
@@ -15,12 +21,6 @@ from utils.data_utils import (
     tiled_results,
 )
 from utils.plot_utils import generate_notification
-from utils.prefect import (
-    get_children_flow_run_ids,
-    get_flow_run_name,
-    get_flow_runs_by_name,
-    schedule_prefect_flow,
-)
 
 MODE = os.getenv("MODE", "")
 RESULTS_DIR = os.getenv("RESULTS_DIR", "")
@@ -37,6 +37,11 @@ IMAGE_NAME = os.getenv("IMAGE_NAME", None)
 IMAGE_TAG = os.getenv("IMAGE_TAG", None)
 CONTAINER_NETWORK = os.getenv("CONTAINER_NETWORK", "")
 MOUNT_RESULTS_DIR = os.getenv("MOUNT_RESULTS_DIR", "")
+
+# NEW: MLflow environment variables
+MLFLOW_URI = os.getenv("MLFLOW_URI", "http://mlflow:5000")
+MLFLOW_TRACKING_USERNAME = os.getenv("MLFLOW_TRACKING_USERNAME", "admin")
+MLFLOW_TRACKING_PASSWORD = os.getenv("MLFLOW_TRACKING_PASSWORD", "passwd")
 
 # TODO: Retrieve timezone from browser
 TIMEZONE = os.getenv("TIMEZONE", "US/Pacific")
@@ -157,6 +162,7 @@ else:
                     "io_parameters": {"uid_save": "uid0001", "uid_retrieve": "uid0001"}
                 },
                 "volumes": [f"{MOUNT_RESULTS_DIR}:/app/work/results"],
+                "network": CONTAINER_NETWORK,
             },
         ],
     }
@@ -226,6 +232,12 @@ def run_train(
         io_parameters["uid_retrieve"] = ""
         io_parameters["models_dir"] = RESULTS_DIR
         io_parameters["job_name"] = flow_run_name
+
+        # NEW: Add MLflow parameters
+        io_parameters["mlflow_uri"] = MLFLOW_URI
+        io_parameters["mlflow_tracking_username"] = MLFLOW_TRACKING_USERNAME
+        io_parameters["mlflow_tracking_password"] = MLFLOW_TRACKING_PASSWORD
+        io_parameters["mlflow_model"] = None
 
         TRAIN_PARAMS_EXAMPLE["params_list"][0]["params"][
             "io_parameters"
@@ -317,6 +329,12 @@ def run_inference(
         io_parameters["uid_retrieve"] = ""
         io_parameters["models_dir"] = RESULTS_DIR
 
+        # NEW: Add MLflow parameters
+        io_parameters["mlflow_uri"] = MLFLOW_URI
+        io_parameters["mlflow_tracking_username"] = MLFLOW_TRACKING_USERNAME
+        io_parameters["mlflow_tracking_password"] = MLFLOW_TRACKING_PASSWORD
+        io_parameters["mlflow_model"] = None
+
         INFERENCE_PARAMS_EXAMPLE["params_list"][0]["params"][
             "io_parameters"
         ] = io_parameters
@@ -349,6 +367,12 @@ def run_inference(
                     INFERENCE_PARAMS_EXAMPLE["params_list"][0]["params"][
                         "io_parameters"
                     ]["job_name"] = flow_run_name
+
+                    # NEW: Set mlflow_model to enable loading from MLflow registry
+                    INFERENCE_PARAMS_EXAMPLE["params_list"][0]["params"][
+                        "io_parameters"
+                    ]["mlflow_model"] = train_job_id
+
                     # TODO: Check if the architecture parameters are the same, as the one used in training
                     try:
                         # Schedule job
@@ -406,7 +430,7 @@ def check_train_job(n_intervals):
     data = []
     infra_state = no_update
     try:
-        data = get_flow_runs_by_name(tags=PREFECT_TAGS + ["train"])
+        data = query_flow_runs(tags=PREFECT_TAGS + ["train"])
     except Exception:
         # Communication with Prefect failed, update the infra_state
         infra_state = Patch()
@@ -446,7 +470,7 @@ def check_inference_job(n_intervals, train_job_id, image_uri):
         try:
             job_name = get_flow_run_name(train_job_id)
             if job_name is not None:
-                data = get_flow_runs_by_name(
+                data = query_flow_runs(
                     flow_run_name=job_name,
                     tags=PREFECT_TAGS + ["inference", image_uri],
                 )
@@ -539,9 +563,7 @@ def populate_segmentation_results_train(train_job_id, image_uri):
         train_job_id, image_uri, "training"
     )
     if segment_job_id is not None:
-        results_link = os.path.join(
-            RESULTS_DIR, segment_job_id, "dvc_metrics/report.html"
-        )
+        results_link = f"/results/{segment_job_id}/dvc_metrics/report.html"
     else:
         results_link = no_update
 
