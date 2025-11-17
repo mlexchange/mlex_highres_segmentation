@@ -3,6 +3,7 @@ import os
 import random
 import time
 import uuid
+from urllib.parse import urlparse
 
 import dash_mantine_components as dmc
 import plotly.express as px
@@ -38,6 +39,36 @@ USER_NAME = os.getenv("USER_NAME", "user1")
 # Create an empty file if it doesn't exist
 if not os.path.exists(EXPORT_FILE_PATH):
     open(EXPORT_FILE_PATH, "w").close()
+
+
+@callback(
+    Output("image-uri", "value"),
+    Input("tiled-image-selector", "selectedLinks"),
+    prevent_initial_call=True,
+)
+def update_selected_image_uri(selected_links):
+    print(f"DEBUG - Selected image links: {selected_links}")  # Debug print
+
+    if selected_links:
+        # Extract the 'self' key from the dictionary
+        if isinstance(selected_links, dict) and "self" in selected_links:
+            # Extract the full URI from the selected links
+            full_uri = selected_links.get("self", "")
+
+            # Parse the URI and extract the path
+            parsed_uri = urlparse(full_uri)
+            extracted_path = parsed_uri.path
+
+            # Remove the common prefix from the path
+            base_data_path = urlparse(tiled_datasets.data_tiled_uri).path
+            if extracted_path.startswith(base_data_path):
+                extracted_path = extracted_path[len(base_data_path) :]
+
+            # Clean up the extracted path and return
+            return extracted_path.strip("/")
+        # Fall back to string representation if we can't extract 'self'
+        return str(selected_links)
+    return ""
 
 
 @callback(
@@ -746,10 +777,10 @@ def export_annotation(n_clicks, all_annotations, global_store):
     Input("save-annotations", "n_clicks"),
     State("annotation-store", "data"),
     State({"type": "annotation-class-store", "index": ALL}, "data"),
-    State("project-name-src", "value"),
+    State("image-uri", "value"),
     prevent_initial_call=True,
 )
-def save_data(n_clicks, global_store, all_annotations, image_src):
+def save_data(n_clicks, global_store, all_annotations, image_uri):
     """This callback is responsible for saving the annotation data to the store"""
     if not n_clicks:
         raise PreventUpdate
@@ -758,7 +789,7 @@ def save_data(n_clicks, global_store, all_annotations, image_src):
         # TODO: save store to the server file-user system, this will be changed to DB later
         export_data = {
             "user": USER_NAME,
-            "source": image_src,
+            "source": image_uri,
             "time": time.strftime("%Y-%m-%d-%H:%M:%S"),
             "data": json.dumps(all_annotations),
         }
@@ -787,10 +818,10 @@ def toggle_save_load_modal(n_clicks, opened):
 @callback(
     Output("load-annotations-server-container", "children"),
     Input("open-data-management-modal-button", "n_clicks"),
-    State("project-name-src", "value"),
+    State("image-uri", "value"),
     prevent_initial_call=True,
 )
-def populate_load_annotations_dropdown_menu_options(modal_opened, image_src):
+def populate_load_annotations_dropdown_menu_options(modal_opened, image_uri):
     """
     This callback populates dropdown window with all saved annotation options for the given project name.
     It then creates buttons with info about the save, which when clicked, loads the data from the server.
@@ -799,7 +830,7 @@ def populate_load_annotations_dropdown_menu_options(modal_opened, image_src):
         raise PreventUpdate
 
     data = tiled_masks.DEV_load_exported_json_data(
-        EXPORT_FILE_PATH, USER_NAME, image_src
+        EXPORT_FILE_PATH, USER_NAME, image_uri
     )
     if not data:
         return "No annotations found for the selected data source."
@@ -827,11 +858,11 @@ def populate_load_annotations_dropdown_menu_options(modal_opened, image_src):
     Output("annotation-class-container", "children", allow_duplicate=True),
     Output("data-management-modal", "opened", allow_duplicate=True),
     Input({"type": "load-server-annotations", "index": ALL}, "n_clicks"),
-    State("project-name-src", "value"),
+    State("image-uri", "value"),
     State("image-selection-slider", "value"),
     prevent_initial_call=True,
 )
-def load_and_apply_selected_annotations(selected_annotation, image_src, img_idx):
+def load_and_apply_selected_annotations(selected_annotation, image_uri, img_idx):
     """
     This callback is responsible for loading and applying the selected annotations when user selects them from the modal.
     """
@@ -845,7 +876,7 @@ def load_and_apply_selected_annotations(selected_annotation, image_src, img_idx)
 
     # TODO : when quering from the server, load (data) for user, source, time
     data = tiled_masks.DEV_load_exported_json_data(
-        EXPORT_FILE_PATH, USER_NAME, image_src
+        EXPORT_FILE_PATH, USER_NAME, image_uri
     )
     data = tiled_masks.DEV_filter_json_data_by_timestamp(
         data, str(selected_annotation_timestamp)
@@ -873,16 +904,6 @@ def open_controls_drawer(n_clicks, is_opened):
             return no_update, {"display": "none"}
         return no_update, {}
     return no_update, no_update
-
-
-@callback(Output("project-name-src", "data"), Input("refresh-tiled", "n_clicks"))
-def refresh_data_client(refresh_tiled):
-    if refresh_tiled:
-        tiled_datasets.refresh_data_client()
-    data_options = [
-        item for item in tiled_datasets.get_data_project_names() if "seg" not in item
-    ]
-    return data_options
 
 
 @callback(
