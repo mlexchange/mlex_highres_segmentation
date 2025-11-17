@@ -45,7 +45,7 @@ def plot_mask(mask_uri, api_key, slice_idx, output_path):
         vmin=-1.5,
         vmax=max_class_id + 0.5,
     )
-    plt.title(meta_data["project_name"] + ", slice: " + mask_idx[slice_idx])
+    plt.title(meta_data["image_uri"] + ", slice: " + mask_idx[slice_idx])
 
     # create a patch for every color
     patches = [
