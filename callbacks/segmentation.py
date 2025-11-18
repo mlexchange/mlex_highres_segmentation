@@ -506,6 +506,15 @@ def populate_segmentation_results(
             if job_type == "training":
                 # Get second child to retrieve results
                 # (inference on just annotated slices for the training job)
+                # Training might have only one child if training failed
+                if len(children_flows) < 2:
+                    notification = generate_notification(
+                        "Segmentation Results",
+                        "red",
+                        ANNOT_ICONS["results"],
+                        "Cannot retrieve result as inference for training did not complete!",
+                    )
+                    return notification, None, None
                 job_id = children_flows[1]
             else:
                 # There will be only one child
@@ -527,6 +536,7 @@ def populate_segmentation_results(
                 )
                 return notification, None, children_flows[0]
             result_metadata = result_container.metadata
+            # Check if the result corresponds to the current image_uri
             if result_metadata["data_uri"] == data_uri:
                 result_store = {
                     "seg_result_trimmed_uri": expected_result_uri,
