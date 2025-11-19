@@ -4,7 +4,7 @@ services:
   app:
     container_name: highres_seg_demo
     build: .
-    command: 'gunicorn -b 0.0.0.0:8075 --reload app:server'
+    command: sh -c "python scripts/save_mlflow_algorithm.py || true && gunicorn -b 0.0.0.0:8075 --reload app:server"
     environment:
       DATA_TILED_URI: '${DATA_TILED_URI}'
       DATA_TILED_API_KEY: '${DATA_TILED_API_KEY}'
@@ -22,6 +22,9 @@ services:
       MLFLOW_TRACKING_URI: '${MLFLOW_TRACKING_URI}'
       MLFLOW_TRACKING_USERNAME: '${MLFLOW_TRACKING_USERNAME}'
       MLFLOW_TRACKING_PASSWORD: '${MLFLOW_TRACKING_PASSWORD}'
+      # MLflow algorithm registration
+      MLFLOW_TRACKING_URI_OUTSIDE: '${MLFLOW_TRACKING_URI}'
+      ALGORITHM_JSON_PATH: '/app/assets/models.json'
     volumes:
       - ${MOUNT_RESULTS_DIR}:/app/work/results
     ports:
