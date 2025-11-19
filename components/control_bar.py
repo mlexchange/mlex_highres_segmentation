@@ -594,7 +594,8 @@ def layout():
                                         data=models.modelname_list,
                                         value=(
                                             models.modelname_list[0]
-                                            if len(models.modelname_list) > 0 and models.modelname_list[0]
+                                            if len(models.modelname_list) > 0
+                                            and models.modelname_list[0]
                                             else None
                                         ),
                                         placeholder="Select a model...",
