@@ -298,7 +298,7 @@ def keybind_image_slider(
     Input("toggle-viewfinder", "checked"),
     prevent_initial_call=True,
 )
-def toggle_viewdinfer(viewfinder_enabled):
+def toggle_viewfinder(viewfinder_enabled):
     if viewfinder_enabled:
         return "visible"
     return "hidden"
