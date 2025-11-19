@@ -23,7 +23,7 @@ from utils.data_utils import (
 from utils.plot_utils import generate_notification
 
 MODE = os.getenv("MODE", "")
-RESULTS_DIR = os.getenv("RESULTS_DIR", "")
+MOUNT_RESULTS_DIR = os.getenv("MOUNT_RESULTS_DIR", "")
 FLOW_NAME = os.getenv("FLOW_NAME", "")
 PREFECT_TAGS = os.getenv("PREFECT_TAGS", ["high-res-segmentation"])
 # NEW: MLflow environment variables
@@ -95,7 +95,7 @@ def run_train(
         data_uri = tiled_datasets.get_data_uri_by_trimmed_uri(image_uri)
         io_parameters = assemble_io_parameters_from_uris(data_uri, mask_uri)
         io_parameters["uid_retrieve"] = ""
-        io_parameters["models_dir"] = RESULTS_DIR
+        io_parameters["models_dir"] = MOUNT_RESULTS_DIR
         io_parameters["job_name"] = flow_run_name
 
         # NEW: Add MLflow parameters
@@ -200,7 +200,7 @@ def run_inference(
         data_uri = tiled_datasets.get_data_uri_by_trimmed_uri(image_uri)
         io_parameters = assemble_io_parameters_from_uris(data_uri, "")
         io_parameters["uid_retrieve"] = ""
-        io_parameters["models_dir"] = RESULTS_DIR
+        io_parameters["models_dir"] = MOUNT_RESULTS_DIR
 
         # NEW: Add MLflow parameters
         io_parameters["mlflow_uri"] = MLFLOW_URI
