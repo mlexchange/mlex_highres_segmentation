@@ -14,8 +14,6 @@ services:
       SEG_TILED_API_KEY: '${SEG_TILED_API_KEY}'
       USER_NAME: '${USER_NAME}'
       USER_PASSWORD: '${USER_PASSWORD}'
-      RESULTS_DIR: '${RESULTS_DIR}'
-      WRITE_DIR: '${WRITE_DIR}'
       PREFECT_API_URL: '${PREFECT_API_URL}'
       FLOW_NAME: '${FLOW_NAME}'
       TIMEZONE: '${TIMEZONE}'
@@ -26,8 +24,6 @@ services:
       # MLflow algorithm registration
       MLFLOW_TRACKING_URI_OUTSIDE: '${MLFLOW_TRACKING_URI}'
       ALGORITHM_JSON_PATH: '/app/assets/models.json'
-    volumes:
-      - ${MOUNT_RESULTS_DIR}:/app/work/results
     ports:
       - '127.0.0.1:8075:8075'
     networks:

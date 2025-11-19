@@ -5,6 +5,7 @@ from datetime import datetime
 
 import pytz
 from dash import ALL, Input, Output, Patch, State, callback, no_update
+from mlex_utils.mlflow_utils.mlflow_model_client import MLflowModelClient
 from mlex_utils.prefect_utils.core import (
     get_children_flow_run_ids,
     get_flow_run_name,
@@ -23,14 +24,16 @@ from utils.data_utils import (
 from utils.plot_utils import generate_notification
 
 MODE = os.getenv("MODE", "")
-WRITE_DIR = os.getenv("WRITE_DIR", "")
 FLOW_NAME = os.getenv("FLOW_NAME", "")
 PREFECT_TAGS = os.getenv("PREFECT_TAGS", ["high-res-segmentation"])
 # NEW: MLflow environment variables
-MLFLOW_URI = os.getenv("MLFLOW_URI", "http://mlflow:5000")
+MLFLOW_URI = os.getenv("MLFLOW_TRACKING_URI", "http://mlflow:5000")
 
 # TODO: Retrieve timezone from browser
 TIMEZONE = os.getenv("TIMEZONE", "US/Pacific")
+
+# Initialize MLflow client
+mlflow_client = MLflowModelClient()
 
 
 @callback(
@@ -95,7 +98,6 @@ def run_train(
         data_uri = tiled_datasets.get_data_uri_by_trimmed_uri(image_uri)
         io_parameters = assemble_io_parameters_from_uris(data_uri, mask_uri)
         io_parameters["uid_retrieve"] = ""
-        io_parameters["models_dir"] = WRITE_DIR
         io_parameters["job_name"] = flow_run_name
 
         # NEW: Add MLflow parameters
@@ -200,7 +202,6 @@ def run_inference(
         data_uri = tiled_datasets.get_data_uri_by_trimmed_uri(image_uri)
         io_parameters = assemble_io_parameters_from_uris(data_uri, "")
         io_parameters["uid_retrieve"] = ""
-        io_parameters["models_dir"] = WRITE_DIR
 
         # NEW: Add MLflow parameters
         io_parameters["mlflow_uri"] = MLFLOW_URI
@@ -442,7 +443,26 @@ def populate_segmentation_results_train(train_job_id, image_uri):
         train_job_id, image_uri, "training"
     )
     if segment_job_id is not None:
-        results_link = f"/results/{segment_job_id}/dvc_metrics/report.html"
+        try:
+            # segment_job_id is the Prefect training flow run ID
+            # It's also used as the MLflow registered model name
+            # Get the registered model to find the actual MLflow run_id
+            model_versions = mlflow_client.client.search_model_versions(
+                filter_string=f"name='{segment_job_id}'"
+            )
+            
+            if model_versions and len(model_versions) > 0:
+                # Get the run_id from the model version
+                mlflow_run_id = model_versions[0].run_id
+                print(f"Found MLflow run ID: {mlflow_run_id} for Prefect flow: {segment_job_id}")
+                results_link = f"/mlflow-artifact/{mlflow_run_id}/dvc_metrics/report.html"
+            else:
+                print(f"No MLflow model found with name: {segment_job_id}")
+                results_link = no_update
+        except Exception as e:
+            print(f"Error retrieving MLflow run ID from model: {e}")
+            traceback.print_exc()
+            results_link = no_update
     else:
         results_link = no_update
 

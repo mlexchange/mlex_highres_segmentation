@@ -1,9 +1,11 @@
 import os
+import tempfile
 
 import dash_auth
 import dash_mantine_components as dmc
 from dash import Dash
-from flask import send_from_directory
+from flask import send_file
+from mlex_utils.mlflow_utils.mlflow_model_client import MLflowModelClient
 
 from callbacks.control_bar import *  # noqa: F403, F401
 from callbacks.image_viewer import *  # noqa: F403, F401
@@ -14,14 +16,16 @@ from components.image_viewer import layout as image_viewer_layout
 
 USER_NAME = os.getenv("USER_NAME")
 USER_PASSWORD = os.getenv("USER_PASSWORD")
-RESULTS_DIR = os.getenv("RESULTS_DIR", "/app/work/results")
 
 VALID_USER_NAME_PASSWORD_PAIRS = {USER_NAME: USER_PASSWORD}
 
 app = Dash(__name__, update_title=None)
 server = app.server
 
-# Set single user name password pair if deployment isn't
+# Initialize MLflow client for serving artifacts
+mlflow_client = MLflowModelClient()
+
+# Set single user name password pair if deployment isn't local
 auth = (
     dash_auth.BasicAuth(app, VALID_USER_NAME_PASSWORD_PAIRS)
     if os.getenv("DASH_DEPLOYMENT_LOC", "") != "Local"
@@ -37,10 +41,18 @@ app.layout = dmc.MantineProvider(
 )
 
 
-@server.route("/results/<path:filename>")
-def serve_results(filename):
-    """Serve files from container's results directory"""
-    return send_from_directory(RESULTS_DIR, filename)  # ← Container path
+@server.route("/mlflow-artifact/<run_id>/<path:artifact_path>")
+def serve_mlflow_artifact(run_id, artifact_path):
+    """Download and serve MLflow artifacts"""
+    try:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            downloaded_path = mlflow_client.client.download_artifacts(
+                run_id, artifact_path, tmp_dir
+            )
+            return send_file(downloaded_path)
+    except Exception as e:
+        print(f"Error loading MLflow artifact: {e}")
+        return f"Error loading artifact: {str(e)}", 404
 
 
 if __name__ == "__main__":
