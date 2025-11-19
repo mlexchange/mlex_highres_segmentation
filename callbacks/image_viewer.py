@@ -57,13 +57,9 @@ def hide_show_segmentation_overlay(toggle_seg_result, opacity):
     Output("image-viewfinder", "figure"),
     Output("annotation-store", "data", allow_duplicate=True),
     Output("image-metadata", "data"),
-    Output("annotated-slices-selector", "value"),
-    Output("image-selection-slider", "value", allow_duplicate=True),
-    Output("notifications-container", "children", allow_duplicate=True),
     Output("image-viewer-loading", "className"),
     Input("image-selection-slider", "value"),
     Input("show-result-overlay-toggle", "checked"),
-    Input("annotated-slices-selector", "value"),
     State({"type": "annotation-class-store", "index": ALL}, "data"),
     State("image-uri", "value"),
     State("annotation-store", "data"),
@@ -79,7 +75,6 @@ def hide_show_segmentation_overlay(toggle_seg_result, opacity):
 def render_image(
     image_idx,
     toggle_seg_result,
-    slice_selection,
     all_annotation_class_store,
     image_uri,
     annotation_store,
@@ -91,23 +86,11 @@ def render_image(
     opacity,
     fig,
 ):
-    reset_slice_selection = dash.no_update
-    update_slider_value = dash.no_update
-    notification = dash.no_update
-    if ctx.triggered_id == "annotated-slices-selector":
-        reset_slice_selection = None
-        if image_idx == slice_selection:
-            ret_values = [dash.no_update] * 8
-            ret_values[4] = reset_slice_selection
-            ret_values[7] = "hidden"
-            return ret_values
-        image_idx = slice_selection
-        update_slider_value = slice_selection
-        notification = generate_notification(
-            f"{ANNOT_NOTIFICATION_MSGS['slice-jump']} {image_idx}",
-            "indigo",
-            ANNOT_ICONS["jump-to-slice"],
-        )
+    """
+    Re-renders the image if:
+        A new slice is selected,
+        the segmentation overlay is toggled,
+    """
 
     if image_idx:
         image_idx -= 1  # slider starts at 1, so subtract 1 to get the correct index
@@ -228,11 +211,28 @@ def render_image(
         fig_viewfinder,
         patched_annotation_store,
         curr_image_metadata,
-        reset_slice_selection,
-        update_slider_value,
-        notification,
         "hidden",
     )
+
+
+@callback(
+    Output("image-selection-slider", "value", allow_duplicate=True),
+    Output("annotated-slices-selector", "value"),
+    Output("notifications-container", "children", allow_duplicate=True),
+    Input("annotated-slices-selector", "value"),
+    State("image-selection-slider", "value"),
+    prevent_initial_call=True,
+)
+def jump_to_annotated_slice(new_image_idx, current_image_idx):
+    if new_image_idx == current_image_idx:
+        # Already on the selected slice, only reset the selector
+        return dash.no_update, None, dash.no_update
+    notification = generate_notification(
+        f"{ANNOT_NOTIFICATION_MSGS['slice-jump']} {new_image_idx}",
+        "indigo",
+        ANNOT_ICONS["jump-to-slice"],
+    )
+    return new_image_idx, None, notification
 
 
 @callback(
