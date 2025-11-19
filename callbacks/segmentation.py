@@ -450,12 +450,16 @@ def populate_segmentation_results_train(train_job_id, image_uri):
             model_versions = mlflow_client.client.search_model_versions(
                 filter_string=f"name='{segment_job_id}'"
             )
-            
+
             if model_versions and len(model_versions) > 0:
                 # Get the run_id from the model version
                 mlflow_run_id = model_versions[0].run_id
-                print(f"Found MLflow run ID: {mlflow_run_id} for Prefect flow: {segment_job_id}")
-                results_link = f"/mlflow-artifact/{mlflow_run_id}/dvc_metrics/report.html"
+                print(
+                    f"Found MLflow run ID: {mlflow_run_id} for Prefect flow: {segment_job_id}"
+                )
+                results_link = (
+                    f"/mlflow-artifact/{mlflow_run_id}/dvc_metrics/report.html"
+                )
             else:
                 print(f"No MLflow model found with name: {segment_job_id}")
                 results_link = no_update
