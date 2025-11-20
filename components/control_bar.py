@@ -679,7 +679,7 @@ def layout():
                                     radius="lg",
                                     color="gray",
                                     label="View segmentation overlay",
-                                    checked=False,
+                                    checked=True,
                                     disabled=True,
                                     styles={"trackLabel": {"cursor": "pointer"}},
                                 ),
