@@ -2,7 +2,7 @@
     "contents": [
         {
             "model_name": "DLSIA MSDNet",
-            "version": "0.0.1",
+            "version": "0.1.0",
             "type": "segmentation",
             "owner": "mlexchange team",
             "image_name": "ghcr.io/mlexchange/mlex_dlsia_segmentation_prototype",
@@ -434,13 +434,13 @@
                 }
             ],
             "python_file_name": {
-                "train": "src/train.py",
-                "inference": "src/segment.py"
+                "train": "mlex_dlsia/main.py --train",
+                "inference": "mlex_dlsia/main.py"
             }
         },
         {
             "model_name": "DLSIA TUNet",
-            "version": "0.0.1",
+            "version": "0.1.0",
             "type": "segmentation",
             "owner": "mlexchange team",
             "image_name": "ghcr.io/mlexchange/mlex_dlsia_segmentation_prototype",
@@ -861,13 +861,13 @@
                 }
             ],
             "python_file_name": {
-                "train": "src/train.py",
-                "inference": "src/segment.py"
+                "train": "mlex_dlsia/main.py --train",
+                "inference": "mlex_dlsia/main.py"
             }
         },
         {
             "model_name": "DLSIA TUNet3+",
-            "version": "0.0.1",
+            "version": "0.1.0",
             "type": "segmentation",
             "owner": "mlexchange team",
             "image_name": "ghcr.io/mlexchange/mlex_dlsia_segmentation_prototype",
@@ -1296,8 +1296,8 @@
                 }
             ],
             "python_file_name": {
-                "train": "src/train.py",
-                "inference": "src/segment.py"
+                "train": "mlex_dlsia/main.py --train",
+                "inference": "mlex_dlsia/main.py"
             }
         }
     ]
