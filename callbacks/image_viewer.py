@@ -57,58 +57,36 @@ def hide_show_segmentation_overlay(toggle_seg_result, opacity):
     Output("image-viewfinder", "figure"),
     Output("annotation-store", "data", allow_duplicate=True),
     Output("image-metadata", "data"),
-    Output("annotated-slices-selector", "value"),
-    Output("image-selection-slider", "value", allow_duplicate=True),
-    Output("notifications-container", "children", allow_duplicate=True),
     Output("image-viewer-loading", "className"),
     Input("image-selection-slider", "value"),
-    Input("show-result-overlay-toggle", "checked"),
-    Input("annotated-slices-selector", "value"),
+    Input("seg-results-train-store", "data"),
+    Input("seg-results-inference-store", "data"),
+    State("show-result-overlay-toggle", "checked"),
     State({"type": "annotation-class-store", "index": ALL}, "data"),
     State("image-uri", "value"),
     State("annotation-store", "data"),
     State("image-metadata", "data"),
     State("screen-size", "data"),
     State("current-class-selection", "data"),
-    State("seg-results-train-store", "data"),
-    State("seg-results-inference-store", "data"),
     State("seg-result-opacity-slider", "value"),
     State("image-viewer", "figure"),
     prevent_initial_call=True,
 )
 def render_image(
     image_idx,
+    seg_result_train,
+    seg_result_inference,
     toggle_seg_result,
-    slice_selection,
     all_annotation_class_store,
     image_uri,
     annotation_store,
     image_metadata,
     screen_size,
     current_color,
-    seg_result_train,
-    seg_result_inference,
     opacity,
     fig,
 ):
-    reset_slice_selection = dash.no_update
-    update_slider_value = dash.no_update
-    notification = dash.no_update
-    if ctx.triggered_id == "annotated-slices-selector":
-        reset_slice_selection = None
-        if image_idx == slice_selection:
-            ret_values = [dash.no_update] * 8
-            ret_values[4] = reset_slice_selection
-            ret_values[7] = "hidden"
-            return ret_values
-        image_idx = slice_selection
-        update_slider_value = slice_selection
-        notification = generate_notification(
-            f"{ANNOT_NOTIFICATION_MSGS['slice-jump']} {image_idx}",
-            "indigo",
-            ANNOT_ICONS["jump-to-slice"],
-        )
-
+    result = None
     if image_idx:
         image_idx -= 1  # slider starts at 1, so subtract 1 to get the correct index
         tf = tiled_datasets.get_data_sequence_by_trimmed_uri(image_uri)[image_idx]
@@ -116,43 +94,34 @@ def render_image(
         low = np.percentile(tf.ravel(), 1)
         high = np.percentile(tf.ravel(), 99)
         tf = np.clip((tf - low) / (high - low), 0, 1)
-        if toggle_seg_result:
-            # if toggle is true and overlay exists already (2 images in data) this will
-            # be handled in hide_show_segmentation_overlay callback
-            if (
-                len(fig["data"]) == 2
-                and ctx.triggered_id == "show-result-overlay-toggle"
-            ):
-                return [dash.no_update] * 7 + ["hidden"]
-            # Check if the stored results are for the current project and image
-            if seg_result_train or seg_result_inference:
-                seg_result = (
-                    seg_result_inference if seg_result_inference else seg_result_train
-                )
 
-                if "mask_idx" in seg_result and seg_result["mask_idx"] is not None:
-                    annotation_indices = seg_result["mask_idx"]
-                    if image_idx in annotation_indices:
-                        # Will not return an error since we already checked if image_idx is in the list
-                        mapped_index = annotation_indices.index(image_idx)
-                        result = tiled_results.get_data_slice_by_trimmed_uri(
-                            seg_result["seg_result_trimmed_uri"], slice=mapped_index
-                        )
-                    else:
-                        result = None
-                # if mask_idx is not given in the results,
-                # then the result stems from inference on the full data set
-                else:
+        # Segmentation result stores are only populated when they fit with the current image_uri
+        if seg_result_train or seg_result_inference:
+            seg_result = (
+                seg_result_inference if seg_result_inference else seg_result_train
+            )
+
+            if "mask_idx" in seg_result and seg_result["mask_idx"] is not None:
+                annotation_indices = seg_result["mask_idx"]
+                if image_idx in annotation_indices:
+                    # Will not return an error since we already checked if image_idx is in the list
+                    mapped_index = annotation_indices.index(image_idx)
                     result = tiled_results.get_data_slice_by_trimmed_uri(
-                        seg_result["seg_result_trimmed_uri"], slice=image_idx
+                        seg_result["seg_result_trimmed_uri"], slice=mapped_index
                     )
+                else:
+                    result = None
+            # if mask_idx is not given in the results,
+            # then the result stems from inference on the full data set
             else:
-                result = None
+                result = tiled_results.get_data_slice_by_trimmed_uri(
+                    seg_result["seg_result_trimmed_uri"], slice=image_idx
+                )
     else:
         tf = np.zeros((500, 500))
 
     fig = px.imshow(tf, binary_string=True)
-    if toggle_seg_result and result is not None:
+    if result is not None:
         colorscale, max_class_id = generate_segmentation_colormap(
             all_annotation_class_store
         )
@@ -165,7 +134,7 @@ def render_image(
                 showscale=False,
             )
         )
-        fig["data"][1]["opacity"] = opacity / 100
+        fig["data"][1]["opacity"] = opacity / 100 if toggle_seg_result else 0
 
     fig.update_layout(
         margin=dict(l=0, r=0, t=0, b=0),
@@ -228,11 +197,28 @@ def render_image(
         fig_viewfinder,
         patched_annotation_store,
         curr_image_metadata,
-        reset_slice_selection,
-        update_slider_value,
-        notification,
         "hidden",
     )
+
+
+@callback(
+    Output("image-selection-slider", "value", allow_duplicate=True),
+    Output("annotated-slices-selector", "value"),
+    Output("notifications-container", "children", allow_duplicate=True),
+    Input("annotated-slices-selector", "value"),
+    State("image-selection-slider", "value"),
+    prevent_initial_call=True,
+)
+def jump_to_annotated_slice(new_image_idx, current_image_idx):
+    if new_image_idx == current_image_idx:
+        # Already on the selected slice, only reset the selector
+        return dash.no_update, None, dash.no_update
+    notification = generate_notification(
+        f"{ANNOT_NOTIFICATION_MSGS['slice-jump']} {new_image_idx}",
+        "indigo",
+        ANNOT_ICONS["jump-to-slice"],
+    )
+    return new_image_idx, None, notification
 
 
 @callback(
@@ -298,7 +284,7 @@ def keybind_image_slider(
     Input("toggle-viewfinder", "checked"),
     prevent_initial_call=True,
 )
-def toggle_viewdinfer(viewfinder_enabled):
+def toggle_viewfinder(viewfinder_enabled):
     if viewfinder_enabled:
         return "visible"
     return "hidden"
