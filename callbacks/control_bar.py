@@ -907,7 +907,6 @@ def open_controls_drawer(n_clicks, is_opened):
 
 
 @callback(
-    Output("show-result-overlay-toggle", "checked"),
     Output("show-result-overlay-toggle", "disabled"),
     Output("seg-result-opacity-slider", "disabled"),
     Input("show-result-overlay-toggle", "checked"),
@@ -917,7 +916,6 @@ def open_controls_drawer(n_clicks, is_opened):
 def update_result_controls(toggle, seg_result_train, seg_result_inference):
     # Disable opacity slider if result overlay is unchecked
     if ctx.triggered_id == "show-result-overlay-toggle":
-        checked = no_update
         # Must have been enabled to be source of trigger
         disable_toggle = no_update
         # Disable slider if toggle is unchecked
@@ -925,15 +923,12 @@ def update_result_controls(toggle, seg_result_train, seg_result_inference):
     # Trigger is a change in either a train or inference result
     else:
         if seg_result_train or seg_result_inference:
-            checked = no_update
             disable_toggle = False
             disable_slider = False
         else:
-            checked = False
             disable_toggle = True
             disable_slider = True
     return (
-        checked,
         disable_toggle,
         disable_slider,
     )

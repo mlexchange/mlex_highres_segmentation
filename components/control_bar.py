@@ -641,6 +641,8 @@ def layout():
                                     dmc.Select(
                                         placeholder="Select a job...",
                                         id="train-job-selector",
+                                        clearable=True,
+                                        searchable=True,
                                     ),
                                 ),
                                 dmc.Space(h=25),
@@ -670,6 +672,8 @@ def layout():
                                     dmc.Select(
                                         placeholder="Select a job...",
                                         id="inference-job-selector",
+                                        clearable=True,
+                                        searchable=True,
                                     ),
                                 ),
                                 dmc.Space(h=25),
@@ -679,7 +683,7 @@ def layout():
                                     radius="lg",
                                     color="gray",
                                     label="View segmentation overlay",
-                                    checked=False,
+                                    checked=True,
                                     disabled=True,
                                     styles={"trackLabel": {"cursor": "pointer"}},
                                 ),

@@ -506,6 +506,15 @@ def populate_segmentation_results(
             if job_type == "training":
                 # Get second child to retrieve results
                 # (inference on just annotated slices for the training job)
+                # Training might have only one child if training failed
+                if len(children_flows) < 2:
+                    notification = generate_notification(
+                        "Segmentation Results",
+                        "red",
+                        ANNOT_ICONS["results"],
+                        "Cannot retrieve result as inference for training did not complete!",
+                    )
+                    return notification, None, None
                 job_id = children_flows[1]
             else:
                 # There will be only one child
@@ -527,6 +536,7 @@ def populate_segmentation_results(
                 )
                 return notification, None, children_flows[0]
             result_metadata = result_container.metadata
+            # Check if the result corresponds to the current image_uri
             if result_metadata["data_uri"] == data_uri:
                 result_store = {
                     "seg_result_trimmed_uri": expected_result_uri,
@@ -542,7 +552,13 @@ def populate_segmentation_results(
 
                 return notification, result_store, children_flows[0]
             else:
-                return no_update, None, None
+                notification = generate_notification(
+                    "Segmentation Results",
+                    "orange",
+                    ANNOT_ICONS["results"],
+                    f"This {job_type} job did not use the current image as input!",
+                )
+                return notification, None, None
     return no_update, no_update, None
 
 
@@ -551,14 +567,21 @@ def populate_segmentation_results(
     Output("seg-results-train-store", "data"),
     Output("dvc-training-stats-link", "href"),
     Input("train-job-selector", "value"),
-    State("image-uri", "value"),
+    Input("image-uri", "value"),
+    State("seg-results-train-store", "data"),
     prevent_initial_call=True,
 )
-def populate_segmentation_results_train(train_job_id, image_uri):
+def populate_segmentation_results_train(
+    train_job_id, image_uri, current_seg_results_train
+):
     """
     This callback populates the segmentation results store based on the uids
     if the training job and the inference job.
     """
+    if train_job_id is None and current_seg_results_train:
+        # Clear the store if no training job is selected
+        return no_update, None, no_update
+
     notification, result_store, segment_job_id = populate_segmentation_results(
         train_job_id, image_uri, "training"
     )
@@ -574,14 +597,22 @@ def populate_segmentation_results_train(train_job_id, image_uri):
     Output("notifications-container", "children", allow_duplicate=True),
     Output("seg-results-inference-store", "data"),
     Input("inference-job-selector", "value"),
-    State("image-uri", "value"),
+    Input("image-uri", "value"),
+    State("seg-results-inference-store", "data"),
     prevent_initial_call=True,
 )
-def populate_segmentation_results_inference(inference_job_id, image_uri):
+def populate_segmentation_results_inference(
+    inference_job_id, image_uri, current_seg_results_inference
+):
     """
     This callback populates the segmentation results store based on the uids
     if the training job and the inference job.
     """
+
+    if inference_job_id is None and current_seg_results_inference:
+        # Clear the store if no inference job is selected
+        return no_update, None
+
     notification, result_store, _ = populate_segmentation_results(
         inference_job_id, image_uri, "inference"
     )
