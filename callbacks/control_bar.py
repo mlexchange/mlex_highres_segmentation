@@ -958,6 +958,13 @@ def update_current_annotated_slices_values(all_classes):
     Input("model-list", "value"),
 )
 def update_model_parameters(model_name):
+    # Guard against no model selected or available
+    if not model_name:
+        return html.Div(
+            "No models available. Please add segmentation models to MLflow.",
+            style={"padding": "10px", "color": "#9EA4AB", "fontSize": "14px"},
+        )
+
     model = models[model_name]
     if model["gui_parameters"]:
         # TODO: Retain old parameters if they exist
