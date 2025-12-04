@@ -6,6 +6,7 @@ from urllib.parse import urlparse, urlunparse
 import httpx
 import numpy as np
 from dotenv import load_dotenv
+from mlex_utils.mlflow_utils.mlflow_algorithm_client import MlflowAlgorithmClient
 from tiled.client import from_uri
 from tiled.client.array import ArrayClient
 from tiled.client.container import Container
@@ -21,6 +22,10 @@ MASK_TILED_API_KEY = os.getenv("MASK_TILED_API_KEY")
 SEG_TILED_URI = os.getenv("SEG_TILED_URI")
 SEG_TILED_API_KEY = os.getenv("SEG_TILED_API_KEY")
 USER_NAME = os.getenv("USER_NAME", "user1")
+
+MLFLOW_TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI", "http://mlflow:5000")
+MLFLOW_TRACKING_USERNAME = os.getenv("MLFLOW_TRACKING_USERNAME", "")
+MLFLOW_TRACKING_PASSWORD = os.getenv("MLFLOW_TRACKING_PASSWORD", "")
 
 
 def _create_or_return_containers(client, container_names):
@@ -370,20 +375,28 @@ tiled_results = TiledDataLoader(
 
 
 class Models:
-    def __init__(self, modelfile_path="./assets/models.json"):
-        self.path = modelfile_path
-        f = open(self.path)
+    """
+    This class loads algorithm definitions from MLflow instead of a local JSON file.
+    """
 
-        contents = json.load(f)["contents"]
-        self.modelname_list = [content["model_name"] for content in contents]
-        self.models = {}
+    def __init__(self):
+        # Initialize MLflow client
+        self.mlflow_client = MlflowAlgorithmClient(
+            MLFLOW_TRACKING_URI,
+            MLFLOW_TRACKING_USERNAME,
+            MLFLOW_TRACKING_PASSWORD,
+        )
 
-        for i, n in enumerate(self.modelname_list):
-            self.models[n] = contents[i]
+        # Load algorithms from MLflow filtered by type="segmentation"
+        self.mlflow_client.load_from_mlflow(algorithm_type="segmentation")
+
+        # Get list of model names
+        self.modelname_list = self.mlflow_client.modelname_list
 
     def __getitem__(self, key):
+        """Get model by name from MLflow"""
         try:
-            return self.models[key]
+            return self.mlflow_client[key]
         except KeyError:
             raise KeyError(f"A model with name {key} does not exist.")
 
@@ -402,7 +415,7 @@ def extract_parameters_from_html(model_parameters_html):
         # param["props"]["children"][0] is the label
         # param["props"]["children"][1] is the input
         parameter_container = param["props"]["children"][1]
-        # The achtual parameter item is the first and only child of the parameter container
+        # The actual parameter item is the first and only child of the parameter container
         parameter_item = parameter_container["props"]["children"]["props"]
         key = parameter_item["id"]["param_key"]
         if "value" in parameter_item:
@@ -422,10 +435,7 @@ def assemble_io_parameters_from_uris(data_uri, mask_uri):
     """
     io_parameters = {
         "data_tiled_uri": data_uri,
-        "data_tiled_api_key": DATA_TILED_API_KEY,
         "mask_tiled_uri": mask_uri,
-        "mask_tiled_api_key": MASK_TILED_API_KEY,
         "seg_tiled_uri": SEG_TILED_URI,
-        "seg_tiled_api_key": SEG_TILED_API_KEY,
     }
     return io_parameters

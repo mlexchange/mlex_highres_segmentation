@@ -38,6 +38,23 @@ MODE='dev'
 python app.py
 ```
 
+### Algorithm registry in MLflow
+
+First make sure the following environment variables are set in your `.env` file:
+```
+MLFLOW_TRACKING_USERNAME=<your_username>
+MLFLOW_TRACKING_PASSWORD=<your_password>
+
+MLFLOW_TRACKING_URI_OUTSIDE=<your_mlflow_uri>
+ALGORITHM_JSON_PATH="../assets/models.json"
+```
+Inside the Python virtual environment you created, run the following commands:
+```
+cd scripts
+python save_mlflow_algorithm.py
+```
+
+
 ### Local tiled connection
 
 For local testing of just the annotation functionality, developers may also choose to set up a local Tiled server with access to minimal datasets (eg. in the case that the remote server is down).

@@ -4,7 +4,7 @@ services:
   app:
     container_name: highres_seg_demo
     build: .
-    command: 'gunicorn -b 0.0.0.0:8075 --reload app:server'
+    command: sh -c "python scripts/save_mlflow_algorithm.py || true && gunicorn -b 0.0.0.0:8075 --reload app:server"
     environment:
       DATA_TILED_URI: '${DATA_TILED_URI}'
       DATA_TILED_API_KEY: '${DATA_TILED_API_KEY}'
@@ -14,27 +14,16 @@ services:
       SEG_TILED_API_KEY: '${SEG_TILED_API_KEY}'
       USER_NAME: '${USER_NAME}'
       USER_PASSWORD: '${USER_PASSWORD}'
-      # The application itself finds the local results directory as mounted below
-      RESULTS_DIR: "/app/work/results"
       PREFECT_API_URL: '${PREFECT_API_URL}'
       FLOW_NAME: '${FLOW_NAME}'
-      TIMEZONE: "${TIMEZONE}"
-      FLOW_TYPE: "${FLOW_TYPE}"
-      IMAGE_NAME: "${IMAGE_NAME}"
-      IMAGE_TAG: "${IMAGE_TAG}"
-      CONTAINER_NETWORK: "${CONTAINER_NETWORK}"
-      # When scheduling flows through docker/podman, the container needs to
-      # mount the local results directory
-      MOUNT_RESULTS_DIR: "${RESULTS_DIR}"
-      TRAIN_SCRIPT_PATH: "${TRAIN_SCRIPT_PATH}"
-      SEGMENT_SCRIPT_PATH: "${SEGMENT_SCRIPT_PATH}"
-    volumes:
-      - ./app.py:/app/app.py
-      - ./constants.py:/app/constants.py
-      - ./callbacks:/app/callbacks
-      - ./components:/app/components
-      - ./utils:/app/utils
-      - ${RESULTS_DIR}:/app/work/results
+      TIMEZONE: '${TIMEZONE}'
+      # MLflow
+      MLFLOW_TRACKING_URI: '${MLFLOW_TRACKING_URI}'
+      MLFLOW_TRACKING_USERNAME: '${MLFLOW_TRACKING_USERNAME}'
+      MLFLOW_TRACKING_PASSWORD: '${MLFLOW_TRACKING_PASSWORD}'
+      # MLflow algorithm registration
+      MLFLOW_TRACKING_URI_OUTSIDE: '${MLFLOW_TRACKING_URI}'
+      ALGORITHM_JSON_PATH: '/app/assets/models.json'
     ports:
       - '127.0.0.1:8075:8075'
     networks:

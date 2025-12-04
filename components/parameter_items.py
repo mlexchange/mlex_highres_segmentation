@@ -141,6 +141,11 @@ class DropdownItem(ControlItem):
     ):
         if param_key is None:
             param_key = name
+
+        # Convert 'options' to 'data' if present (for dmc.Select compatibility)
+        if "options" in kwargs:
+            kwargs["data"] = kwargs.pop("options")
+
         self.input = dmc.Select(
             id={**base_id, "name": name, "param_key": param_key, "layer": "input"},
             **kwargs,
@@ -170,11 +175,12 @@ class RadioItem(ControlItem):
         if param_key is None:
             param_key = name
 
+        # Handle both 'options' and 'data' field names
+        options_list = kwargs.pop("options", kwargs.pop("data", []))
         options = [
-            dmc.Radio(option["label"], value=option["value"])
-            for option in kwargs["options"]
+            dmc.Radio(option["label"], value=option["value"]) for option in options_list
         ]
-        kwargs.pop("options", None)
+
         self.input = dmc.RadioGroup(
             options,
             id={**base_id, "name": name, "param_key": param_key, "layer": "input"},

@@ -8,13 +8,12 @@ dash-table==5.0.0
 Flask==2.2.5
 importlib-metadata==6.7.0
 itsdangerous==2.1.2
-Jinja2==3.1.2
+Jinja2>=3.1.6,<4.0.0
 MarkupSafe==2.1.3
 numpy<2.0.0
 packaging==23.1
 pandas==2.0.2
 plotly==5.17.0
-prefect-client==2.14.21
 python-dateutil==2.8.2
 pytz==2023.3
 six==1.16.0

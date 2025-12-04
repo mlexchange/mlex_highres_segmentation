@@ -3,12 +3,15 @@ from datetime import datetime
 
 import pytz
 from dash import Input, Output, callback, no_update
+from mlex_utils.mlflow_utils.mlflow_model_client import MLflowModelClient
+from mlex_utils.prefect_utils.core import (
+    check_prefect_ready,
+    check_prefect_worker_ready,
+)
 
 from components.control_bar import create_infra_state_details
 from utils.data_utils import tiled_datasets, tiled_masks, tiled_results
-from utils.mlflow_utils import MLflowClient
 from utils.plot_utils import generate_notification
-from utils.prefect import check_prefect_ready, check_prefect_worker_ready
 
 TIMEZONE = os.getenv("TIMEZONE", "US/Pacific")
 FLOW_NAME = os.getenv("FLOW_NAME", "")
@@ -58,7 +61,7 @@ def check_infra_state(n_intervals):
 
     # MLFLOW: Check MLFlow is reachable
     try:
-        mlflow_client = MLflowClient()
+        mlflow_client = MLflowModelClient()
         infra_state["mlflow_ready"] = mlflow_client.check_mlflow_ready()
         if not infra_state["mlflow_ready"]:
             any_infra_down = True
