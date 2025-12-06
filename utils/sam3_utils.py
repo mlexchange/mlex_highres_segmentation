@@ -288,15 +288,23 @@ def prepare_masks_for_overlay(results):
     Converts torch tensors to a stacked tensor if needed
 
     Args:
-        results: Dict with 'masks' key containing list of masks
+        results: Dict with 'masks' key containing list of masks,
+                 OR can be a list of masks directly
 
     Returns:
         torch.Tensor of shape [num_masks, H, W]
     """
-    if results is None or "masks" not in results:
+    # Handle direct list input
+    if isinstance(results, list):
+        masks = results
+    elif isinstance(results, dict) and "masks" in results:
+        masks = results["masks"]
+    else:
+        logger.warning(f"Unexpected results type: {type(results)}")
         return None
 
-    masks = results["masks"]
+    if not masks:
+        return None
 
     if isinstance(masks, torch.Tensor):
         # Already a tensor, ensure 3D shape

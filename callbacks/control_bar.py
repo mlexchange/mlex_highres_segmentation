@@ -1123,7 +1123,6 @@ def toggle_sam3_button_based_on_mode(
     Input("refine-by-sam3", "n_clicks"),
     State("image-viewer", "figure"),
     State("image-selection-slider", "value"),
-    State("current-class-selection", "data"),
     State({"type": "annotation-class-store", "index": ALL}, "data"),
     State("image-uri", "value"),
     prevent_initial_call=True,
@@ -1132,15 +1131,14 @@ def refine_bbox_with_sam3(
     n_clicks,
     fig,
     img_idx,
-    current_color,
     all_annotation_class_store,
     image_uri,
 ):
     """
-    Refine ALL rectangle annotations with the selected class color using SAM3
+    Refine ALL rectangle annotations across ALL classes using SAM3.
+    Groups bounding boxes by class and processes them together.
     """
-    logger.info("=== SAM3 Refinement Started ===")
-    logger.info(f"Selected class color: {current_color}")
+    logger.info("=== SAM3 Multi-Class Refinement Started ===")
 
     if not n_clicks or not fig.get("layout", {}).get("shapes"):
         logger.warning("No clicks or no shapes in figure")
@@ -1153,46 +1151,58 @@ def refine_bbox_with_sam3(
             "SAM3 Refinement",
             "orange",
             ANNOT_ICONS["sam3"],
-            "No bounding box found to refine!",
+            "No bounding boxes found to refine!",
         )
         return no_update, notification
 
-    # Filter rectangles with the current class color
-    rectangle_shapes = [
-        shape
-        for shape in shapes
-        if shape.get("type") == "rect"
-        and shape.get("line", {}).get("color") == current_color
-    ]
+    # Group rectangles by class color
+    class_boxes = {}  # {color: {"boxes": [], "label": ""}}
 
-    if not rectangle_shapes:
-        logger.warning("No rectangle shapes found with current class color")
+    for shape in shapes:
+        if shape.get("type") == "rect":
+            color = shape.get("line", {}).get("color")
+            if color:
+                x0 = int(shape["x0"])
+                y0 = int(shape["y0"])
+                x1 = int(shape["x1"])
+                y1 = int(shape["y1"])
+
+                # Ensure coordinates are in correct order
+                x_min = min(x0, x1)
+                x_max = max(x0, x1)
+                y_min = min(y0, y1)
+                y_max = max(y0, y1)
+
+                box = [x_min, y_min, x_max, y_max]
+
+                if color not in class_boxes:
+                    # Find label for this color
+                    label = "Unknown"
+                    for annotation_class in all_annotation_class_store:
+                        if annotation_class["color"] == color:
+                            label = annotation_class["label"]
+                            break
+                    class_boxes[color] = {"boxes": [], "label": label}
+
+                class_boxes[color]["boxes"].append(box)
+
+    if not class_boxes:
+        logger.warning("No rectangle shapes found")
         notification = generate_notification(
             "SAM3 Refinement",
             "orange",
             ANNOT_ICONS["sam3"],
-            f"No rectangles found with the selected class color!",
+            "No rectangles found to refine!",
         )
         return no_update, notification
 
-    logger.info(f"Found {len(rectangle_shapes)} rectangle(s) to refine")
-
-    # Extract bounding boxes from all rectangles
-    boxes = []
-    for i, shape in enumerate(rectangle_shapes):
-        x0 = int(shape["x0"])
-        y0 = int(shape["y0"])
-        x1 = int(shape["x1"])
-        y1 = int(shape["y1"])
-
-        # Ensure coordinates are in correct order
-        x_min = min(x0, x1)
-        x_max = max(x0, x1)
-        y_min = min(y0, y1)
-        y_max = max(y0, y1)
-
-        boxes.append([x_min, y_min, x_max, y_max])
-        logger.info(f"Box {i}: [{x_min}, {y_min}, {x_max}, {y_max}]")
+    # Log what we found
+    logger.info(f"Found {len(class_boxes)} class(es) with bounding boxes:")
+    total_boxes = 0
+    for color, data in class_boxes.items():
+        num_boxes = len(data["boxes"])
+        total_boxes += num_boxes
+        logger.info(f"  {data['label']}: {num_boxes} box(es)")
 
     # Load the current image
     img_idx -= 1
@@ -1231,42 +1241,64 @@ def refine_bbox_with_sam3(
         )
         return no_update, notification
 
-    # Run SAM3 segmentation with ALL boxes
+    # Run SAM3 segmentation for each class
     try:
-        logger.info(f"Calling SAM3 segmentation with {len(boxes)} boxes...")
-        results = sam3_segmenter.segment_with_boxes(
-            image_pil,
-            boxes,  # Pass ALL boxes at once
-            threshold=0.5,
-            mask_threshold=0.5,
-        )
+        logger.info(f"Running SAM3 segmentation for {len(class_boxes)} class(es)...")
 
-        if results is None or "masks" not in results or len(results["masks"]) == 0:
-            logger.error("SAM3 failed to generate masks")
+        all_masks = []
+        all_colors = []
+        class_results_summary = []
+
+        for color, data in class_boxes.items():
+            boxes = data["boxes"]
+            label = data["label"]
+
+            logger.info(f"Processing class '{label}' with {len(boxes)} box(es)...")
+
+            # Run SAM3 for this class
+            results = sam3_segmenter.segment_with_boxes(
+                image_pil,
+                boxes,
+                threshold=0.5,
+                mask_threshold=0.5,
+            )
+
+            if results is None or "masks" not in results or len(results["masks"]) == 0:
+                logger.warning(f"SAM3 failed for class '{label}'")
+                continue
+
+            num_masks = len(results["masks"])
+            logger.info(f"✓ Class '{label}': generated {num_masks} mask(s)")
+
+            # Convert hex color to RGB tuple
+            def hex_to_rgb(hex_color):
+                hex_color = hex_color.lstrip("#")
+                return tuple(int(hex_color[i : i + 2], 16) for i in (0, 2, 4))
+
+            rgb_color = hex_to_rgb(color)
+
+            # Add masks and colors for this class
+            all_masks.extend(results["masks"])
+            all_colors.extend([rgb_color] * num_masks)
+
+            class_results_summary.append(f"'{label}': {num_masks} mask(s)")
+
+        if not all_masks:
+            logger.error("No masks generated for any class")
             notification = generate_notification(
                 "SAM3 Refinement",
                 "red",
                 ANNOT_ICONS["sam3"],
-                "SAM3 failed to generate masks! Try adjusting the bounding boxes.",
+                "SAM3 failed to generate masks for any class!",
             )
             return no_update, notification
 
-        # Convert hex color to RGB tuple
-        def hex_to_rgb(hex_color):
-            """Convert hex color like '#FFA200' to RGB tuple like (255, 162, 0)"""
-            hex_color = hex_color.lstrip("#")
-            return tuple(int(hex_color[i : i + 2], 16) for i in (0, 2, 4))
+        # Create overlay image with ALL masks from ALL classes
+        logger.info(f"Creating overlay with {len(all_masks)} total masks...")
+        masks_tensor = prepare_masks_for_overlay({"masks": all_masks})
+        overlay_image = overlay_masks(image_pil, masks_tensor, colors=all_colors)
 
-        # Use the selected class color from UI
-        overlay_color = hex_to_rgb(current_color)
-        logger.info(f"Using overlay color: {overlay_color} (from hex: {current_color})")
-
-        # Create overlay image with ALL masks
-        logger.info("Creating overlay image...")
-        masks_tensor = prepare_masks_for_overlay(results)
-        overlay_image = overlay_masks(image_pil, masks_tensor, colors=[overlay_color])
-
-        # Convert overlay image to base64 for display in Plotly
+        # Convert overlay image to base64 for display
         import base64
         import io
 
@@ -1276,8 +1308,6 @@ def refine_bbox_with_sam3(
 
         # Update figure with overlay
         fig_patch = Patch()
-
-        # Add the overlay as an image layer
         fig_patch["layout"]["images"] = [
             {
                 "source": f"data:image/png;base64,{img_str}",
@@ -1293,21 +1323,16 @@ def refine_bbox_with_sam3(
             }
         ]
 
-        # Get class label for notification
-        class_label = "Unknown"
-        for annotation_class in all_annotation_class_store:
-            if annotation_class["color"] == current_color:
-                class_label = annotation_class["label"]
-                break
-
+        # Create success notification
+        summary = ", ".join(class_results_summary)
         notification = generate_notification(
             "SAM3 Refinement",
             "green",
             ANNOT_ICONS["sam3"],
-            f"Successfully refined {len(boxes)} box(es) for '{class_label}'! Generated {len(results['masks'])} mask(s).",
+            f"Successfully refined {total_boxes} box(es) across {len(class_boxes)} class(es): {summary}",
         )
 
-        logger.info("=== SAM3 Refinement Completed Successfully ===")
+        logger.info("=== SAM3 Multi-Class Refinement Completed Successfully ===")
         return fig_patch, notification
 
     except Exception as e:
