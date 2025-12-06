@@ -503,6 +503,18 @@ def layout():
                                     color="#00313C",
                                     style={"width": "100%"},
                                 ),
+                                # ADD SAM3 BUTTON HERE
+                                dmc.Space(h=3),
+                                dmc.Button(
+                                    "Refine by SAM3",
+                                    id="refine-by-sam3",
+                                    variant="outline",
+                                    color="indigo",
+                                    style={"width": "100%"},
+                                    leftIcon=DashIconify(icon="mdi:auto-fix", width=20),
+                                    disabled=True,  # ADD THIS - Start disabled until rectangle mode is selected
+                                ),
+                                # END ADD
                                 dmc.Modal(
                                     title="Data Management",
                                     id="data-management-modal",

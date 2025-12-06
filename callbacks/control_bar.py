@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import random
 import time
@@ -6,6 +7,7 @@ import uuid
 from urllib.parse import urlparse
 
 import dash_mantine_components as dmc
+import numpy as np
 import plotly.express as px
 from dash import (
     ALL,
@@ -24,13 +26,18 @@ from dash import (
 )
 from dash.exceptions import PreventUpdate
 from dash_iconify import DashIconify
+from PIL import Image
 
 from components.annotation_class import annotation_class_item
 from components.parameter_items import ParameterItems
 from constants import ANNOT_ICONS, ANNOT_NOTIFICATION_MSGS, KEY_MODES, KEYBINDS
+from utils.sam3_utils import sam3_segmenter, overlay_masks, prepare_masks_for_overlay
 from utils.annotations import Annotations
 from utils.data_utils import models, tiled_datasets, tiled_masks
 from utils.plot_utils import generate_notification, generate_notification_bg_icon_col
+
+# Configure logger
+logger = logging.getLogger("seg.control_bar")
 
 # TODO - temporary local file path and user for annotation saving and exporting
 EXPORT_FILE_PATH = os.getenv("EXPORT_FILE_PATH", "exported_annotation_data.json")
@@ -47,7 +54,7 @@ if not os.path.exists(EXPORT_FILE_PATH):
     prevent_initial_call=True,
 )
 def update_selected_image_uri(selected_links):
-    print(f"DEBUG - Selected image links: {selected_links}")  # Debug print
+    logger.info(f"Selected image links: {selected_links}")
 
     if selected_links:
         # Extract the 'self' key from the dictionary
@@ -1043,3 +1050,264 @@ def validate_dilation_array(dilation_array):
     except ValueError:
         # If there's any error in parsing or validation, return False
         return "Provide a list of ints for dilation"
+    
+@callback(
+    Output("refine-by-sam3", "disabled"),
+    Input("closed-freeform", "n_clicks"),
+    Input("circle", "n_clicks"),
+    Input("rectangle", "n_clicks"),
+    Input("pan-and-zoom", "n_clicks"),
+    Input("keybind-event-listener", "event"),
+    State("generate-annotation-class-modal", "opened"),
+    State({"type": "edit-annotation-class-modal", "index": ALL}, "opened"),
+    State("control-accordion", "value"),
+    prevent_initial_call=True,
+)
+def toggle_sam3_button_based_on_mode(
+    closed,
+    circle,
+    rect,
+    pan_and_zoom,
+    keybind_event_listener,
+    generate_modal_opened,
+    edit_modal_opened,
+    control_accordion_state,
+):
+    """
+    Enable SAM3 refinement button only when rectangle mode is active.
+    Disable for freeform, circle, and pan-and-zoom modes.
+    """
+    # Determine which mode was triggered
+    trigger = ctx.triggered_id
+    pressed_key = (
+        keybind_event_listener.get("key", None) if keybind_event_listener else None
+    )
+    
+    # Handle keyboard shortcuts
+    if trigger == "keybind-event-listener":
+        if generate_modal_opened or any(edit_modal_opened):
+            raise PreventUpdate
+        if (
+            control_accordion_state is not None
+            and "run-model" in control_accordion_state
+        ):
+            raise PreventUpdate
+        
+        if pressed_key in KEY_MODES:
+            mode, trigger = KEY_MODES[pressed_key]
+        else:
+            raise PreventUpdate
+    
+    # Enable button only for rectangle mode
+    if trigger == "rectangle" and rect > 0:
+        logger.info("SAM3 button ENABLED (rectangle mode)")
+        return False  # False = enabled
+    elif trigger == "closed-freeform" and closed > 0:
+        logger.info("SAM3 button DISABLED (freeform mode)")
+        return True  # True = disabled
+    elif trigger == "circle" and circle > 0:
+        logger.info("SAM3 button DISABLED (circle mode)")
+        return True
+    elif trigger == "pan-and-zoom" and pan_and_zoom > 0:
+        logger.info("SAM3 button DISABLED (pan-and-zoom mode)")
+        return True
+    
+    # Default: keep current state
+    raise PreventUpdate
+
+@callback(
+    Output("image-viewer", "figure", allow_duplicate=True),
+    Output("notifications-container", "children", allow_duplicate=True),
+    Input("refine-by-sam3", "n_clicks"),
+    State("image-viewer", "figure"),
+    State("image-selection-slider", "value"),
+    State("current-class-selection", "data"),
+    State({"type": "annotation-class-store", "index": ALL}, "data"),
+    State("image-uri", "value"),
+    prevent_initial_call=True,
+)
+def refine_bbox_with_sam3(
+    n_clicks,
+    fig,
+    img_idx,
+    current_color,
+    all_annotation_class_store,
+    image_uri,
+):
+    """
+    Refine ALL rectangle annotations with the selected class color using SAM3
+    """
+    logger.info("=== SAM3 Refinement Started ===")
+    logger.info(f"Selected class color: {current_color}")
+    
+    if not n_clicks or not fig.get("layout", {}).get("shapes"):
+        logger.warning("No clicks or no shapes in figure")
+        return no_update, no_update
+    
+    shapes = fig["layout"]["shapes"]
+    if not shapes:
+        logger.warning("Shapes list is empty")
+        notification = generate_notification(
+            "SAM3 Refinement",
+            "orange",
+            ANNOT_ICONS["sam3"],
+            "No bounding box found to refine!",
+        )
+        return no_update, notification
+    
+    # Filter rectangles with the current class color
+    rectangle_shapes = [
+        shape for shape in shapes 
+        if shape.get("type") == "rect" and shape.get("line", {}).get("color") == current_color
+    ]
+    
+    if not rectangle_shapes:
+        logger.warning("No rectangle shapes found with current class color")
+        notification = generate_notification(
+            "SAM3 Refinement",
+            "orange",
+            ANNOT_ICONS["sam3"],
+            f"No rectangles found with the selected class color!",
+        )
+        return no_update, notification
+    
+    logger.info(f"Found {len(rectangle_shapes)} rectangle(s) to refine")
+    
+    # Extract bounding boxes from all rectangles
+    boxes = []
+    for i, shape in enumerate(rectangle_shapes):
+        x0 = int(shape["x0"])
+        y0 = int(shape["y0"])
+        x1 = int(shape["x1"])
+        y1 = int(shape["y1"])
+        
+        # Ensure coordinates are in correct order
+        x_min = min(x0, x1)
+        x_max = max(x0, x1)
+        y_min = min(y0, y1)
+        y_max = max(y0, y1)
+        
+        boxes.append([x_min, y_min, x_max, y_max])
+        logger.info(f"Box {i}: [{x_min}, {y_min}, {x_max}, {y_max}]")
+    
+    # Load the current image
+    img_idx -= 1
+    logger.info(f"Loading image at index: {img_idx}")
+    
+    try:
+        image_data = tiled_datasets.get_data_sequence_by_trimmed_uri(image_uri)[img_idx]
+        logger.info(f"Image loaded - shape: {image_data.shape}, dtype: {image_data.dtype}")
+        
+        # Convert to PIL Image
+        if isinstance(image_data, np.ndarray):
+            # Normalize to 0-255 range
+            low = np.percentile(image_data.ravel(), 1)
+            high = np.percentile(image_data.ravel(), 99)
+            image_data_normalized = np.clip((image_data - low) / (high - low) * 255, 0, 255).astype(np.uint8)
+            
+            # Convert grayscale to RGB if needed
+            if len(image_data_normalized.shape) == 2:
+                image_data_normalized = np.stack([image_data_normalized] * 3, axis=-1)
+            
+            image_pil = Image.fromarray(image_data_normalized)
+        else:
+            image_pil = image_data
+            
+    except Exception as e:
+        logger.error(f"Error loading image: {str(e)}", exc_info=True)
+        notification = generate_notification(
+            "SAM3 Refinement",
+            "red",
+            ANNOT_ICONS["sam3"],
+            f"Error loading image: {str(e)}",
+        )
+        return no_update, notification
+    
+    # Run SAM3 segmentation with ALL boxes
+    try:
+        from utils.sam3_utils import sam3_segmenter, overlay_masks, prepare_masks_for_overlay
+        
+        logger.info(f"Calling SAM3 segmentation with {len(boxes)} boxes...")
+        results = sam3_segmenter.segment_with_boxes(
+            image_pil, 
+            boxes,  # Pass ALL boxes at once
+            threshold=0.5, 
+            mask_threshold=0.5
+        )
+        
+        if results is None or 'masks' not in results or len(results['masks']) == 0:
+            logger.error("SAM3 failed to generate masks")
+            notification = generate_notification(
+                "SAM3 Refinement",
+                "red",
+                ANNOT_ICONS["sam3"],
+                "SAM3 failed to generate masks! Try adjusting the bounding boxes.",
+            )
+            return no_update, notification
+        
+        # Convert hex color to RGB tuple
+        def hex_to_rgb(hex_color):
+            """Convert hex color like '#FFA200' to RGB tuple like (255, 162, 0)"""
+            hex_color = hex_color.lstrip('#')
+            return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+        
+        # Use the selected class color from UI
+        overlay_color = hex_to_rgb(current_color)
+        logger.info(f"Using overlay color: {overlay_color} (from hex: {current_color})")
+        
+        # Create overlay image with ALL masks
+        logger.info("Creating overlay image...")
+        masks_tensor = prepare_masks_for_overlay(results)
+        overlay_image = overlay_masks(image_pil, masks_tensor, colors=[overlay_color])
+        
+        # Convert overlay image to base64 for display in Plotly
+        import io
+        import base64
+        
+        buffered = io.BytesIO()
+        overlay_image.save(buffered, format="PNG")
+        img_str = base64.b64encode(buffered.getvalue()).decode()
+        
+        # Update figure with overlay
+        fig_patch = Patch()
+        
+        # Add the overlay as an image layer
+        fig_patch["layout"]["images"] = [{
+            "source": f"data:image/png;base64,{img_str}",
+            "xref": "x",
+            "yref": "y",
+            "x": 0,
+            "y": 0,
+            "sizex": image_data.shape[1],
+            "sizey": image_data.shape[0],
+            "sizing": "stretch",
+            "opacity": 0.5,
+            "layer": "above"
+        }]
+        
+        # Get class label for notification
+        class_label = "Unknown"
+        for annotation_class in all_annotation_class_store:
+            if annotation_class["color"] == current_color:
+                class_label = annotation_class["label"]
+                break
+        
+        notification = generate_notification(
+            "SAM3 Refinement",
+            "green",
+            ANNOT_ICONS["sam3"],
+            f"Successfully refined {len(boxes)} box(es) for '{class_label}'! Generated {len(results['masks'])} mask(s).",
+        )
+        
+        logger.info("=== SAM3 Refinement Completed Successfully ===")
+        return fig_patch, notification
+        
+    except Exception as e:
+        logger.error(f"SAM3 error: {str(e)}", exc_info=True)
+        notification = generate_notification(
+            "SAM3 Refinement",
+            "red",
+            ANNOT_ICONS["sam3"],
+            f"SAM3 error: {str(e)}",
+        )
+        return no_update, notification
