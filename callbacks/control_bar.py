@@ -9,6 +9,7 @@ from urllib.parse import urlparse
 import dash_mantine_components as dmc
 import numpy as np
 import plotly.express as px
+import torch
 from dash import (
     ALL,
     MATCH,
@@ -1120,11 +1121,14 @@ def toggle_sam3_button_based_on_mode(
 @callback(
     Output("image-viewer", "figure", allow_duplicate=True),
     Output("notifications-container", "children", allow_duplicate=True),
+    Output("sam3-masks-store", "data"),
+    Output("mask-source-selector", "data"),
     Input("refine-by-sam3", "n_clicks"),
     State("image-viewer", "figure"),
     State("image-selection-slider", "value"),
     State({"type": "annotation-class-store", "index": ALL}, "data"),
     State("image-uri", "value"),
+    State("sam3-masks-store", "data"),
     prevent_initial_call=True,
 )
 def refine_bbox_with_sam3(
@@ -1133,6 +1137,7 @@ def refine_bbox_with_sam3(
     img_idx,
     all_annotation_class_store,
     image_uri,
+    existing_sam3_masks,
 ):
     """
     Refine ALL rectangle annotations across ALL classes using SAM3.
@@ -1142,7 +1147,7 @@ def refine_bbox_with_sam3(
 
     if not n_clicks or not fig.get("layout", {}).get("shapes"):
         logger.warning("No clicks or no shapes in figure")
-        return no_update, no_update
+        return no_update, no_update, no_update, no_update
 
     shapes = fig["layout"]["shapes"]
     if not shapes:
@@ -1153,7 +1158,7 @@ def refine_bbox_with_sam3(
             ANNOT_ICONS["sam3"],
             "No bounding boxes found to refine!",
         )
-        return no_update, notification
+        return no_update, notification, no_update, no_update
 
     # Group rectangles by class color
     class_boxes = {}  # {color: {"boxes": [], "label": ""}}
@@ -1194,7 +1199,7 @@ def refine_bbox_with_sam3(
             ANNOT_ICONS["sam3"],
             "No rectangles found to refine!",
         )
-        return no_update, notification
+        return no_update, notification, no_update, no_update
 
     # Log what we found
     logger.info(f"Found {len(class_boxes)} class(es) with bounding boxes:")
@@ -1239,7 +1244,7 @@ def refine_bbox_with_sam3(
             ANNOT_ICONS["sam3"],
             f"Error loading image: {str(e)}",
         )
-        return no_update, notification
+        return no_update, notification, no_update, no_update
 
     # Run SAM3 segmentation for each class
     try:
@@ -1291,7 +1296,7 @@ def refine_bbox_with_sam3(
                 ANNOT_ICONS["sam3"],
                 "SAM3 failed to generate masks for any class!",
             )
-            return no_update, notification
+            return no_update, notification, no_update, no_update
 
         # Create overlay image with ALL masks from ALL classes
         logger.info(f"Creating overlay with {len(all_masks)} total masks...")
@@ -1323,17 +1328,114 @@ def refine_bbox_with_sam3(
             }
         ]
 
+        # === Convert SAM3 masks to numpy array (like manual annotations) ===
+        logger.info("Converting SAM3 masks to numpy array format...")
+
+        # Initialize SAM3 masks store structure
+        if existing_sam3_masks is None:
+            existing_sam3_masks = {}
+
+        # Get image dimensions
+        image_height, image_width = image_data.shape[:2]
+
+        # Create a mapping from color to class_id
+        color_to_class_id = {}
+        for idx, annotation_class in enumerate(all_annotation_class_store):
+            color_to_class_id[annotation_class["color"]] = idx
+
+        # Create numpy mask for this slice (same format as manual annotations)
+        slice_mask = np.full((image_height, image_width), fill_value=-1, dtype=np.int8)
+
+        # Fill mask with SAM3 results - FIXED VERSION
+        mask_idx = 0
+        for color, data in class_boxes.items():
+            class_id = color_to_class_id.get(color, -1)
+            if class_id == -1:
+                # Skip to next class's masks
+                continue
+
+            label = data["label"]
+
+            # Process ALL masks for this class (SAM3 may generate multiple masks per box)
+            # Count how many masks were generated for this class from the summary
+            num_masks_for_class = 0
+            for summary in class_results_summary:
+                if f"'{label}':" in summary:
+                    # Extract number from "'label': X mask(s)"
+                    num_masks_for_class = int(
+                        summary.split(":")[1].strip().split(" ")[0]
+                    )
+                    break
+
+            if num_masks_for_class == 0:
+                logger.warning(f"No masks found for class '{label}'")
+                continue
+
+            # Get all masks for this class
+            class_masks = all_masks[mask_idx : mask_idx + num_masks_for_class]
+            mask_idx += num_masks_for_class
+
+            logger.info(
+                f"Adding {len(class_masks)} mask(s) for class '{label}' (id={class_id})"
+            )
+
+            # Combine all masks for this class into the slice mask
+            for i, mask in enumerate(class_masks):
+                mask_np = mask.cpu().numpy() if isinstance(mask, torch.Tensor) else mask
+                # Handle both float and boolean masks
+                if mask_np.dtype == np.float32 or mask_np.dtype == np.float64:
+                    mask_binary = mask_np > 0.5
+                else:
+                    mask_binary = mask_np > 0
+
+                pixels_added = np.sum(mask_binary)
+                logger.info(
+                    f"  Mask {i+1}/{len(class_masks)}: adding {pixels_added} pixels"
+                )
+
+                # Set pixels where mask is True to the class_id
+                slice_mask[mask_binary] = class_id
+
+        # Log final statistics
+        unique_values, counts = np.unique(slice_mask, return_counts=True)
+        logger.info("Final mask statistics:")
+        for val, count in zip(unique_values, counts):
+            if val == -1:
+                logger.info(f"  Unlabeled: {count} pixels")
+            else:
+                class_label = all_annotation_class_store[val]["label"]
+                logger.info(f"  Class {val} ({class_label}): {count} pixels")
+
+        # Store SAM3 mask for this slice
+        slice_key = str(img_idx)
+        existing_sam3_masks[slice_key] = {
+            "mask": slice_mask.tolist(),  # Convert to list for JSON serialization
+            "image_shape": [image_height, image_width],
+            "num_classes": len(all_annotation_class_store),
+        }
+
+        logger.info(f"SAM3 mask stored for slice {slice_key}")
+        logger.info(
+            f"Mask shape: {slice_mask.shape}, unique values: {np.unique(slice_mask)}"
+        )
+
+        # Enable SAM3 option in dropdown
+        updated_dropdown_options = [
+            {"value": "annotations", "label": "Manual Annotations"},
+            {"value": "sam3", "label": "SAM3 Refined (Available)"},
+        ]
+
         # Create success notification
         summary = ", ".join(class_results_summary)
         notification = generate_notification(
             "SAM3 Refinement",
             "green",
             ANNOT_ICONS["sam3"],
-            f"Successfully refined {total_boxes} box(es) across {len(class_boxes)} class(es): {summary}",
+            f"Successfully refined {total_boxes} box(es) across {len(class_boxes)} class(es): {summary}. You can now select 'SAM3 Refined' for training.",
         )
 
         logger.info("=== SAM3 Multi-Class Refinement Completed Successfully ===")
-        return fig_patch, notification
+        return fig_patch, notification, existing_sam3_masks, updated_dropdown_options
 
     except Exception as e:
         logger.error(f"SAM3 error: {str(e)}", exc_info=True)
@@ -1343,4 +1445,24 @@ def refine_bbox_with_sam3(
             ANNOT_ICONS["sam3"],
             f"SAM3 error: {str(e)}",
         )
-        return no_update, notification
+        return no_update, notification, no_update, no_update
+
+
+@callback(
+    Output("sam3-masks-store", "data", allow_duplicate=True),
+    Output("mask-source-selector", "data", allow_duplicate=True),
+    Output("mask-source-selector", "value", allow_duplicate=True),
+    Input("image-uri", "value"),
+    Input("image-selection-slider", "value"),
+    prevent_initial_call=True,
+)
+def clear_sam3_on_image_change(image_uri, slider_value):
+    """
+    Clear SAM3 masks and reset dropdown when changing images or slices
+    """
+    updated_dropdown_options = [
+        {"value": "annotations", "label": "Manual Annotations"},
+        {"value": "sam3", "label": "SAM3 Refined", "disabled": True},
+    ]
+
+    return {}, updated_dropdown_options, "annotations"
