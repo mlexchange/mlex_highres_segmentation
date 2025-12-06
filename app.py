@@ -1,15 +1,14 @@
-import os
-import tempfile
-
 # Configure logging at the earliest possible point
 import logging
+import os
 import sys
+import tempfile
 
 # Set up basic configuration
 logging.basicConfig(
     level=logging.INFO,  # Use DEBUG to see all logs
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[logging.StreamHandler(sys.stdout)]
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[logging.StreamHandler(sys.stdout)],
 )
 
 # Create logger for this module
@@ -21,7 +20,7 @@ logging.getLogger("seg").setLevel(logging.INFO)
 
 # Force propagation for all existing seg loggers
 for name in logging.root.manager.loggerDict:
-    if name.startswith('seg.'):
+    if name.startswith("seg."):
         logging.getLogger(name).propagate = True
 
 import dash_auth
