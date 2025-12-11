@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import random
 import time
@@ -6,7 +7,9 @@ import uuid
 from urllib.parse import urlparse
 
 import dash_mantine_components as dmc
+import numpy as np
 import plotly.express as px
+import torch
 from dash import (
     ALL,
     MATCH,
@@ -24,6 +27,7 @@ from dash import (
 )
 from dash.exceptions import PreventUpdate
 from dash_iconify import DashIconify
+from PIL import Image
 
 from components.annotation_class import annotation_class_item
 from components.parameter_items import ParameterItems
@@ -31,6 +35,19 @@ from constants import ANNOT_ICONS, ANNOT_NOTIFICATION_MSGS, KEY_MODES, KEYBINDS
 from utils.annotations import Annotations
 from utils.data_utils import models, tiled_datasets, tiled_masks
 from utils.plot_utils import generate_notification, generate_notification_bg_icon_col
+from utils.sam3_utils import (  # Add these new helper functions:
+    convert_sam3_masks_to_numpy,
+    create_overlay_figure,
+    extract_rectangles_by_class,
+    load_and_prepare_image,
+    overlay_masks,
+    prepare_masks_for_overlay,
+    sam3_segmenter,
+    segment_all_classes_with_sam3,
+)
+
+# Configure logger
+logger = logging.getLogger("seg.control_bar")
 
 # TODO - temporary local file path and user for annotation saving and exporting
 EXPORT_FILE_PATH = os.getenv("EXPORT_FILE_PATH", "exported_annotation_data.json")
@@ -52,7 +69,7 @@ if not os.path.exists(EXPORT_FILE_PATH):
     prevent_initial_call=True,
 )
 def update_selected_image_uri(selected_links):
-    print(f"DEBUG - Selected image links: {selected_links}")  # Debug print
+    logger.info(f"Selected image links: {selected_links}")
 
     if selected_links:
         # Extract the 'self' key from the dictionary
@@ -1048,3 +1065,247 @@ def validate_dilation_array(dilation_array):
     except ValueError:
         # If there's any error in parsing or validation, return False
         return "Provide a list of ints for dilation"
+
+
+@callback(
+    Output("refine-by-sam3", "disabled"),
+    Input("closed-freeform", "n_clicks"),
+    Input("circle", "n_clicks"),
+    Input("rectangle", "n_clicks"),
+    Input("pan-and-zoom", "n_clicks"),
+    Input("keybind-event-listener", "event"),
+    State("generate-annotation-class-modal", "opened"),
+    State({"type": "edit-annotation-class-modal", "index": ALL}, "opened"),
+    State("control-accordion", "value"),
+    prevent_initial_call=True,
+)
+def toggle_sam3_button_based_on_mode(
+    closed,
+    circle,
+    rect,
+    pan_and_zoom,
+    keybind_event_listener,
+    generate_modal_opened,
+    edit_modal_opened,
+    control_accordion_state,
+):
+    """
+    Enable SAM3 refinement button only when rectangle mode is active.
+    Disable for freeform, circle, and pan-and-zoom modes.
+    """
+    # Determine which mode was triggered
+    trigger = ctx.triggered_id
+    pressed_key = (
+        keybind_event_listener.get("key", None) if keybind_event_listener else None
+    )
+
+    # Handle keyboard shortcuts
+    if trigger == "keybind-event-listener":
+        if generate_modal_opened or any(edit_modal_opened):
+            raise PreventUpdate
+        if (
+            control_accordion_state is not None
+            and "run-model" in control_accordion_state
+        ):
+            raise PreventUpdate
+
+        if pressed_key in KEY_MODES:
+            mode, trigger = KEY_MODES[pressed_key]
+        else:
+            raise PreventUpdate
+
+    # Enable button only for rectangle mode
+    if trigger == "rectangle" and rect > 0:
+        logger.info("SAM3 button ENABLED (rectangle mode)")
+        return False  # False = enabled
+    elif trigger == "closed-freeform" and closed > 0:
+        logger.info("SAM3 button DISABLED (freeform mode)")
+        return True  # True = disabled
+    elif trigger == "circle" and circle > 0:
+        logger.info("SAM3 button DISABLED (circle mode)")
+        return True
+    elif trigger == "pan-and-zoom" and pan_and_zoom > 0:
+        logger.info("SAM3 button DISABLED (pan-and-zoom mode)")
+        return True
+
+    # Default: keep current state
+    raise PreventUpdate
+
+
+@callback(
+    Output("image-viewer", "figure", allow_duplicate=True),
+    Output("notifications-container", "children", allow_duplicate=True),
+    Output("sam3-masks-store", "data"),
+    Output("mask-source-selector", "data"),
+    Input("refine-by-sam3", "n_clicks"),
+    State("image-viewer", "figure"),
+    State("image-selection-slider", "value"),
+    State({"type": "annotation-class-store", "index": ALL}, "data"),
+    State("image-uri", "value"),
+    State("sam3-masks-store", "data"),
+    prevent_initial_call=True,
+)
+def refine_bbox_with_sam3(
+    n_clicks,
+    fig,
+    img_idx,
+    all_annotation_class_store,
+    image_uri,
+    existing_sam3_masks,
+):
+    """
+    Refine ALL rectangle annotations across ALL classes using SAM3.
+    Groups bounding boxes by class and processes them together.
+    """
+    logger.info("=== SAM3 Multi-Class Refinement Started ===")
+
+    # Validation: Check for clicks and shapes
+    if not n_clicks or not fig.get("layout", {}).get("shapes"):
+        logger.warning("No clicks or no shapes in figure")
+        return no_update, no_update, no_update, no_update
+
+    shapes = fig["layout"]["shapes"]
+    if not shapes:
+        logger.warning("Shapes list is empty")
+        notification = generate_notification(
+            "SAM3 Refinement",
+            "orange",
+            ANNOT_ICONS["sam3"],
+            "No bounding boxes found to refine!",
+        )
+        return no_update, notification, no_update, no_update
+
+    # Step 1: Extract and group rectangles by class
+    class_boxes = extract_rectangles_by_class(shapes, all_annotation_class_store)
+
+    if not class_boxes:
+        logger.warning("No rectangle shapes found")
+        notification = generate_notification(
+            "SAM3 Refinement",
+            "orange",
+            ANNOT_ICONS["sam3"],
+            "No rectangles found to refine!",
+        )
+        return no_update, notification, no_update, no_update
+
+    # Log statistics
+    total_boxes = sum(len(data["boxes"]) for data in class_boxes.values())
+    logger.info(f"Found {len(class_boxes)} class(es) with {total_boxes} total box(es)")
+    for color, data in class_boxes.items():
+        logger.info(f"  {data['label']}: {len(data['boxes'])} box(es)")
+
+    # Step 2: Load and prepare the current image
+    img_idx -= 1
+    logger.info(f"Loading image at index: {img_idx}")
+
+    try:
+        image_data = tiled_datasets.get_data_sequence_by_trimmed_uri(image_uri)[img_idx]
+        logger.info(
+            f"Image loaded - shape: {image_data.shape}, dtype: {image_data.dtype}"
+        )
+        image_pil = load_and_prepare_image(image_data)
+    except Exception as e:
+        logger.error(f"Error loading image: {str(e)}", exc_info=True)
+        notification = generate_notification(
+            "SAM3 Refinement",
+            "red",
+            ANNOT_ICONS["sam3"],
+            f"Error loading image: {str(e)}",
+        )
+        return no_update, notification, no_update, no_update
+
+    # Step 3: Run SAM3 segmentation for all classes
+    try:
+        all_masks, all_colors, class_results_summary = segment_all_classes_with_sam3(
+            image_pil, class_boxes, sam3_segmenter, threshold=0.5, mask_threshold=0.5
+        )
+
+        if all_masks is None:
+            notification = generate_notification(
+                "SAM3 Refinement",
+                "red",
+                ANNOT_ICONS["sam3"],
+                "SAM3 failed to generate masks for any class!",
+            )
+            return no_update, notification, no_update, no_update
+
+        # Step 4: Create visual overlay
+        logger.info(f"Creating overlay with {len(all_masks)} total masks...")
+        masks_tensor = prepare_masks_for_overlay({"masks": all_masks})
+        overlay_image = overlay_masks(image_pil, masks_tensor, colors=all_colors)
+        fig_patch = create_overlay_figure(overlay_image, image_data.shape)
+
+        # Step 5: Convert SAM3 masks to numpy array format (for training)
+        logger.info("Converting SAM3 masks to numpy array format...")
+
+        if existing_sam3_masks is None:
+            existing_sam3_masks = {}
+
+        slice_mask = convert_sam3_masks_to_numpy(
+            all_masks,
+            all_colors,
+            class_results_summary,  # Changed from class_boxes
+            all_annotation_class_store,
+            (image_data.shape[0], image_data.shape[1]),
+        )
+
+        # Step 6: Store SAM3 mask for this slice
+        slice_key = str(img_idx)
+        existing_sam3_masks[slice_key] = {
+            "mask": slice_mask.tolist(),
+            "image_shape": [image_data.shape[0], image_data.shape[1]],
+            "num_classes": len(all_annotation_class_store),
+        }
+
+        logger.info(f"SAM3 mask stored for slice {slice_key}")
+        logger.info(
+            f"Mask shape: {slice_mask.shape}, unique values: {np.unique(slice_mask)}"
+        )
+
+        # Step 7: Enable SAM3 option in dropdown
+        updated_dropdown_options = [
+            {"value": "annotations", "label": "Manual Annotations"},
+            {"value": "sam3", "label": "SAM3 Refined (Available)"},
+        ]
+
+        # Step 8: Create success notification
+        summary = ", ".join(class_results_summary)
+        notification = generate_notification(
+            "SAM3 Refinement",
+            "green",
+            ANNOT_ICONS["sam3"],
+            f"Successfully refined {total_boxes} box(es) across {len(class_boxes)} class(es): {summary}. You can now select 'SAM3 Refined' for training.",
+        )
+
+        logger.info("=== SAM3 Multi-Class Refinement Completed Successfully ===")
+        return fig_patch, notification, existing_sam3_masks, updated_dropdown_options
+
+    except Exception as e:
+        logger.error(f"SAM3 error: {str(e)}", exc_info=True)
+        notification = generate_notification(
+            "SAM3 Refinement",
+            "red",
+            ANNOT_ICONS["sam3"],
+            f"SAM3 error: {str(e)}",
+        )
+        return no_update, notification, no_update, no_update
+
+
+@callback(
+    Output("sam3-masks-store", "data", allow_duplicate=True),
+    Output("mask-source-selector", "data", allow_duplicate=True),
+    Output("mask-source-selector", "value", allow_duplicate=True),
+    Input("image-uri", "value"),
+    Input("image-selection-slider", "value"),
+    prevent_initial_call=True,
+)
+def clear_sam3_on_image_change(image_uri, slider_value):
+    """
+    Clear SAM3 masks and reset dropdown when changing images or slices
+    """
+    updated_dropdown_options = [
+        {"value": "annotations", "label": "Manual Annotations"},
+        {"value": "sam3", "label": "SAM3 Refined", "disabled": True},
+    ]
+
+    return {}, updated_dropdown_options, "annotations"

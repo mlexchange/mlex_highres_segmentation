@@ -32,6 +32,7 @@ ANNOT_ICONS = {
     "submit": "formkit:submit",
     "parameters": "fluent-mdl2:machine-learning",
     "results": "entypo:download",
+    "sam3": "mdi:auto-fix",  # ADD THIS LINE
 }
 
 ANNOT_NOTIFICATION_MSGS = {
