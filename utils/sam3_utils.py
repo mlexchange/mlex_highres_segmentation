@@ -187,19 +187,20 @@ def prepare_masks_for_overlay(results):
 
 # ===== HELPER FUNCTIONS FOR CALLBACK REFACTORING =====
 
+
 def extract_rectangles_by_class(shapes, all_annotation_class_store):
     """
     Extract and group rectangle annotations by class color.
-    
+
     Args:
         shapes: List of shape annotations from figure
         all_annotation_class_store: List of annotation class metadata
-        
+
     Returns:
         dict: {color: {"boxes": [[x0,y0,x1,y1], ...], "label": str}}
     """
     class_boxes = {}
-    
+
     for shape in shapes:
         if shape.get("type") == "rect":
             color = shape.get("line", {}).get("color")
@@ -208,15 +209,15 @@ def extract_rectangles_by_class(shapes, all_annotation_class_store):
                 y0 = int(shape["y0"])
                 x1 = int(shape["x1"])
                 y1 = int(shape["y1"])
-                
+
                 # Ensure coordinates are in correct order
                 x_min = min(x0, x1)
                 x_max = max(x0, x1)
                 y_min = min(y0, y1)
                 y_max = max(y0, y1)
-                
+
                 box = [x_min, y_min, x_max, y_max]
-                
+
                 if color not in class_boxes:
                     # Find label for this color
                     label = "Unknown"
@@ -225,19 +226,19 @@ def extract_rectangles_by_class(shapes, all_annotation_class_store):
                             label = annotation_class["label"]
                             break
                     class_boxes[color] = {"boxes": [], "label": label}
-                
+
                 class_boxes[color]["boxes"].append(box)
-    
+
     return class_boxes
 
 
 def load_and_prepare_image(image_data):
     """
     Load image data and convert to PIL Image format.
-    
+
     Args:
         image_data: numpy array or other image format
-        
+
     Returns:
         PIL.Image: Converted image
     """
@@ -248,11 +249,11 @@ def load_and_prepare_image(image_data):
         image_data_normalized = np.clip(
             (image_data - low) / (high - low) * 255, 0, 255
         ).astype(np.uint8)
-        
+
         # Convert grayscale to RGB if needed
         if len(image_data_normalized.shape) == 2:
             image_data_normalized = np.stack([image_data_normalized] * 3, axis=-1)
-        
+
         return Image.fromarray(image_data_normalized)
     else:
         return image_data
@@ -261,21 +262,21 @@ def load_and_prepare_image(image_data):
 def create_overlay_figure(overlay_image, image_shape):
     """
     Create Plotly figure patch with overlay image.
-    
+
     Args:
         overlay_image: PIL Image with overlaid masks
         image_shape: Tuple (height, width) of original image
-        
+
     Returns:
         dict: Figure patch with overlay configuration
     """
     from dash import Patch
-    
+
     # Convert overlay image to base64 for display
     buffered = BytesIO()
     overlay_image.save(buffered, format="PNG")
     img_str = base64.b64encode(buffered.getvalue()).decode()
-    
+
     fig_patch = Patch()
     fig_patch["layout"]["images"] = [
         {
@@ -291,38 +292,42 @@ def create_overlay_figure(overlay_image, image_shape):
             "layer": "above",
         }
     ]
-    
+
     return fig_patch
 
 
 def convert_sam3_masks_to_numpy(
-    all_masks, all_colors, class_results_summary, all_annotation_class_store, image_shape
+    all_masks,
+    all_colors,
+    class_results_summary,
+    all_annotation_class_store,
+    image_shape,
 ):
     """
     Convert SAM3 masks to numpy array format matching manual annotations.
-    
+
     Args:
         all_masks: List of all SAM3 masks
         all_colors: List of RGB colors for each mask
         class_results_summary: List of strings like "'label': N mask(s)"
         all_annotation_class_store: List of annotation class metadata
         image_shape: Tuple (height, width)
-        
+
     Returns:
         np.ndarray: Mask array with shape (height, width) and class IDs
     """
     image_height, image_width = image_shape
-    
+
     # Create a mapping from color to class_id and from label to class_id
     color_to_class_id = {}
     label_to_class_id = {}
     for idx, annotation_class in enumerate(all_annotation_class_store):
         color_to_class_id[annotation_class["color"]] = idx
         label_to_class_id[annotation_class["label"]] = idx
-    
+
     # Create numpy mask for this slice
     slice_mask = np.full((image_height, image_width), fill_value=-1, dtype=np.int8)
-    
+
     # Parse class_results_summary to get actual mask counts per class
     # Format: "'Class1': 3 mask(s)", "'Class2': 5 mask(s)"
     mask_idx = 0
@@ -333,21 +338,21 @@ def convert_sam3_masks_to_numpy(
         label = parts[0].strip().strip("'\"")
         num_masks_str = parts[1].strip().split()[0]
         num_masks_for_class = int(num_masks_str)
-        
+
         class_id = label_to_class_id.get(label, -1)
         if class_id == -1:
             logger.warning(f"Could not find class_id for label '{label}'")
             mask_idx += num_masks_for_class
             continue
-        
+
         logger.info(
             f"Adding {num_masks_for_class} mask(s) for class '{label}' (id={class_id})"
         )
-        
+
         # Get all masks for this class
         class_masks = all_masks[mask_idx : mask_idx + num_masks_for_class]
         mask_idx += num_masks_for_class
-        
+
         # Combine all masks for this class into the slice mask
         for i, mask in enumerate(class_masks):
             mask_np = mask.cpu().numpy() if isinstance(mask, torch.Tensor) else mask
@@ -356,15 +361,15 @@ def convert_sam3_masks_to_numpy(
                 mask_binary = mask_np > 0.5
             else:
                 mask_binary = mask_np > 0
-            
+
             pixels_added = np.sum(mask_binary)
             logger.info(
                 f"  Mask {i+1}/{num_masks_for_class}: adding {pixels_added} pixels"
             )
-            
+
             # Set pixels where mask is True to the class_id
             slice_mask[mask_binary] = class_id
-    
+
     # Log final statistics
     unique_values, counts = np.unique(slice_mask, return_counts=True)
     logger.info("Final mask statistics:")
@@ -374,17 +379,17 @@ def convert_sam3_masks_to_numpy(
         else:
             class_label = all_annotation_class_store[val]["label"]
             logger.info(f"  Class {val} ({class_label}): {count} pixels")
-    
+
     return slice_mask
 
 
 def hex_to_rgb(hex_color):
     """
     Convert hex color to RGB tuple.
-    
+
     Args:
         hex_color: Hex color string (e.g., "#FF0000" or "FF0000")
-        
+
     Returns:
         tuple: RGB values (r, g, b) where each is 0-255
     """
@@ -397,14 +402,14 @@ def segment_all_classes_with_sam3(
 ):
     """
     Run SAM3 segmentation for all classes and collect results.
-    
+
     Args:
         image_pil: PIL Image to segment
         class_boxes: Dict of {color: {"boxes": [[x0,y0,x1,y1], ...], "label": str}}
         sam3_client: SAM3InferenceClient instance
         threshold: Confidence threshold for SAM3
         mask_threshold: Mask binarization threshold for SAM3
-        
+
     Returns:
         tuple: (all_masks, all_colors, class_results_summary)
             - all_masks: List of all mask tensors
@@ -413,7 +418,7 @@ def segment_all_classes_with_sam3(
         Returns (None, None, None) if no masks were generated
     """
     logger.info(f"Running SAM3 segmentation for {len(class_boxes)} class(es)...")
-    
+
     all_masks = []
     all_colors = []
     class_results_summary = []
@@ -450,7 +455,7 @@ def segment_all_classes_with_sam3(
     if not all_masks:
         logger.error("No masks generated for any class")
         return None, None, None
-    
+
     logger.info(f"✓ Total masks generated: {len(all_masks)}")
     return all_masks, all_colors, class_results_summary
 

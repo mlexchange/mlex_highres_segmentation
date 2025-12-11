@@ -35,15 +35,14 @@ from constants import ANNOT_ICONS, ANNOT_NOTIFICATION_MSGS, KEY_MODES, KEYBINDS
 from utils.annotations import Annotations
 from utils.data_utils import models, tiled_datasets, tiled_masks
 from utils.plot_utils import generate_notification, generate_notification_bg_icon_col
-from utils.sam3_utils import (
-    overlay_masks, 
-    prepare_masks_for_overlay, 
-    sam3_segmenter,
-    # Add these new helper functions:
+from utils.sam3_utils import (  # Add these new helper functions:
+    convert_sam3_masks_to_numpy,
+    create_overlay_figure,
     extract_rectangles_by_class,
     load_and_prepare_image,
-    create_overlay_figure,
-    convert_sam3_masks_to_numpy,
+    overlay_masks,
+    prepare_masks_for_overlay,
+    sam3_segmenter,
     segment_all_classes_with_sam3,
 )
 
@@ -1196,7 +1195,9 @@ def refine_bbox_with_sam3(
 
     try:
         image_data = tiled_datasets.get_data_sequence_by_trimmed_uri(image_uri)[img_idx]
-        logger.info(f"Image loaded - shape: {image_data.shape}, dtype: {image_data.dtype}")
+        logger.info(
+            f"Image loaded - shape: {image_data.shape}, dtype: {image_data.dtype}"
+        )
         image_pil = load_and_prepare_image(image_data)
     except Exception as e:
         logger.error(f"Error loading image: {str(e)}", exc_info=True)
@@ -1211,11 +1212,7 @@ def refine_bbox_with_sam3(
     # Step 3: Run SAM3 segmentation for all classes
     try:
         all_masks, all_colors, class_results_summary = segment_all_classes_with_sam3(
-            image_pil, 
-            class_boxes, 
-            sam3_segmenter,
-            threshold=0.5,
-            mask_threshold=0.5
+            image_pil, class_boxes, sam3_segmenter, threshold=0.5, mask_threshold=0.5
         )
 
         if all_masks is None:
@@ -1256,7 +1253,9 @@ def refine_bbox_with_sam3(
         }
 
         logger.info(f"SAM3 mask stored for slice {slice_key}")
-        logger.info(f"Mask shape: {slice_mask.shape}, unique values: {np.unique(slice_mask)}")
+        logger.info(
+            f"Mask shape: {slice_mask.shape}, unique values: {np.unique(slice_mask)}"
+        )
 
         # Step 7: Enable SAM3 option in dropdown
         updated_dropdown_options = [
