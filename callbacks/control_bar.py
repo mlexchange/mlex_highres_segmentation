@@ -35,7 +35,17 @@ from constants import ANNOT_ICONS, ANNOT_NOTIFICATION_MSGS, KEY_MODES, KEYBINDS
 from utils.annotations import Annotations
 from utils.data_utils import models, tiled_datasets, tiled_masks
 from utils.plot_utils import generate_notification, generate_notification_bg_icon_col
-from utils.sam3_utils import overlay_masks, prepare_masks_for_overlay, sam3_segmenter
+from utils.sam3_utils import (
+    overlay_masks, 
+    prepare_masks_for_overlay, 
+    sam3_segmenter,
+    # Add these new helper functions:
+    extract_rectangles_by_class,
+    load_and_prepare_image,
+    create_overlay_figure,
+    convert_sam3_masks_to_numpy,
+    segment_all_classes_with_sam3,
+)
 
 # Configure logger
 logger = logging.getLogger("seg.control_bar")
@@ -1145,6 +1155,7 @@ def refine_bbox_with_sam3(
     """
     logger.info("=== SAM3 Multi-Class Refinement Started ===")
 
+    # Validation: Check for clicks and shapes
     if not n_clicks or not fig.get("layout", {}).get("shapes"):
         logger.warning("No clicks or no shapes in figure")
         return no_update, no_update, no_update, no_update
@@ -1160,36 +1171,8 @@ def refine_bbox_with_sam3(
         )
         return no_update, notification, no_update, no_update
 
-    # Group rectangles by class color
-    class_boxes = {}  # {color: {"boxes": [], "label": ""}}
-
-    for shape in shapes:
-        if shape.get("type") == "rect":
-            color = shape.get("line", {}).get("color")
-            if color:
-                x0 = int(shape["x0"])
-                y0 = int(shape["y0"])
-                x1 = int(shape["x1"])
-                y1 = int(shape["y1"])
-
-                # Ensure coordinates are in correct order
-                x_min = min(x0, x1)
-                x_max = max(x0, x1)
-                y_min = min(y0, y1)
-                y_max = max(y0, y1)
-
-                box = [x_min, y_min, x_max, y_max]
-
-                if color not in class_boxes:
-                    # Find label for this color
-                    label = "Unknown"
-                    for annotation_class in all_annotation_class_store:
-                        if annotation_class["color"] == color:
-                            label = annotation_class["label"]
-                            break
-                    class_boxes[color] = {"boxes": [], "label": label}
-
-                class_boxes[color]["boxes"].append(box)
+    # Step 1: Extract and group rectangles by class
+    class_boxes = extract_rectangles_by_class(shapes, all_annotation_class_store)
 
     if not class_boxes:
         logger.warning("No rectangle shapes found")
@@ -1201,41 +1184,20 @@ def refine_bbox_with_sam3(
         )
         return no_update, notification, no_update, no_update
 
-    # Log what we found
-    logger.info(f"Found {len(class_boxes)} class(es) with bounding boxes:")
-    total_boxes = 0
+    # Log statistics
+    total_boxes = sum(len(data["boxes"]) for data in class_boxes.values())
+    logger.info(f"Found {len(class_boxes)} class(es) with {total_boxes} total box(es)")
     for color, data in class_boxes.items():
-        num_boxes = len(data["boxes"])
-        total_boxes += num_boxes
-        logger.info(f"  {data['label']}: {num_boxes} box(es)")
+        logger.info(f"  {data['label']}: {len(data['boxes'])} box(es)")
 
-    # Load the current image
+    # Step 2: Load and prepare the current image
     img_idx -= 1
     logger.info(f"Loading image at index: {img_idx}")
 
     try:
         image_data = tiled_datasets.get_data_sequence_by_trimmed_uri(image_uri)[img_idx]
-        logger.info(
-            f"Image loaded - shape: {image_data.shape}, dtype: {image_data.dtype}"
-        )
-
-        # Convert to PIL Image
-        if isinstance(image_data, np.ndarray):
-            # Normalize to 0-255 range
-            low = np.percentile(image_data.ravel(), 1)
-            high = np.percentile(image_data.ravel(), 99)
-            image_data_normalized = np.clip(
-                (image_data - low) / (high - low) * 255, 0, 255
-            ).astype(np.uint8)
-
-            # Convert grayscale to RGB if needed
-            if len(image_data_normalized.shape) == 2:
-                image_data_normalized = np.stack([image_data_normalized] * 3, axis=-1)
-
-            image_pil = Image.fromarray(image_data_normalized)
-        else:
-            image_pil = image_data
-
+        logger.info(f"Image loaded - shape: {image_data.shape}, dtype: {image_data.dtype}")
+        image_pil = load_and_prepare_image(image_data)
     except Exception as e:
         logger.error(f"Error loading image: {str(e)}", exc_info=True)
         notification = generate_notification(
@@ -1246,50 +1208,17 @@ def refine_bbox_with_sam3(
         )
         return no_update, notification, no_update, no_update
 
-    # Run SAM3 segmentation for each class
+    # Step 3: Run SAM3 segmentation for all classes
     try:
-        logger.info(f"Running SAM3 segmentation for {len(class_boxes)} class(es)...")
+        all_masks, all_colors, class_results_summary = segment_all_classes_with_sam3(
+            image_pil, 
+            class_boxes, 
+            sam3_segmenter,
+            threshold=0.5,
+            mask_threshold=0.5
+        )
 
-        all_masks = []
-        all_colors = []
-        class_results_summary = []
-
-        for color, data in class_boxes.items():
-            boxes = data["boxes"]
-            label = data["label"]
-
-            logger.info(f"Processing class '{label}' with {len(boxes)} box(es)...")
-
-            # Run SAM3 for this class
-            results = sam3_segmenter.segment_with_boxes(
-                image_pil,
-                boxes,
-                threshold=0.5,
-                mask_threshold=0.5,
-            )
-
-            if results is None or "masks" not in results or len(results["masks"]) == 0:
-                logger.warning(f"SAM3 failed for class '{label}'")
-                continue
-
-            num_masks = len(results["masks"])
-            logger.info(f"✓ Class '{label}': generated {num_masks} mask(s)")
-
-            # Convert hex color to RGB tuple
-            def hex_to_rgb(hex_color):
-                hex_color = hex_color.lstrip("#")
-                return tuple(int(hex_color[i : i + 2], 16) for i in (0, 2, 4))
-
-            rgb_color = hex_to_rgb(color)
-
-            # Add masks and colors for this class
-            all_masks.extend(results["masks"])
-            all_colors.extend([rgb_color] * num_masks)
-
-            class_results_summary.append(f"'{label}': {num_masks} mask(s)")
-
-        if not all_masks:
-            logger.error("No masks generated for any class")
+        if all_masks is None:
             notification = generate_notification(
                 "SAM3 Refinement",
                 "red",
@@ -1298,134 +1227,44 @@ def refine_bbox_with_sam3(
             )
             return no_update, notification, no_update, no_update
 
-        # Create overlay image with ALL masks from ALL classes
+        # Step 4: Create visual overlay
         logger.info(f"Creating overlay with {len(all_masks)} total masks...")
         masks_tensor = prepare_masks_for_overlay({"masks": all_masks})
         overlay_image = overlay_masks(image_pil, masks_tensor, colors=all_colors)
+        fig_patch = create_overlay_figure(overlay_image, image_data.shape)
 
-        # Convert overlay image to base64 for display
-        import base64
-        import io
-
-        buffered = io.BytesIO()
-        overlay_image.save(buffered, format="PNG")
-        img_str = base64.b64encode(buffered.getvalue()).decode()
-
-        # Update figure with overlay
-        fig_patch = Patch()
-        fig_patch["layout"]["images"] = [
-            {
-                "source": f"data:image/png;base64,{img_str}",
-                "xref": "x",
-                "yref": "y",
-                "x": 0,
-                "y": 0,
-                "sizex": image_data.shape[1],
-                "sizey": image_data.shape[0],
-                "sizing": "stretch",
-                "opacity": 0.5,
-                "layer": "above",
-            }
-        ]
-
-        # === Convert SAM3 masks to numpy array (like manual annotations) ===
+        # Step 5: Convert SAM3 masks to numpy array format (for training)
         logger.info("Converting SAM3 masks to numpy array format...")
 
-        # Initialize SAM3 masks store structure
         if existing_sam3_masks is None:
             existing_sam3_masks = {}
 
-        # Get image dimensions
-        image_height, image_width = image_data.shape[:2]
+        slice_mask = convert_sam3_masks_to_numpy(
+            all_masks,
+            all_colors,
+            class_results_summary,  # Changed from class_boxes
+            all_annotation_class_store,
+            (image_data.shape[0], image_data.shape[1]),
+        )
 
-        # Create a mapping from color to class_id
-        color_to_class_id = {}
-        for idx, annotation_class in enumerate(all_annotation_class_store):
-            color_to_class_id[annotation_class["color"]] = idx
-
-        # Create numpy mask for this slice (same format as manual annotations)
-        slice_mask = np.full((image_height, image_width), fill_value=-1, dtype=np.int8)
-
-        # Fill mask with SAM3 results - FIXED VERSION
-        mask_idx = 0
-        for color, data in class_boxes.items():
-            class_id = color_to_class_id.get(color, -1)
-            if class_id == -1:
-                # Skip to next class's masks
-                continue
-
-            label = data["label"]
-
-            # Process ALL masks for this class (SAM3 may generate multiple masks per box)
-            # Count how many masks were generated for this class from the summary
-            num_masks_for_class = 0
-            for summary in class_results_summary:
-                if f"'{label}':" in summary:
-                    # Extract number from "'label': X mask(s)"
-                    num_masks_for_class = int(
-                        summary.split(":")[1].strip().split(" ")[0]
-                    )
-                    break
-
-            if num_masks_for_class == 0:
-                logger.warning(f"No masks found for class '{label}'")
-                continue
-
-            # Get all masks for this class
-            class_masks = all_masks[mask_idx : mask_idx + num_masks_for_class]
-            mask_idx += num_masks_for_class
-
-            logger.info(
-                f"Adding {len(class_masks)} mask(s) for class '{label}' (id={class_id})"
-            )
-
-            # Combine all masks for this class into the slice mask
-            for i, mask in enumerate(class_masks):
-                mask_np = mask.cpu().numpy() if isinstance(mask, torch.Tensor) else mask
-                # Handle both float and boolean masks
-                if mask_np.dtype == np.float32 or mask_np.dtype == np.float64:
-                    mask_binary = mask_np > 0.5
-                else:
-                    mask_binary = mask_np > 0
-
-                pixels_added = np.sum(mask_binary)
-                logger.info(
-                    f"  Mask {i+1}/{len(class_masks)}: adding {pixels_added} pixels"
-                )
-
-                # Set pixels where mask is True to the class_id
-                slice_mask[mask_binary] = class_id
-
-        # Log final statistics
-        unique_values, counts = np.unique(slice_mask, return_counts=True)
-        logger.info("Final mask statistics:")
-        for val, count in zip(unique_values, counts):
-            if val == -1:
-                logger.info(f"  Unlabeled: {count} pixels")
-            else:
-                class_label = all_annotation_class_store[val]["label"]
-                logger.info(f"  Class {val} ({class_label}): {count} pixels")
-
-        # Store SAM3 mask for this slice
+        # Step 6: Store SAM3 mask for this slice
         slice_key = str(img_idx)
         existing_sam3_masks[slice_key] = {
-            "mask": slice_mask.tolist(),  # Convert to list for JSON serialization
-            "image_shape": [image_height, image_width],
+            "mask": slice_mask.tolist(),
+            "image_shape": [image_data.shape[0], image_data.shape[1]],
             "num_classes": len(all_annotation_class_store),
         }
 
         logger.info(f"SAM3 mask stored for slice {slice_key}")
-        logger.info(
-            f"Mask shape: {slice_mask.shape}, unique values: {np.unique(slice_mask)}"
-        )
+        logger.info(f"Mask shape: {slice_mask.shape}, unique values: {np.unique(slice_mask)}")
 
-        # Enable SAM3 option in dropdown
+        # Step 7: Enable SAM3 option in dropdown
         updated_dropdown_options = [
             {"value": "annotations", "label": "Manual Annotations"},
             {"value": "sam3", "label": "SAM3 Refined (Available)"},
         ]
 
-        # Create success notification
+        # Step 8: Create success notification
         summary = ", ".join(class_results_summary)
         notification = generate_notification(
             "SAM3 Refinement",
