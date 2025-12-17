@@ -70,6 +70,7 @@ def hide_show_segmentation_overlay(toggle_seg_result, opacity):
     State("current-class-selection", "data"),
     State("seg-result-opacity-slider", "value"),
     State("image-viewer", "figure"),
+    State("mask-source-selector", "value"),
     prevent_initial_call=True,
 )
 def render_image(
@@ -85,6 +86,7 @@ def render_image(
     current_color,
     opacity,
     fig,
+    mask_source,
 ):
     result = None
     if image_idx:
@@ -153,7 +155,22 @@ def render_image(
         all_annotations = []
         for a_class in all_annotation_class_store:
             if str(image_idx) in a_class["annotations"] and a_class["is_visible"]:
-                all_annotations += a_class["annotations"][str(image_idx)]
+                slice_shapes = a_class["annotations"][str(image_idx)]
+                
+                # Filter based on mask_source selection
+                if mask_source == "sam3":
+                    # Show only SAM3 polygons
+                    filtered_shapes = [s for s in slice_shapes if s.get("source") == "sam3"]
+                else:
+                    # Show only original annotations (not SAM3)
+                    filtered_shapes = [s for s in slice_shapes if s.get("source") != "sam3"]
+                
+                # ===== ADDED: Remove 'source' property before adding to figure =====
+                for shape in filtered_shapes:
+                    shape_copy = shape.copy()
+                    shape_copy.pop("source", None)  # Remove the source tag
+                    all_annotations.append(shape_copy)
+                # ===== END OF ADDED CODE =====
 
         fig["layout"]["shapes"] = all_annotations
         view = annotation_store["view"]
@@ -199,7 +216,6 @@ def render_image(
         curr_image_metadata,
         "hidden",
     )
-
 
 @callback(
     Output("image-selection-slider", "value", allow_duplicate=True),

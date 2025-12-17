@@ -310,7 +310,21 @@ class TiledMaskHandler:
                 return None, None, "Image shape could not be determined."
             image_shape = (data_shape[1], data_shape[2])
 
-        annotations = Annotations(all_annotations, image_shape)
+        # ===== ADD THIS BLOCK - Filter out SAM3 polygons =====
+        filtered_annotations = []
+        for annotation_class in all_annotations:
+            filtered_class = annotation_class.copy()
+            filtered_class["annotations"] = {}
+            
+            for slice_idx, slice_annotations in annotation_class["annotations"].items():
+                manual_only = [s for s in slice_annotations if s.get("source") != "sam3"]
+                if manual_only:
+                    filtered_class["annotations"][slice_idx] = manual_only
+            
+            filtered_annotations.append(filtered_class)
+        
+        annotations = Annotations(filtered_annotations, image_shape)
+        # ===== END OF ADDED BLOCK =====
         # TODO: Check sparse status, it may be worthwhile to store the mask as a sparse array
         # if our machine learning models can handle sparse arrays
         annotations.create_annotation_mask(sparse=False)

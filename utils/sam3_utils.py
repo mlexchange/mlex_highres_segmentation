@@ -7,6 +7,7 @@ import numpy as np
 import requests
 import torch
 from PIL import Image
+import cv2
 
 logger = logging.getLogger("seg.sam3_utils")
 
@@ -459,6 +460,126 @@ def segment_all_classes_with_sam3(
     logger.info(f"✓ Total masks generated: {len(all_masks)}")
     return all_masks, all_colors, class_results_summary
 
+
+def masks_to_plotly_polygons(masks, class_color, min_area=100, epsilon_factor=0.002):
+    """
+    Convert SAM3 masks to Plotly polygon shapes.
+    
+    Args:
+        masks: torch.Tensor [num_masks, H, W] or list of masks
+        class_color: Hex color string (e.g., "#FF0000")
+        min_area: Minimum contour area in pixels
+        epsilon_factor: Polygon simplification (0.001-0.01, lower=more detail)
+    
+    Returns:
+        List of Plotly shape dicts for fig["layout"]["shapes"]
+    """
+    polygons = []
+    
+    # Convert to numpy
+    if isinstance(masks, torch.Tensor):
+        masks_np = masks.cpu().numpy().astype(np.uint8)
+    else:
+        masks_np = np.array(masks).astype(np.uint8)
+    
+    if len(masks_np.shape) == 2:
+        masks_np = masks_np[np.newaxis, ...]
+    
+    for mask in masks_np:
+        # Find contours
+        contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        
+        if not contours:
+            continue
+        
+        # Get largest contour
+        contour = max(contours, key=cv2.contourArea)
+        
+        if cv2.contourArea(contour) < min_area:
+            continue
+        
+        # Simplify polygon
+        perimeter = cv2.arcLength(contour, True)
+        epsilon = epsilon_factor * perimeter
+        approx = cv2.approxPolyDP(contour, epsilon, True)
+        
+        points = approx.squeeze().tolist()
+        if not isinstance(points[0], list):
+            points = [points]
+        
+        if len(points) < 3:
+            continue
+        
+        # Build SVG path: M x0,y0 L x1,y1 ... Z
+        path_parts = [f"M {points[0][0]},{points[0][1]}"]
+        for x, y in points[1:]:
+            path_parts.append(f"L {x},{y}")
+        path_parts.append("Z")
+        
+        polygons.append({
+            "type": "path",
+            "path": " ".join(path_parts),
+            "fillcolor": class_color,
+            "fillrule": "evenodd",
+            "line": {"color": class_color},
+            "editable": True,
+        })
+    
+    return polygons
+
+
+def segment_all_classes_to_polygons(
+    image_pil, class_boxes, sam3_client, threshold=0.5, mask_threshold=0.5
+):
+    """
+    Run SAM3 and return BOTH polygons and masks.
+    
+    Returns:
+        Tuple of (all_polygons, all_masks, all_colors, class_results_summary) or (None, None, None, None)
+        - all_polygons: List of Plotly shape dicts (for UI display)
+        - all_masks: List of torch tensors (for mask conversion)
+        - all_colors: List of hex colors (for mask conversion)
+        - class_results_summary: List of result strings
+    """
+    logger.info(f"Generating polygons for {len(class_boxes)} class(es)...")
+    
+    all_polygons = []
+    all_masks = []
+    all_colors = []
+    class_results_summary = []
+    
+    for color, data in class_boxes.items():
+        boxes = data["boxes"]
+        label = data["label"]
+        
+        logger.info(f"Processing '{label}' ({len(boxes)} box(es))...")
+        
+        results = sam3_client.segment_with_boxes(
+            image_pil, boxes, threshold=threshold, mask_threshold=mask_threshold
+        )
+        
+        if results is None or "masks" not in results or len(results["masks"]) == 0:
+            logger.warning(f"SAM3 failed for '{label}'")
+            continue
+        
+        # Convert to polygons for UI
+        class_polygons = masks_to_plotly_polygons(results["masks"], class_color=color)
+        
+        # Keep original masks for Tiled export
+        num_masks = len(results["masks"])
+        
+        logger.info(f"✓ '{label}': {len(class_polygons)} polygon(s), {num_masks} mask(s)")
+        
+        all_polygons.extend(class_polygons)
+        all_masks.extend(results["masks"])
+        all_colors.extend([color] * num_masks)
+        class_results_summary.append(f"'{label}': {len(class_polygons)} polygon(s)")
+    
+    if not all_polygons:
+        return None, None, None, None
+    
+    logger.info(f"✓ Total: {len(all_polygons)} polygon(s), {len(all_masks)} mask(s)")
+    return all_polygons, all_masks, all_colors, class_results_summary
 
 # Global client instance
 sam3_segmenter = SAM3InferenceClient()
