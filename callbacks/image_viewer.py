@@ -156,15 +156,19 @@ def render_image(
         for a_class in all_annotation_class_store:
             if str(image_idx) in a_class["annotations"] and a_class["is_visible"]:
                 slice_shapes = a_class["annotations"][str(image_idx)]
-                
+
                 # Filter based on mask_source selection
                 if mask_source == "sam3":
                     # Show only SAM3 polygons
-                    filtered_shapes = [s for s in slice_shapes if s.get("source") == "sam3"]
+                    filtered_shapes = [
+                        s for s in slice_shapes if s.get("source") == "sam3"
+                    ]
                 else:
                     # Show only original annotations (not SAM3)
-                    filtered_shapes = [s for s in slice_shapes if s.get("source") != "sam3"]
-                
+                    filtered_shapes = [
+                        s for s in slice_shapes if s.get("source") != "sam3"
+                    ]
+
                 # ===== ADDED: Remove 'source' property before adding to figure =====
                 for shape in filtered_shapes:
                     shape_copy = shape.copy()
@@ -216,6 +220,7 @@ def render_image(
         curr_image_metadata,
         "hidden",
     )
+
 
 @callback(
     Output("image-selection-slider", "value", allow_duplicate=True),

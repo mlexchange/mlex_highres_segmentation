@@ -315,14 +315,16 @@ class TiledMaskHandler:
         for annotation_class in all_annotations:
             filtered_class = annotation_class.copy()
             filtered_class["annotations"] = {}
-            
+
             for slice_idx, slice_annotations in annotation_class["annotations"].items():
-                manual_only = [s for s in slice_annotations if s.get("source") != "sam3"]
+                manual_only = [
+                    s for s in slice_annotations if s.get("source") != "sam3"
+                ]
                 if manual_only:
                     filtered_class["annotations"][slice_idx] = manual_only
-            
+
             filtered_annotations.append(filtered_class)
-        
+
         annotations = Annotations(filtered_annotations, image_shape)
         # ===== END OF ADDED BLOCK =====
         # TODO: Check sparse status, it may be worthwhile to store the mask as a sparse array
