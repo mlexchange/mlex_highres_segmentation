@@ -1082,67 +1082,34 @@ def validate_dilation_array(dilation_array):
 
 @callback(
     Output("refine-by-sam3", "disabled"),
-    Input("closed-freeform", "n_clicks"),
-    Input("circle", "n_clicks"),
-    Input("rectangle", "n_clicks"),
-    Input("pan-and-zoom", "n_clicks"),
-    Input("keybind-event-listener", "event"),
-    State("generate-annotation-class-modal", "opened"),
-    State({"type": "edit-annotation-class-modal", "index": ALL}, "opened"),
-    State("control-accordion", "value"),
+    Input("image-viewer", "figure"),
+    State("mask-source-selector", "value"),
     prevent_initial_call=True,
 )
-def toggle_sam3_button_based_on_mode(
-    closed,
-    circle,
-    rect,
-    pan_and_zoom,
-    keybind_event_listener,
-    generate_modal_opened,
-    edit_modal_opened,
-    control_accordion_state,
-):
+def toggle_sam3_button_based_on_rectangles(fig, mask_source):
     """
-    Enable SAM3 refinement button only when rectangle mode is active.
-    Disable for freeform, circle, and pan-and-zoom modes.
+    Enable SAM3 refinement button if there's at least one rectangle visible,
+    regardless of current drawing mode. Only check when viewing manual annotations.
     """
-    # Determine which mode was triggered
-    trigger = ctx.triggered_id
-    pressed_key = (
-        keybind_event_listener.get("key", None) if keybind_event_listener else None
-    )
+    # Only enable for manual annotations view
+    if mask_source != "annotations":
+        return True  # Disabled for SAM3 view
 
-    # Handle keyboard shortcuts
-    if trigger == "keybind-event-listener":
-        if generate_modal_opened or any(edit_modal_opened):
-            raise PreventUpdate
-        if (
-            control_accordion_state is not None
-            and "run-model" in control_accordion_state
-        ):
-            raise PreventUpdate
+    # Check if there are any rectangles in the figure
+    if "layout" not in fig or "shapes" not in fig["layout"]:
+        return True  # No shapes, disable button
 
-        if pressed_key in KEY_MODES:
-            mode, trigger = KEY_MODES[pressed_key]
-        else:
-            raise PreventUpdate
+    shapes = fig["layout"]["shapes"]
 
-    # Enable button only for rectangle mode
-    if trigger == "rectangle" and rect > 0:
-        logger.info("SAM3 button ENABLED (rectangle mode)")
-        return False  # False = enabled
-    elif trigger == "closed-freeform" and closed > 0:
-        logger.info("SAM3 button DISABLED (freeform mode)")
-        return True  # True = disabled
-    elif trigger == "circle" and circle > 0:
-        logger.info("SAM3 button DISABLED (circle mode)")
-        return True
-    elif trigger == "pan-and-zoom" and pan_and_zoom > 0:
-        logger.info("SAM3 button DISABLED (pan-and-zoom mode)")
-        return True
+    # Check if there's at least one rectangle
+    has_rectangle = any(shape.get("type") == "rect" for shape in shapes)
 
-    # Default: keep current state
-    raise PreventUpdate
+    if has_rectangle:
+        logger.info("SAM3 button ENABLED (rectangles found)")
+        return False  # Enable button
+    else:
+        logger.info("SAM3 button DISABLED (no rectangles)")
+        return True  # Disable button
 
 
 @callback(
