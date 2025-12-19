@@ -416,7 +416,9 @@ clientside_callback(
 
 
 @callback(
-    Output({"type": "annotation-class-store", "index": ALL}, "data", allow_duplicate=True),
+    Output(
+        {"type": "annotation-class-store", "index": ALL}, "data", allow_duplicate=True
+    ),
     Output("annotation-store", "data", allow_duplicate=True),
     Output("image-viewer", "figure", allow_duplicate=True),
     Input("image-viewer", "relayoutData"),
@@ -428,7 +430,12 @@ clientside_callback(
     prevent_initial_call=True,
 )
 def locally_store_annotations(
-    relayout_data, img_idx, annotation_store, all_annotation_class_store, fig, mask_source
+    relayout_data,
+    img_idx,
+    annotation_store,
+    all_annotation_class_store,
+    fig,
+    mask_source,
 ):
     """
     Upon finishing a relayout event (drawing, modifying, panning or zooming), this function takes the
@@ -437,7 +444,7 @@ def locally_store_annotations(
     """
     img_idx = str(img_idx - 1)
     shapes = []
-    
+
     # Case 1: panning/zooming, no need to update all the class annotation stores
     if "xaxis.range[0]" in relayout_data:
         annotation_store["view"]["xaxis_range_0"] = relayout_data["xaxis.range[0]"]
@@ -445,7 +452,7 @@ def locally_store_annotations(
         annotation_store["view"]["yaxis_range_0"] = relayout_data["yaxis.range[0]"]
         annotation_store["view"]["yaxis_range_1"] = relayout_data["yaxis.range[1]"]
         return all_annotation_class_store, annotation_store, dash.no_update
-    
+
     # Case 2: A shape is modified, drawn or deleted. Save all the current shapes on the fig layout
     if (
         any(["shapes" in key for key in relayout_data])
@@ -463,22 +470,23 @@ def locally_store_annotations(
         if img_idx in a_class["annotations"]:
             # Keep shapes from OTHER sources, remove shapes from target source
             a_class["annotations"][img_idx] = [
-                s for s in a_class["annotations"][img_idx] 
+                s
+                for s in a_class["annotations"][img_idx]
                 if s.get("source") != target_source
             ]
             if not a_class["annotations"][img_idx]:
                 del a_class["annotations"][img_idx]
-    
+
     # Add shapes back, tagging them with the target source
     for shape in shapes:
         # Determine this shape's source
         shape_source = shape.get("source")
-        
+
         # If shape has no source, it's newly drawn - assign target_source
         if shape_source is None:
             shape["source"] = target_source
             shape_source = target_source
-        
+
         # Only add shapes that match the target source
         # (shapes from other source were already preserved above)
         if shape_source == target_source:
@@ -489,7 +497,7 @@ def locally_store_annotations(
                     else:
                         a_class["annotations"][img_idx] = [shape]
                     break
-    
+
     # ✅ FIX: Redraw figure showing ONLY the target source (current view)
     fig = Patch()
     all_annotations = []
@@ -497,13 +505,13 @@ def locally_store_annotations(
         if a["is_visible"] and "annotations" in a and img_idx in a["annotations"]:
             # Filter to show only shapes matching the current mask source
             filtered_shapes = [
-                s for s in a["annotations"][img_idx]
-                if s.get("source") == target_source
+                s for s in a["annotations"][img_idx] if s.get("source") == target_source
             ]
             all_annotations += filtered_shapes
     fig["layout"]["shapes"] = all_annotations
-    
+
     return all_annotation_class_store, annotation_store, fig
+
 
 @callback(
     Output(

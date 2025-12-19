@@ -548,16 +548,17 @@ def re_draw_annotations_after_editing_class_color(
     """
     fig = Patch()
     image_idx = str(image_idx - 1)
-    
+
     # ✅ Determine which source to show
     target_source = "original" if mask_source == "annotations" else "sam3"
-    
+
     all_annotations = []
     for a in all_annotation_class_store:
         if a["is_visible"] and "annotations" in a and image_idx in a["annotations"]:
             # ✅ Filter by source
             filtered_shapes = [
-                s for s in a["annotations"][image_idx]
+                s
+                for s in a["annotations"][image_idx]
                 if s.get("source") == target_source
             ]
             all_annotations += filtered_shapes
@@ -644,16 +645,17 @@ def hide_show_annotations_on_fig(
     """This callback hides or shows all annotations for a given class by Patching the figure accordingly"""
     fig = Patch()
     image_idx = str(image_idx - 1)
-    
+
     # ✅ Determine which source to show
     target_source = "original" if mask_source == "annotations" else "sam3"
-    
+
     all_annotations = []
     for a in all_annotation_class_store:
         if a["is_visible"] and "annotations" in a and image_idx in a["annotations"]:
             # ✅ Filter by source
             filtered_shapes = [
-                s for s in a["annotations"][image_idx]
+                s
+                for s in a["annotations"][image_idx]
                 if s.get("source") == target_source
             ]
             all_annotations += filtered_shapes
@@ -1226,8 +1228,11 @@ def refine_bbox_with_sam3(
             if slice_key in annotation_class["annotations"]:
                 # Keep only non-SAM3 shapes, mark rectangles as "original"
                 annotation_class["annotations"][slice_key] = [
-                    {**shape, "source": "original"} if shape.get("type") == "rect" and shape.get("source") is None
-                    else shape
+                    (
+                        {**shape, "source": "original"}
+                        if shape.get("type") == "rect" and shape.get("source") is None
+                        else shape
+                    )
                     for shape in annotation_class["annotations"][slice_key]
                     if shape.get("source") != "sam3"  # Remove old SAM3
                 ]

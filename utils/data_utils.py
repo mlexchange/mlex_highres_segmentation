@@ -403,9 +403,7 @@ class TiledMaskHandler:
             filtered_class["annotations"] = {}
 
             for slice_idx, slice_annotations in annotation_class["annotations"].items():
-                sam3_only = [
-                    s for s in slice_annotations if s.get("source") == "sam3"
-                ]
+                sam3_only = [s for s in slice_annotations if s.get("source") == "sam3"]
                 if sam3_only:
                     filtered_class["annotations"][slice_idx] = sam3_only
 
@@ -451,13 +449,12 @@ class TiledMaskHandler:
             mask = last_container.write_array(key="mask", array=mask)
         else:
             last_container = last_container[annotations_hash]
-        
+
         return (
             last_container.uri,
             len(annotation_classes),
             "SAM3 masks saved successfully.",
         )
-
 
 
 tiled_masks = TiledMaskHandler(
