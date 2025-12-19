@@ -310,7 +310,23 @@ class TiledMaskHandler:
                 return None, None, "Image shape could not be determined."
             image_shape = (data_shape[1], data_shape[2])
 
-        annotations = Annotations(all_annotations, image_shape)
+        # ===== ADD THIS BLOCK - Filter out SAM3 polygons =====
+        filtered_annotations = []
+        for annotation_class in all_annotations:
+            filtered_class = annotation_class.copy()
+            filtered_class["annotations"] = {}
+
+            for slice_idx, slice_annotations in annotation_class["annotations"].items():
+                manual_only = [
+                    s for s in slice_annotations if s.get("source") != "sam3"
+                ]
+                if manual_only:
+                    filtered_class["annotations"][slice_idx] = manual_only
+
+            filtered_annotations.append(filtered_class)
+
+        annotations = Annotations(filtered_annotations, image_shape)
+        # ===== END OF ADDED BLOCK =====
         # TODO: Check sparse status, it may be worthwhile to store the mask as a sparse array
         # if our machine learning models can handle sparse arrays
         annotations.create_annotation_mask(sparse=False)
@@ -360,6 +376,84 @@ class TiledMaskHandler:
             last_container.uri,
             len(annotation_classes),
             "Annotations saved successfully.",
+        )
+
+    # ===== ADD THIS NEW METHOD HERE =====
+    def save_sam3_masks_data(self, global_store, all_annotations, trimmed_uri):
+        """
+        Save SAM3-refined masks to Tiled by reading current SAM3 annotations from annotation-class-store.
+        Ignores the sam3_masks parameter and always uses current polygons.
+        """
+        if "image_shapes" in global_store:
+            image_shape = global_store["image_shapes"][0]
+        else:
+            data_shape = (
+                tiled_datasets.get_data_shape_by_trimmed_uri(trimmed_uri)
+                if trimmed_uri
+                else None
+            )
+            if data_shape is None:
+                return None, None, "Image shape could not be determined."
+            image_shape = (data_shape[1], data_shape[2])
+
+        # Filter to keep ONLY SAM3 annotations (source="sam3")
+        filtered_annotations = []
+        for annotation_class in all_annotations:
+            filtered_class = annotation_class.copy()
+            filtered_class["annotations"] = {}
+
+            for slice_idx, slice_annotations in annotation_class["annotations"].items():
+                sam3_only = [s for s in slice_annotations if s.get("source") == "sam3"]
+                if sam3_only:
+                    filtered_class["annotations"][slice_idx] = sam3_only
+
+            filtered_annotations.append(filtered_class)
+
+        annotations = Annotations(filtered_annotations, image_shape)
+        annotations.create_annotation_mask(sparse=False)
+
+        annotations_per_slice = annotations.get_annotations()
+        annotation_classes = annotations.get_annotation_classes()
+        annotations_hash = annotations.get_annotations_hash()
+
+        metadata = {
+            "project_name": trimmed_uri,
+            "data_uri": tiled_datasets.get_data_uri_by_trimmed_uri(trimmed_uri),
+            "image_shape": image_shape,
+            "mask_idx": [int(key) for key in annotations_per_slice.keys()],
+            "classes": annotation_classes,
+            "annotations": annotations_per_slice,
+            "unlabeled_class_id": -1,
+            "mask_source": "sam3",
+        }
+
+        mask = annotations.get_annotation_mask()
+
+        try:
+            mask = np.stack(mask)
+        except ValueError:
+            return None, None, "No SAM3 annotations to process."
+
+        container_keys = [USER_NAME] + trimmed_uri.strip("/").split("/")
+        last_container = self.mask_client
+        for key in container_keys:
+            if key not in last_container.keys():
+                last_container = last_container.create_container(key=key)
+            else:
+                last_container = last_container[key]
+
+        if annotations_hash not in last_container.keys():
+            last_container = last_container.create_container(
+                key=annotations_hash, metadata=metadata
+            )
+            mask = last_container.write_array(key="mask", array=mask)
+        else:
+            last_container = last_container[annotations_hash]
+
+        return (
+            last_container.uri,
+            len(annotation_classes),
+            "SAM3 masks saved successfully.",
         )
 
 

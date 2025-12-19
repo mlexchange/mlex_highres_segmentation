@@ -1,3 +1,4 @@
+import logging
 import os
 import traceback
 import uuid
@@ -23,6 +24,9 @@ from utils.data_utils import (
 )
 from utils.plot_utils import generate_notification
 
+# Configure logger
+logger = logging.getLogger("seg.segmentation")
+
 MODE = os.getenv("MODE", "")
 FLOW_NAME = os.getenv("FLOW_NAME", "")
 PREFECT_TAGS = os.getenv("PREFECT_TAGS", ["high-res-segmentation"])
@@ -46,6 +50,8 @@ mlflow_client = MLflowModelClient()
     State("model-parameters", "children"),
     State("model-list", "value"),
     State("job-name", "value"),
+    State("mask-source-selector", "value"),
+    State("sam3-masks-store", "data"),
     prevent_initial_call=True,
 )
 def run_train(
@@ -56,11 +62,13 @@ def run_train(
     model_parameter_container,
     model_name,
     job_name,
+    mask_source,
+    sam3_masks,
 ):
     """
     This callback collects parameters from the UI and submits a training job to Prefect.
     If the app is run from "dev" mode, then only a placeholder job_uid will be created.
-
+    Now supports using either manual annotations or SAM3 refined masks.
     """
     if n_clicks:
         model_parameters, parameter_errors = extract_parameters_from_html(
@@ -75,9 +83,23 @@ def run_train(
                 "Model parameters are not valid!",
             )
             return notification, no_update
-        mask_uri, num_classes, mask_error_message = tiled_masks.save_annotations_data(
-            global_store, all_annotations, image_uri
-        )
+
+        # Determine which mask to use based on user selection
+        if mask_source == "sam3":
+            logger.info("Using SAM3 refined masks for training")
+            mask_uri, num_classes, mask_error_message = (
+                tiled_masks.save_sam3_masks_data(
+                    global_store, all_annotations, image_uri
+                )
+            )
+        else:
+            logger.info("Using manual annotations for training")
+            mask_uri, num_classes, mask_error_message = (
+                tiled_masks.save_annotations_data(
+                    global_store, all_annotations, image_uri
+                )
+            )
+
         model_parameters["num_classes"] = num_classes
         model_parameters["network"] = model_name
 
@@ -100,7 +122,7 @@ def run_train(
         io_parameters["uid_retrieve"] = ""
         io_parameters["job_name"] = flow_run_name
 
-        # NEW: Add MLflow parameters
+        # Add MLflow parameters
         io_parameters["mlflow_uri"] = MLFLOW_URI
         io_parameters["mlflow_model"] = None
 
@@ -129,7 +151,7 @@ def run_train(
 
         if MODE == "dev":
             job_uid = str(uuid.uuid4())
-            job_message = f"Dev Mode: Job has been succesfully submitted with uid: {job_uid} and mask uri: {mask_uri}"
+            job_message = f"Dev Mode: Job has been succesfully submitted with uid: {job_uid} and mask uri: {mask_uri} (using {mask_source} masks)"
             notification_color = "indigo"
         else:
             try:
@@ -140,7 +162,7 @@ def run_train(
                     flow_run_name=flow_run_name,
                     tags=PREFECT_TAGS + ["train", image_uri],
                 )
-                job_message = f"Job has been succesfully submitted with uid: {job_uid} and mask uri: {mask_uri}"
+                job_message = f"Job has been succesfully submitted with uid: {job_uid} and mask uri: {mask_uri} (using {mask_source} masks)"
                 notification_color = "indigo"
             except Exception as e:
                 # Print the traceback to the console
