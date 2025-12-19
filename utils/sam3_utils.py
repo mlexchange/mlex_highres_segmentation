@@ -6,7 +6,6 @@ from io import BytesIO
 import cv2
 import numpy as np
 import requests
-import torch
 from PIL import Image
 
 logger = logging.getLogger("seg.sam3_utils")
@@ -51,7 +50,7 @@ class SAM3InferenceClient:
             mask_threshold: Mask binarization threshold (0.0-1.0)
 
         Returns:
-            dict: {'masks': [tensor, ...], 'scores': [float, ...]} or None
+            dict: {'masks': [np.ndarray, ...], 'scores': [float, ...]} or None
         """
         logger.info(f"Segmenting {len(boxes)} boxes on {image.size} image")
 
@@ -77,10 +76,8 @@ class SAM3InferenceClient:
                     logger.error(f"API error: {result.get('error')}")
                     return None
 
-                # Decode masks
-                masks = [
-                    torch.from_numpy(self._decode_mask(enc)) for enc in result["masks"]
-                ]
+                # Decode masks to numpy arrays
+                masks = [self._decode_mask(enc) for enc in result["masks"]]
 
                 if masks:
                     logger.info(f"✓ Received {len(masks)} masks")
@@ -110,83 +107,7 @@ class SAM3InferenceClient:
         return None
 
 
-def overlay_masks(image, masks, colors=None, opacity=0.5):
-    """
-    Overlay masks on image with colors
-
-    Args:
-        image: PIL Image
-        masks: torch.Tensor [num_masks, H, W] or list of masks
-        colors: List of RGB tuples or None (auto-generate)
-        opacity: Float 0.0-1.0
-
-    Returns:
-        PIL Image with overlaid masks
-    """
-    import matplotlib
-
-    image = image.convert("RGBA")
-
-    # Convert masks to numpy
-    if isinstance(masks, torch.Tensor):
-        masks_np = masks.cpu().numpy()
-    else:
-        masks_np = np.array(masks)
-
-    if len(masks_np.shape) == 2:
-        masks_np = masks_np[np.newaxis, ...]
-
-    n_masks = masks_np.shape[0]
-
-    # Generate colors if needed
-    if colors is None:
-        cmap = matplotlib.colormaps.get_cmap("rainbow").resampled(n_masks)
-        colors = [tuple(int(c * 255) for c in cmap(i)[:3]) for i in range(n_masks)]
-    elif len(colors) == 1 and n_masks > 1:
-        colors = colors * n_masks
-
-    # Apply each mask
-    for mask, color in zip(masks_np, colors):
-        mask_binary = (mask > 0).astype(np.uint8) * 255
-        mask_img = Image.fromarray(mask_binary, mode="L")
-        overlay = Image.new("RGBA", image.size, color + (0,))
-        alpha = mask_img.point(lambda v: int(v * opacity))
-        overlay.putalpha(alpha)
-        image = Image.alpha_composite(image, overlay)
-
-    return image
-
-
-def prepare_masks_for_overlay(results):
-    """
-    Prepare masks for overlay visualization
-
-    Args:
-        results: Dict with 'masks' key or list of masks
-
-    Returns:
-        torch.Tensor [num_masks, H, W]
-    """
-    if isinstance(results, list):
-        masks = results
-    elif isinstance(results, dict) and "masks" in results:
-        masks = results["masks"]
-    else:
-        return None
-
-    if not masks:
-        return None
-
-    if isinstance(masks, torch.Tensor):
-        return masks.unsqueeze(0) if len(masks.shape) == 2 else masks
-    elif isinstance(masks, list):
-        return torch.stack(masks)
-    else:
-        tensor = torch.tensor(masks)
-        return tensor.unsqueeze(0) if len(tensor.shape) == 2 else tensor
-
-
-# ===== HELPER FUNCTIONS FOR CALLBACK REFACTORING =====
+# ===== HELPER FUNCTIONS FOR CALLBACKS =====
 
 
 def extract_rectangles_by_class(shapes, all_annotation_class_store):
@@ -260,43 +181,6 @@ def load_and_prepare_image(image_data):
         return image_data
 
 
-def create_overlay_figure(overlay_image, image_shape):
-    """
-    Create Plotly figure patch with overlay image.
-
-    Args:
-        overlay_image: PIL Image with overlaid masks
-        image_shape: Tuple (height, width) of original image
-
-    Returns:
-        dict: Figure patch with overlay configuration
-    """
-    from dash import Patch
-
-    # Convert overlay image to base64 for display
-    buffered = BytesIO()
-    overlay_image.save(buffered, format="PNG")
-    img_str = base64.b64encode(buffered.getvalue()).decode()
-
-    fig_patch = Patch()
-    fig_patch["layout"]["images"] = [
-        {
-            "source": f"data:image/png;base64,{img_str}",
-            "xref": "x",
-            "yref": "y",
-            "x": 0,
-            "y": 0,
-            "sizex": image_shape[1],
-            "sizey": image_shape[0],
-            "sizing": "stretch",
-            "opacity": 0.5,
-            "layer": "above",
-        }
-    ]
-
-    return fig_patch
-
-
 def convert_sam3_masks_to_numpy(
     all_masks,
     all_colors,
@@ -308,7 +192,7 @@ def convert_sam3_masks_to_numpy(
     Convert SAM3 masks to numpy array format matching manual annotations.
 
     Args:
-        all_masks: List of all SAM3 masks
+        all_masks: List of numpy arrays (boolean masks)
         all_colors: List of RGB colors for each mask
         class_results_summary: List of strings like "'label': N mask(s)"
         all_annotation_class_store: List of annotation class metadata
@@ -356,7 +240,7 @@ def convert_sam3_masks_to_numpy(
 
         # Combine all masks for this class into the slice mask
         for i, mask in enumerate(class_masks):
-            mask_np = mask.cpu().numpy() if isinstance(mask, torch.Tensor) else mask
+            mask_np = np.array(mask) if not isinstance(mask, np.ndarray) else mask
             # Handle both float and boolean masks
             if mask_np.dtype == np.float32 or mask_np.dtype == np.float64:
                 mask_binary = mask_np > 0.5
@@ -384,89 +268,12 @@ def convert_sam3_masks_to_numpy(
     return slice_mask
 
 
-def hex_to_rgb(hex_color):
-    """
-    Convert hex color to RGB tuple.
-
-    Args:
-        hex_color: Hex color string (e.g., "#FF0000" or "FF0000")
-
-    Returns:
-        tuple: RGB values (r, g, b) where each is 0-255
-    """
-    hex_color = hex_color.lstrip("#")
-    return tuple(int(hex_color[i : i + 2], 16) for i in (0, 2, 4))
-
-
-def segment_all_classes_with_sam3(
-    image_pil, class_boxes, sam3_client, threshold=0.5, mask_threshold=0.5
-):
-    """
-    Run SAM3 segmentation for all classes and collect results.
-
-    Args:
-        image_pil: PIL Image to segment
-        class_boxes: Dict of {color: {"boxes": [[x0,y0,x1,y1], ...], "label": str}}
-        sam3_client: SAM3InferenceClient instance
-        threshold: Confidence threshold for SAM3
-        mask_threshold: Mask binarization threshold for SAM3
-
-    Returns:
-        tuple: (all_masks, all_colors, class_results_summary)
-            - all_masks: List of all mask tensors
-            - all_colors: List of RGB tuples for each mask
-            - class_results_summary: List of result strings for each class
-        Returns (None, None, None) if no masks were generated
-    """
-    logger.info(f"Running SAM3 segmentation for {len(class_boxes)} class(es)...")
-
-    all_masks = []
-    all_colors = []
-    class_results_summary = []
-
-    for color, data in class_boxes.items():
-        boxes = data["boxes"]
-        label = data["label"]
-
-        logger.info(f"Processing class '{label}' with {len(boxes)} box(es)...")
-
-        # Run SAM3 for this class
-        results = sam3_client.segment_with_boxes(
-            image_pil,
-            boxes,
-            threshold=threshold,
-            mask_threshold=mask_threshold,
-        )
-
-        if results is None or "masks" not in results or len(results["masks"]) == 0:
-            logger.warning(f"SAM3 failed for class '{label}'")
-            continue
-
-        num_masks = len(results["masks"])
-        logger.info(f"✓ Class '{label}': generated {num_masks} mask(s)")
-
-        rgb_color = hex_to_rgb(color)
-
-        # Add masks and colors for this class
-        all_masks.extend(results["masks"])
-        all_colors.extend([rgb_color] * num_masks)
-
-        class_results_summary.append(f"'{label}': {num_masks} mask(s)")
-
-    if not all_masks:
-        logger.error("No masks generated for any class")
-        return None, None, None
-
-    logger.info(f"✓ Total masks generated: {len(all_masks)}")
-    return all_masks, all_colors, class_results_summary
-
-
 def masks_to_plotly_polygons(masks, class_color, min_area=100, epsilon_factor=0.002):
     """
     Convert SAM3 masks to Plotly polygon shapes.
 
     Args:
-        masks: torch.Tensor [num_masks, H, W] or list of masks
+        masks: np.ndarray [num_masks, H, W] or list of masks
         class_color: Hex color string (e.g., "#FF0000")
         min_area: Minimum contour area in pixels
         epsilon_factor: Polygon simplification (0.001-0.01, lower=more detail)
@@ -477,8 +284,8 @@ def masks_to_plotly_polygons(masks, class_color, min_area=100, epsilon_factor=0.
     polygons = []
 
     # Convert to numpy
-    if isinstance(masks, torch.Tensor):
-        masks_np = masks.cpu().numpy().astype(np.uint8)
+    if isinstance(masks, np.ndarray):
+        masks_np = masks.astype(np.uint8)
     else:
         masks_np = np.array(masks).astype(np.uint8)
 
@@ -539,7 +346,7 @@ def segment_all_classes_to_polygons(
     Returns:
         Tuple of (all_polygons, all_masks, all_colors, class_results_summary) or (None, None, None, None)
         - all_polygons: List of Plotly shape dicts (for UI display)
-        - all_masks: List of torch tensors (for mask conversion)
+        - all_masks: List of numpy arrays (for mask conversion)
         - all_colors: List of hex colors (for mask conversion)
         - class_results_summary: List of result strings
     """
