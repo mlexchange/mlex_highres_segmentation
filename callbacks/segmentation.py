@@ -85,10 +85,10 @@ def run_train(
             return notification, no_update
 
         # Determine which mask to use based on user selection
-        if mask_source == "sam3" and sam3_masks:
+        if mask_source == "sam3":
             logger.info("Using SAM3 refined masks for training")
             mask_uri, num_classes, mask_error_message = (
-                tiled_masks.save_sam3_masks_data(sam3_masks, all_annotations, image_uri)
+                tiled_masks.save_sam3_masks_data(global_store, all_annotations, image_uri)
             )
         else:
             logger.info("Using manual annotations for training")

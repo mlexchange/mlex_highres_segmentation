@@ -536,10 +536,11 @@ def open_delete_class_modal(
     Input({"type": "edit-class-store", "index": ALL}, "data"),
     State({"type": "annotation-class-store", "index": ALL}, "data"),
     State("image-selection-slider", "value"),
+    State("mask-source-selector", "value"),  # ✅ ADD THIS
     prevent_initial_call=True,
 )
 def re_draw_annotations_after_editing_class_color(
-    hide_show_click, all_annotation_class_store, image_idx
+    hide_show_click, all_annotation_class_store, image_idx, mask_source  # ✅ ADD THIS
 ):
     """
     After editing a class color, the color is changed in the class-store, but the color change is not reflected
@@ -547,10 +548,19 @@ def re_draw_annotations_after_editing_class_color(
     """
     fig = Patch()
     image_idx = str(image_idx - 1)
+    
+    # ✅ Determine which source to show
+    target_source = "original" if mask_source == "annotations" else "sam3"
+    
     all_annotations = []
     for a in all_annotation_class_store:
         if a["is_visible"] and "annotations" in a and image_idx in a["annotations"]:
-            all_annotations += a["annotations"][image_idx]
+            # ✅ Filter by source
+            filtered_shapes = [
+                s for s in a["annotations"][image_idx]
+                if s.get("source") == target_source
+            ]
+            all_annotations += filtered_shapes
     fig["layout"]["shapes"] = all_annotations
     return fig
 
@@ -625,18 +635,28 @@ def add_annotation_class(
     Input({"type": "hide-show-class-store", "index": ALL}, "data"),
     State({"type": "annotation-class-store", "index": ALL}, "data"),
     State("image-selection-slider", "value"),
+    State("mask-source-selector", "value"),  # ✅ ADD THIS
     prevent_initial_call=True,
 )
 def hide_show_annotations_on_fig(
-    hide_show_click, all_annotation_class_store, image_idx
+    hide_show_click, all_annotation_class_store, image_idx, mask_source  # ✅ ADD THIS
 ):
     """This callback hides or shows all annotations for a given class by Patching the figure accordingly"""
     fig = Patch()
     image_idx = str(image_idx - 1)
+    
+    # ✅ Determine which source to show
+    target_source = "original" if mask_source == "annotations" else "sam3"
+    
     all_annotations = []
     for a in all_annotation_class_store:
         if a["is_visible"] and "annotations" in a and image_idx in a["annotations"]:
-            all_annotations += a["annotations"][image_idx]
+            # ✅ Filter by source
+            filtered_shapes = [
+                s for s in a["annotations"][image_idx]
+                if s.get("source") == target_source
+            ]
+            all_annotations += filtered_shapes
     fig["layout"]["shapes"] = all_annotations
     return fig
 
@@ -1150,9 +1170,9 @@ def refine_bbox_with_sam3(
 ):
     """
     Refine rectangles using SAM3:
-    1. Keep original rectangles but mark them as "original"
-    2. Add SAM3 polygons and mark them as "sam3"
-    3. Store masks for training export
+    1. Remove old SAM3 annotations and mark rectangles as "original"
+    2. Add NEW SAM3 polygons and mark them as "sam3"
+    3. Store fresh masks for training export
     4. Auto-switch to "SAM3 Refined" view
     """
     logger.info("=== SAM3 Polygon Refinement ===")
@@ -1201,16 +1221,22 @@ def refine_bbox_with_sam3(
             )
             return no_update, notification, no_update, no_update, no_update, no_update
 
-        # 1. MARK existing rectangles as "original" (don't delete them!)
+        # 1. REMOVE old SAM3 annotations and mark rectangles as "original"
         for annotation_class in all_annotation_class_store:
             if slice_key in annotation_class["annotations"]:
-                for shape in annotation_class["annotations"][slice_key]:
-                    if shape.get("type") == "rect":
-                        shape["source"] = "original"  # Mark as original box
+                # Keep only non-SAM3 shapes, mark rectangles as "original"
+                annotation_class["annotations"][slice_key] = [
+                    {**shape, "source": "original"} if shape.get("type") == "rect" and shape.get("source") is None
+                    else shape
+                    for shape in annotation_class["annotations"][slice_key]
+                    if shape.get("source") != "sam3"  # Remove old SAM3
+                ]
+                if not annotation_class["annotations"][slice_key]:
+                    del annotation_class["annotations"][slice_key]
 
-        # 2. ADD polygons and mark as "sam3"
+        # 2. ADD NEW SAM3 polygons
         for polygon_shape in all_polygons:
-            polygon_shape["source"] = "sam3"  # Mark as SAM3 polygon
+            polygon_shape["source"] = "sam3"
             color = polygon_shape["line"]["color"]
             for annotation_class in all_annotation_class_store:
                 if annotation_class["color"] == color:

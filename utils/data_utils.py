@@ -379,75 +379,63 @@ class TiledMaskHandler:
         )
 
     # ===== ADD THIS NEW METHOD HERE =====
-    def save_sam3_masks_data(self, sam3_masks, all_annotations, trimmed_uri):
+    def save_sam3_masks_data(self, global_store, all_annotations, trimmed_uri):
         """
-        Save SAM3-refined masks to Tiled in the same format as manual annotations.
-
-        Args:
-            sam3_masks: Dict of {slice_idx: {"mask": 2D list, "image_shape": [h,w], "num_classes": n}}
-            all_annotations: Annotation class metadata (for labels and colors)
-            trimmed_uri: URI of the data source
-
-        Returns:
-            (mask_uri, num_classes, message)
+        Save SAM3-refined masks to Tiled by reading current SAM3 annotations from annotation-class-store.
+        Ignores the sam3_masks parameter and always uses current polygons.
         """
-        if not sam3_masks:
-            return None, None, "No SAM3 masks to process."
+        if "image_shapes" in global_store:
+            image_shape = global_store["image_shapes"][0]
+        else:
+            data_shape = (
+                tiled_datasets.get_data_shape_by_trimmed_uri(trimmed_uri)
+                if trimmed_uri
+                else None
+            )
+            if data_shape is None:
+                return None, None, "Image shape could not be determined."
+            image_shape = (data_shape[1], data_shape[2])
 
-        # Get annotation classes info (labels and colors)
-        annotation_classes = {}
-        for idx, annotation_class in enumerate(all_annotations):
-            annotation_classes[str(idx)] = {
-                "label": annotation_class["label"],
-                "color": annotation_class["color"],
-            }
+        # Filter to keep ONLY SAM3 annotations (source="sam3")
+        filtered_annotations = []
+        for annotation_class in all_annotations:
+            filtered_class = annotation_class.copy()
+            filtered_class["annotations"] = {}
 
-        num_classes = len(annotation_classes)
+            for slice_idx, slice_annotations in annotation_class["annotations"].items():
+                sam3_only = [
+                    s for s in slice_annotations if s.get("source") == "sam3"
+                ]
+                if sam3_only:
+                    filtered_class["annotations"][slice_idx] = sam3_only
 
-        # Get image shape from first mask
-        first_slice = list(sam3_masks.values())[0]
-        image_shape = tuple(first_slice["image_shape"])
+            filtered_annotations.append(filtered_class)
 
-        # Convert stored masks back to numpy arrays
-        mask_list = []
-        mask_indices = []
+        annotations = Annotations(filtered_annotations, image_shape)
+        annotations.create_annotation_mask(sparse=False)
 
-        for slice_idx_str, slice_data in sorted(
-            sam3_masks.items(), key=lambda x: int(x[0])
-        ):
-            mask_2d = np.array(slice_data["mask"], dtype=np.int8)
-            mask_list.append(mask_2d)
-            mask_indices.append(int(slice_idx_str))
+        annotations_per_slice = annotations.get_annotations()
+        annotation_classes = annotations.get_annotation_classes()
+        annotations_hash = annotations.get_annotations_hash()
 
-        # Stack into 3D array
-        try:
-            mask = np.stack(mask_list)
-        except ValueError:
-            return None, None, "Failed to stack SAM3 masks."
-
-        # Generate hash for SAM3 masks
-        import hashlib
-
-        import canonicaljson
-
-        hash_object = hashlib.md5()
-        hash_object.update(canonicaljson.encode_canonical_json(sam3_masks))
-        hash_object.update(canonicaljson.encode_canonical_json(annotation_classes))
-        sam3_masks_hash = hash_object.hexdigest()
-
-        # Create metadata
         metadata = {
             "project_name": trimmed_uri,
             "data_uri": tiled_datasets.get_data_uri_by_trimmed_uri(trimmed_uri),
             "image_shape": image_shape,
-            "mask_idx": mask_indices,
+            "mask_idx": [int(key) for key in annotations_per_slice.keys()],
             "classes": annotation_classes,
-            "annotations": {},  # SAM3 doesn't have vector annotations
+            "annotations": annotations_per_slice,
             "unlabeled_class_id": -1,
-            "mask_source": "sam3",  # Mark this as SAM3-generated
+            "mask_source": "sam3",
         }
 
-        # Store the mask in Tiled under /username/<trimmed_uri>/<hash>/mask
+        mask = annotations.get_annotation_mask()
+
+        try:
+            mask = np.stack(mask)
+        except ValueError:
+            return None, None, "No SAM3 annotations to process."
+
         container_keys = [USER_NAME] + trimmed_uri.strip("/").split("/")
         last_container = self.mask_client
         for key in container_keys:
@@ -456,22 +444,20 @@ class TiledMaskHandler:
             else:
                 last_container = last_container[key]
 
-        # Add metadata to container with hash as key
-        if sam3_masks_hash not in last_container.keys():
+        if annotations_hash not in last_container.keys():
             last_container = last_container.create_container(
-                key=sam3_masks_hash, metadata=metadata
+                key=annotations_hash, metadata=metadata
             )
             mask = last_container.write_array(key="mask", array=mask)
         else:
-            last_container = last_container[sam3_masks_hash]
-
+            last_container = last_container[annotations_hash]
+        
         return (
             last_container.uri,
-            num_classes,
+            len(annotation_classes),
             "SAM3 masks saved successfully.",
         )
 
-    # ===== END OF NEW METHOD =====
 
 
 tiled_masks = TiledMaskHandler(
