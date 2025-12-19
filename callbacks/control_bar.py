@@ -1083,14 +1083,24 @@ def validate_dilation_array(dilation_array):
 @callback(
     Output("refine-by-sam3", "disabled"),
     Input("image-viewer", "figure"),
+    Input("infra-state", "data"),  # ✅ ADD THIS
     State("mask-source-selector", "value"),
     prevent_initial_call=True,
 )
-def toggle_sam3_button_based_on_rectangles(fig, mask_source):
+def toggle_sam3_button_based_on_rectangles(
+    fig, infra_state, mask_source
+):  # ✅ ADD infra_state
     """
-    Enable SAM3 refinement button if there's at least one rectangle visible,
-    regardless of current drawing mode. Only check when viewing manual annotations.
+    Enable SAM3 refinement button if:
+    1. SAM3 service is ready
+    2. There's at least one rectangle visible
+    3. Currently viewing manual annotations (not SAM3 view)
     """
+    # Check if SAM3 service is ready
+    if infra_state is None or not infra_state.get("sam3_ready", False):
+        logger.info("SAM3 button DISABLED (service not ready)")
+        return True  # Disabled
+
     # Only enable for manual annotations view
     if mask_source != "annotations":
         return True  # Disabled for SAM3 view
@@ -1105,7 +1115,7 @@ def toggle_sam3_button_based_on_rectangles(fig, mask_source):
     has_rectangle = any(shape.get("type") == "rect" for shape in shapes)
 
     if has_rectangle:
-        logger.info("SAM3 button ENABLED (rectangles found)")
+        logger.info("SAM3 button ENABLED (rectangles found & service ready)")
         return False  # Enable button
     else:
         logger.info("SAM3 button DISABLED (no rectangles)")

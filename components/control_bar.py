@@ -989,6 +989,7 @@ def create_infra_state_details(
     prefect_ready=False,
     prefect_worker_ready=False,
     mlflow_ready=False,
+    sam3_ready=False,  # ✅ NEW parameter
     timestamp=None,
 ):
     not_ready_icon = "pajamas:warning-solid"
@@ -1048,6 +1049,13 @@ def create_infra_state_details(
                     icon=ready_icon if mlflow_ready else not_ready_icon,
                     color=ready_color if mlflow_ready else not_ready_color,
                     id="mlflow-ready",
+                ),
+                # ✅ NEW: SAM3 status
+                create_infra_state_status(
+                    "SAM3 (Inference)",
+                    icon=ready_icon if sam3_ready else not_ready_icon,
+                    color=ready_color if sam3_ready else not_ready_color,
+                    id="sam3-ready",
                 ),
             ],
             p=0,

@@ -393,5 +393,20 @@ def segment_all_classes_to_polygons(
     return all_polygons, all_masks, all_colors, class_results_summary
 
 
+def check_sam3_ready():
+    """Check if SAM3 inference endpoint is reachable and healthy"""
+    try:
+        health_url = SAM3_INFERENCE_URL.replace("/invocations", "/health")
+        response = requests.get(health_url, timeout=5)
+
+        if response.status_code == 200:
+            data = response.json()
+            # Check if model is loaded and status is healthy
+            return data.get("status") == "healthy"
+        return False
+    except Exception:
+        return False
+
+
 # Global client instance
 sam3_segmenter = SAM3InferenceClient()
