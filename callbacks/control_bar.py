@@ -49,6 +49,11 @@ logger = logging.getLogger("seg.control_bar")
 EXPORT_FILE_PATH = os.getenv("EXPORT_FILE_PATH", "exported_annotation_data.json")
 USER_NAME = os.getenv("USER_NAME", "user1")
 
+# Ensure parent directory exists
+export_dir = os.path.dirname(EXPORT_FILE_PATH)
+if export_dir:
+    os.makedirs(export_dir, exist_ok=True)
+
 # Create an empty file if it doesn't exist
 if not os.path.exists(EXPORT_FILE_PATH):
     open(EXPORT_FILE_PATH, "w").close()

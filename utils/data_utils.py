@@ -38,7 +38,7 @@ def _create_or_return_containers(client, container_names):
         if container_name not in client.keys():
             client = client.create_container(key=container_name)
         else:
-            client[container_name]
+            client = client[container_name]
     return client
 
 
