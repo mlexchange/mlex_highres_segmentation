@@ -8,7 +8,9 @@ from dotenv import load_dotenv
 # Add the project root directory to Python path to fix imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from mlex_utils.mlflow_utils.mlflow_algorithm_client import MlflowAlgorithmClient
+from mlex_utils.mlflow_utils.mlflow_algorithm_client import (  # noqa: E402
+    MlflowAlgorithmClient,
+)
 
 # Load environment variables from .env file
 load_dotenv(dotenv_path="../.env")
