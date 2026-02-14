@@ -65,6 +65,11 @@ def test_save_annotations_data(mocker, monkeypatch):
         "get_data_uri_by_trimmed_uri",
         return_value="http://example.com/data/project/sample",
     )
+    mocker.patch.object(
+        data_utils.tiled_datasets,
+        "get_data_sequence_by_trimmed_uri",
+        return_value=SimpleNamespace(access_blob={}),
+    )
 
     all_annotations = [
         {
