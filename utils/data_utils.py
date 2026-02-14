@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import traceback
 from urllib.parse import urlparse, urlunparse
@@ -14,6 +15,12 @@ from tiled.client.container import Container
 from utils.annotations import Annotations
 
 load_dotenv()
+
+# Setup basic logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
 
 DATA_TILED_URI = os.getenv("DATA_TILED_URI")
 DATA_TILED_API_KEY = os.getenv("DATA_TILED_API_KEY")
@@ -354,6 +361,10 @@ class TiledMaskHandler:
                 key=annotations_hash, metadata=metadata
             )
             mask = last_container.write_array(key="mask", array=mask)
+            image_client = tiled_datasets.get_data_sequence_by_trimmed_uri(trimmed_uri)
+            # match the new container and new array access tags to the original data_client
+            copy_tiled_access_info(image_client, last_container)
+            copy_tiled_access_info(image_client, mask)
         else:
             last_container = last_container[annotations_hash]
         return (
@@ -439,3 +450,20 @@ def assemble_io_parameters_from_uris(data_uri, mask_uri):
         "seg_tiled_uri": SEG_TILED_URI,
     }
     return io_parameters
+
+
+def copy_tiled_access_info(source_client, target_client):
+    """
+    This function copies the access information from a source Tiled URI to a target Tiled client.
+    Input:
+        source_uri: str, The URI of the source Tiled resource.
+        target_client: Tiled client object, The target Tiled client to copy access info to.
+    Output:
+        None
+    """
+    access_blob = source_client.access_blob
+    if access_blob and access_blob.get("tags") is not None:
+        target_client.replace_metadata(access_tags=access_blob["tags"])
+    logging.info(
+        f"Tiled access information copied successfully {source_client} {source_client.access_blob}."
+    )
