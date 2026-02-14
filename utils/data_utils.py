@@ -361,7 +361,7 @@ class TiledMaskHandler:
                 key=annotations_hash, metadata=metadata
             )
             mask = last_container.write_array(key="mask", array=mask)
-            image_client = from_uri(trimmed_uri)
+            image_client = tiled_datasets.get_data_sequence_by_trimmed_uri(trimmed_uri)
             # match the new container and new array access tags to the original data_client
             copy_tiled_access_info(image_client, last_container)
             copy_tiled_access_info(image_client, mask)
