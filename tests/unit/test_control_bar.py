@@ -17,7 +17,7 @@ class DummyMlflowAlgorithmClient:
 
 @pytest.fixture
 def tiled_data_mock():
-    return {"sample_project": np.zeros((500, 500, 500)), "reconstruction": 0}
+    return {"sample_project": np.zeros((2, 500, 500)), "reconstruction": 0}
 
 
 @pytest.fixture
