@@ -987,12 +987,13 @@ def update_model_parameters(model_name):
         "error",
     ),
     State({"type": "annotation-class-store", "index": ALL}, "data"),
+    Input("annotation-class-container", "children"),
     Input(
         {"type": MATCH, "param_key": "weights", "layer": "input", "name": "weights"},
         "value",
     ),
 )
-def validate_class_weights(all_annotation_classes, weights):
+def validate_class_weights(all_annotation_classes, current_classes, weights):
 
     if weights is None:
         return "Provide a list with a float for each class"
@@ -1003,7 +1004,10 @@ def validate_class_weights(all_annotation_classes, weights):
         # All elements are floats, check if there are the correct number
         # (number of classes)
         if len(parsed_weights) != len(all_annotation_classes):
-            return "This list of floats has the wrong number of entries"
+            return (
+                "Expected "
+                f"{len(all_annotation_classes)} weight values (one per class)."
+            )
         # All good
         return False
     except ValueError:
