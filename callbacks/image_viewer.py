@@ -70,6 +70,7 @@ def hide_show_segmentation_overlay(toggle_seg_result, opacity):
     State("current-class-selection", "data"),
     State("seg-result-opacity-slider", "value"),
     State("image-viewer", "figure"),
+    State("mask-source-selector", "value"),
     prevent_initial_call=True,
 )
 def render_image(
@@ -85,6 +86,7 @@ def render_image(
     current_color,
     opacity,
     fig,
+    mask_source,
 ):
     result = None
     if image_idx:
@@ -153,7 +155,26 @@ def render_image(
         all_annotations = []
         for a_class in all_annotation_class_store:
             if str(image_idx) in a_class["annotations"] and a_class["is_visible"]:
-                all_annotations += a_class["annotations"][str(image_idx)]
+                slice_shapes = a_class["annotations"][str(image_idx)]
+
+                # Filter based on mask_source selection
+                if mask_source == "sam3":
+                    # Show only SAM3 polygons
+                    filtered_shapes = [
+                        s for s in slice_shapes if s.get("source") == "sam3"
+                    ]
+                else:
+                    # Show only original annotations (not SAM3)
+                    filtered_shapes = [
+                        s for s in slice_shapes if s.get("source") != "sam3"
+                    ]
+
+                # ===== ADDED: Remove 'source' property before adding to figure =====
+                for shape in filtered_shapes:
+                    shape_copy = shape.copy()
+                    shape_copy.pop("source", None)  # Remove the source tag
+                    all_annotations.append(shape_copy)
+                # ===== END OF ADDED CODE =====
 
         fig["layout"]["shapes"] = all_annotations
         view = annotation_store["view"]
@@ -405,18 +426,25 @@ clientside_callback(
     State("annotation-store", "data"),
     State({"type": "annotation-class-store", "index": ALL}, "data"),
     State("image-viewer", "figure"),
+    State("mask-source-selector", "value"),
     prevent_initial_call=True,
 )
 def locally_store_annotations(
-    relayout_data, img_idx, annotation_store, all_annotation_class_store, fig
+    relayout_data,
+    img_idx,
+    annotation_store,
+    all_annotation_class_store,
+    fig,
+    mask_source,
 ):
     """
     Upon finishing a relayout event (drawing, modifying, panning or zooming), this function takes the
-    currently drawn shapes or zoom/pan data, and stores the lastest added shape to the
-    appropriate class-annotation-store, or the image pan/zoom position to the anntations-store.
+    currently drawn shapes or zoom/pan data, and stores the latest added shape to the
+    appropriate class-annotation-store, or the image pan/zoom position to the annotations-store.
     """
     img_idx = str(img_idx - 1)
     shapes = []
+
     # Case 1: panning/zooming, no need to update all the class annotation stores
     if "xaxis.range[0]" in relayout_data:
         annotation_store["view"]["xaxis_range_0"] = relayout_data["xaxis.range[0]"]
@@ -424,39 +452,64 @@ def locally_store_annotations(
         annotation_store["view"]["yaxis_range_0"] = relayout_data["yaxis.range[0]"]
         annotation_store["view"]["yaxis_range_1"] = relayout_data["yaxis.range[1]"]
         return all_annotation_class_store, annotation_store, dash.no_update
-    # Case 2: A shape is modified, drawn or deleted. Save all the current shapes on the fig layout, which includes new
-    # modified, and deleted shapes.
+
+    # Case 2: A shape is modified, drawn or deleted. Save all the current shapes on the fig layout
     if (
         any(["shapes" in key for key in relayout_data])
         and "shapes" in fig["layout"].keys()
     ):
         shapes = fig["layout"]["shapes"]
 
-    # Clear all annotation from the stores at the current slice,
-    # except for the hidden shapes (hidden shapes cannot be modified or deleted)
+    # Determine which source we're editing based on dropdown
+    target_source = "original" if mask_source == "annotations" else "sam3"
+
+    # Clear only annotations with the target source on current slice
     for a_class in all_annotation_class_store:
         if not a_class["is_visible"]:
             continue
         if img_idx in a_class["annotations"]:
-            del a_class["annotations"][img_idx]
-    # Add back each annotation on the current slice in each respective store.
+            # Keep shapes from OTHER sources, remove shapes from target source
+            a_class["annotations"][img_idx] = [
+                s
+                for s in a_class["annotations"][img_idx]
+                if s.get("source") != target_source
+            ]
+            if not a_class["annotations"][img_idx]:
+                del a_class["annotations"][img_idx]
+
+    # Add shapes back, tagging them with the target source
     for shape in shapes:
-        for a_class in all_annotation_class_store:
-            if a_class["color"] == shape["line"]["color"]:
-                if img_idx in a_class["annotations"]:
-                    a_class["annotations"][img_idx].append(shape)
-                else:
-                    a_class["annotations"][img_idx] = [shape]
-                break
-    # redraw all annotations on the fig so the store is aligned with whats on the app
-    # ie: drawing with a hidden class hides the shape immediately
-    # ie: drawing with the first class pushes the shape to the back of the image imdediately
+        # Determine this shape's source
+        shape_source = shape.get("source")
+
+        # If shape has no source, it's newly drawn - assign target_source
+        if shape_source is None:
+            shape["source"] = target_source
+            shape_source = target_source
+
+        # Only add shapes that match the target source
+        # (shapes from other source were already preserved above)
+        if shape_source == target_source:
+            for a_class in all_annotation_class_store:
+                if a_class["color"] == shape["line"]["color"]:
+                    if img_idx in a_class["annotations"]:
+                        a_class["annotations"][img_idx].append(shape)
+                    else:
+                        a_class["annotations"][img_idx] = [shape]
+                    break
+
+    # ✅ FIX: Redraw figure showing ONLY the target source (current view)
     fig = Patch()
     all_annotations = []
     for a in all_annotation_class_store:
         if a["is_visible"] and "annotations" in a and img_idx in a["annotations"]:
-            all_annotations += a["annotations"][img_idx]
+            # Filter to show only shapes matching the current mask source
+            filtered_shapes = [
+                s for s in a["annotations"][img_idx] if s.get("source") == target_source
+            ]
+            all_annotations += filtered_shapes
     fig["layout"]["shapes"] = all_annotations
+
     return all_annotation_class_store, annotation_store, fig
 
 

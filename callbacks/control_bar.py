@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import random
 import time
@@ -6,6 +7,7 @@ import uuid
 from urllib.parse import urlparse
 
 import dash_mantine_components as dmc
+import numpy as np
 import plotly.express as px
 from dash import (
     ALL,
@@ -24,6 +26,7 @@ from dash import (
 )
 from dash.exceptions import PreventUpdate
 from dash_iconify import DashIconify
+from PIL import Image
 
 from components.annotation_class import annotation_class_item
 from components.parameter_items import ParameterItems
@@ -31,6 +34,16 @@ from constants import ANNOT_ICONS, ANNOT_NOTIFICATION_MSGS, KEY_MODES, KEYBINDS
 from utils.annotations import Annotations
 from utils.data_utils import models, tiled_datasets, tiled_masks
 from utils.plot_utils import generate_notification, generate_notification_bg_icon_col
+from utils.sam3_utils import segment_all_classes_to_polygons  # NEW function
+from utils.sam3_utils import (
+    convert_sam3_masks_to_numpy,
+    extract_rectangles_by_class,
+    load_and_prepare_image,
+    sam3_segmenter,
+)
+
+# Configure logger
+logger = logging.getLogger("seg.control_bar")
 
 # TODO - temporary local file path and user for annotation saving and exporting
 EXPORT_FILE_PATH = os.getenv("EXPORT_FILE_PATH", "exported_annotation_data.json")
@@ -52,7 +65,7 @@ if not os.path.exists(EXPORT_FILE_PATH):
     prevent_initial_call=True,
 )
 def update_selected_image_uri(selected_links):
-    print(f"DEBUG - Selected image links: {selected_links}")  # Debug print
+    logger.info(f"Selected image links: {selected_links}")
 
     if selected_links:
         # Extract the 'self' key from the dictionary
@@ -528,10 +541,11 @@ def open_delete_class_modal(
     Input({"type": "edit-class-store", "index": ALL}, "data"),
     State({"type": "annotation-class-store", "index": ALL}, "data"),
     State("image-selection-slider", "value"),
+    State("mask-source-selector", "value"),  # ✅ ADD THIS
     prevent_initial_call=True,
 )
 def re_draw_annotations_after_editing_class_color(
-    hide_show_click, all_annotation_class_store, image_idx
+    hide_show_click, all_annotation_class_store, image_idx, mask_source  # ✅ ADD THIS
 ):
     """
     After editing a class color, the color is changed in the class-store, but the color change is not reflected
@@ -539,10 +553,20 @@ def re_draw_annotations_after_editing_class_color(
     """
     fig = Patch()
     image_idx = str(image_idx - 1)
+
+    # ✅ Determine which source to show
+    target_source = "original" if mask_source == "annotations" else "sam3"
+
     all_annotations = []
     for a in all_annotation_class_store:
         if a["is_visible"] and "annotations" in a and image_idx in a["annotations"]:
-            all_annotations += a["annotations"][image_idx]
+            # ✅ Filter by source
+            filtered_shapes = [
+                s
+                for s in a["annotations"][image_idx]
+                if s.get("source") == target_source
+            ]
+            all_annotations += filtered_shapes
     fig["layout"]["shapes"] = all_annotations
     return fig
 
@@ -617,18 +641,29 @@ def add_annotation_class(
     Input({"type": "hide-show-class-store", "index": ALL}, "data"),
     State({"type": "annotation-class-store", "index": ALL}, "data"),
     State("image-selection-slider", "value"),
+    State("mask-source-selector", "value"),  # ✅ ADD THIS
     prevent_initial_call=True,
 )
 def hide_show_annotations_on_fig(
-    hide_show_click, all_annotation_class_store, image_idx
+    hide_show_click, all_annotation_class_store, image_idx, mask_source  # ✅ ADD THIS
 ):
     """This callback hides or shows all annotations for a given class by Patching the figure accordingly"""
     fig = Patch()
     image_idx = str(image_idx - 1)
+
+    # ✅ Determine which source to show
+    target_source = "original" if mask_source == "annotations" else "sam3"
+
     all_annotations = []
     for a in all_annotation_class_store:
         if a["is_visible"] and "annotations" in a and image_idx in a["annotations"]:
-            all_annotations += a["annotations"][image_idx]
+            # ✅ Filter by source
+            filtered_shapes = [
+                s
+                for s in a["annotations"][image_idx]
+                if s.get("source") == target_source
+            ]
+            all_annotations += filtered_shapes
     fig["layout"]["shapes"] = all_annotations
     return fig
 
@@ -1048,3 +1083,293 @@ def validate_dilation_array(dilation_array):
     except ValueError:
         # If there's any error in parsing or validation, return False
         return "Provide a list of ints for dilation"
+
+
+@callback(
+    Output("refine-by-sam3", "disabled"),
+    Input("image-viewer", "figure"),
+    Input("infra-state", "data"),  # ✅ ADD THIS
+    State("mask-source-selector", "value"),
+    prevent_initial_call=True,
+)
+def toggle_sam3_button_based_on_rectangles(
+    fig, infra_state, mask_source
+):  # ✅ ADD infra_state
+    """
+    Enable SAM3 refinement button if:
+    1. SAM3 service is ready
+    2. There's at least one rectangle visible
+    3. Currently viewing manual annotations (not SAM3 view)
+    """
+    # Check if SAM3 service is ready
+    if infra_state is None or not infra_state.get("sam3_ready", False):
+        logger.info("SAM3 button DISABLED (service not ready)")
+        return True  # Disabled
+
+    # Only enable for manual annotations view
+    if mask_source != "annotations":
+        return True  # Disabled for SAM3 view
+
+    # Check if there are any rectangles in the figure
+    if "layout" not in fig or "shapes" not in fig["layout"]:
+        return True  # No shapes, disable button
+
+    shapes = fig["layout"]["shapes"]
+
+    # Check if there's at least one rectangle
+    has_rectangle = any(shape.get("type") == "rect" for shape in shapes)
+
+    if has_rectangle:
+        logger.info("SAM3 button ENABLED (rectangles found & service ready)")
+        return False  # Enable button
+    else:
+        logger.info("SAM3 button DISABLED (no rectangles)")
+        return True  # Disable button
+
+
+@callback(
+    Output("image-viewer", "figure", allow_duplicate=True),
+    Output("notifications-container", "children", allow_duplicate=True),
+    Output(
+        {"type": "annotation-class-store", "index": ALL}, "data", allow_duplicate=True
+    ),
+    Output("sam3-masks-store", "data"),
+    Output("mask-source-selector", "data"),
+    Output("mask-source-selector", "value"),
+    Input("refine-by-sam3", "n_clicks"),
+    State("image-viewer", "figure"),
+    State("image-selection-slider", "value"),
+    State({"type": "annotation-class-store", "index": ALL}, "data"),
+    State("image-uri", "value"),
+    State("sam3-masks-store", "data"),
+    prevent_initial_call=True,
+)
+def refine_bbox_with_sam3(
+    n_clicks,
+    fig,
+    img_idx,
+    all_annotation_class_store,
+    image_uri,
+    existing_sam3_masks,
+):
+    """
+    Refine rectangles using SAM3:
+    1. Remove old SAM3 annotations and mark rectangles as "original"
+    2. Add NEW SAM3 polygons and mark them as "sam3"
+    3. Store fresh masks for training export
+    4. Auto-switch to "SAM3 Refined" view
+    """
+    logger.info("=== SAM3 Polygon Refinement ===")
+
+    if not n_clicks or not fig.get("layout", {}).get("shapes"):
+        return no_update, no_update, no_update, no_update, no_update, no_update
+
+    shapes = fig["layout"]["shapes"]
+    class_boxes = extract_rectangles_by_class(shapes, all_annotation_class_store)
+
+    if not class_boxes:
+        notification = generate_notification(
+            "SAM3 Refinement", "orange", ANNOT_ICONS["sam3"], "No rectangles found!"
+        )
+        return no_update, notification, no_update, no_update, no_update, no_update
+
+    total_boxes = sum(len(data["boxes"]) for data in class_boxes.values())
+    logger.info(f"Found {total_boxes} box(es) across {len(class_boxes)} class(es)")
+
+    # Load image
+    img_idx -= 1
+    slice_key = str(img_idx)
+
+    try:
+        image_data = tiled_datasets.get_data_sequence_by_trimmed_uri(image_uri)[img_idx]
+        image_pil = load_and_prepare_image(image_data)
+    except Exception as e:
+        logger.error(f"Error loading image: {e}")
+        notification = generate_notification(
+            "SAM3 Refinement", "red", ANNOT_ICONS["sam3"], f"Image load error: {e}"
+        )
+        return no_update, notification, no_update, no_update, no_update, no_update
+
+    # Run SAM3 -> get polygons AND masks
+    try:
+        all_polygons, all_masks, all_colors, class_results = (
+            segment_all_classes_to_polygons(image_pil, class_boxes, sam3_segmenter)
+        )
+
+        if all_polygons is None:
+            notification = generate_notification(
+                "SAM3 Refinement",
+                "red",
+                ANNOT_ICONS["sam3"],
+                "Failed to generate polygons!",
+            )
+            return no_update, notification, no_update, no_update, no_update, no_update
+
+        # 1. REMOVE old SAM3 annotations and mark rectangles as "original"
+        for annotation_class in all_annotation_class_store:
+            if slice_key in annotation_class["annotations"]:
+                # Keep only non-SAM3 shapes, mark rectangles as "original"
+                annotation_class["annotations"][slice_key] = [
+                    (
+                        {**shape, "source": "original"}
+                        if shape.get("type") == "rect" and shape.get("source") is None
+                        else shape
+                    )
+                    for shape in annotation_class["annotations"][slice_key]
+                    if shape.get("source") != "sam3"  # Remove old SAM3
+                ]
+                if not annotation_class["annotations"][slice_key]:
+                    del annotation_class["annotations"][slice_key]
+
+        # 2. ADD NEW SAM3 polygons
+        for polygon_shape in all_polygons:
+            polygon_shape["source"] = "sam3"
+            color = polygon_shape["line"]["color"]
+            for annotation_class in all_annotation_class_store:
+                if annotation_class["color"] == color:
+                    if slice_key not in annotation_class["annotations"]:
+                        annotation_class["annotations"][slice_key] = []
+                    annotation_class["annotations"][slice_key].append(polygon_shape)
+                    break
+
+        # 3. Store masks for training (convert to numpy)
+        if existing_sam3_masks is None:
+            existing_sam3_masks = {}
+
+        slice_mask = convert_sam3_masks_to_numpy(
+            all_masks,
+            all_colors,
+            class_results,
+            all_annotation_class_store,
+            (image_data.shape[0], image_data.shape[1]),
+        )
+
+        existing_sam3_masks[slice_key] = {
+            "mask": slice_mask.tolist(),
+            "image_shape": [image_data.shape[0], image_data.shape[1]],
+            "num_classes": len(all_annotation_class_store),
+        }
+
+        logger.info(f"Stored SAM3 mask for slice {slice_key}")
+
+        # 4. Enable SAM3 option in training dropdown
+        updated_dropdown_options = [
+            {"value": "annotations", "label": "Manual Annotations"},
+            {"value": "sam3", "label": "SAM3 Refined"},
+        ]
+
+        # 5. Update figure to show ONLY SAM3 polygons (hide original boxes)
+        fig_patch = Patch()
+        all_shapes = []
+        for annotation_class in all_annotation_class_store:
+            if (
+                annotation_class["is_visible"]
+                and slice_key in annotation_class["annotations"]
+            ):
+                # Show only SAM3 polygons
+                sam3_shapes = [
+                    shape
+                    for shape in annotation_class["annotations"][slice_key]
+                    if shape.get("source") == "sam3"
+                ]
+                all_shapes.extend(sam3_shapes)
+        fig_patch["layout"]["shapes"] = all_shapes
+
+        summary = ", ".join(class_results)
+        notification = generate_notification(
+            "SAM3 Refinement",
+            "green",
+            ANNOT_ICONS["sam3"],
+            f"Refined {total_boxes} box(es): {summary}. Showing refined polygons.",
+        )
+
+        logger.info("=== SAM3 Complete ===")
+        return (
+            fig_patch,
+            notification,
+            all_annotation_class_store,
+            existing_sam3_masks,
+            updated_dropdown_options,
+            "sam3",  # Auto-select SAM3 in dropdown
+        )
+
+    except Exception as e:
+        logger.error(f"SAM3 error: {e}", exc_info=True)
+        notification = generate_notification(
+            "SAM3 Refinement", "red", ANNOT_ICONS["sam3"], f"Error: {e}"
+        )
+        return no_update, notification, no_update, no_update, no_update, no_update
+
+
+@callback(
+    Output("sam3-masks-store", "data", allow_duplicate=True),
+    Output("mask-source-selector", "data", allow_duplicate=True),
+    Output("mask-source-selector", "value", allow_duplicate=True),
+    Input("image-uri", "value"),
+    Input("image-selection-slider", "value"),
+    prevent_initial_call=True,
+)
+def clear_sam3_on_image_change(image_uri, slider_value):
+    """
+    Clear SAM3 masks and reset dropdown when changing images or slices
+    """
+    updated_dropdown_options = [
+        {"value": "annotations", "label": "Manual Annotations"},
+        {"value": "sam3", "label": "SAM3 Refined", "disabled": True},
+    ]
+
+    return {}, updated_dropdown_options, "annotations"
+
+
+@callback(
+    Output("image-viewer", "figure", allow_duplicate=True),
+    Input("mask-source-selector", "value"),
+    State("image-selection-slider", "value"),
+    State({"type": "annotation-class-store", "index": ALL}, "data"),
+    prevent_initial_call=True,
+)
+def toggle_annotation_display(mask_source, img_idx, all_annotation_class_store):
+    """
+    Toggle between showing original annotations (boxes) vs SAM3 refined (polygons)
+
+    When mask_source == "annotations": Show ONLY original boxes
+    When mask_source == "sam3": Show ONLY SAM3 polygons
+    """
+    if not mask_source:
+        raise PreventUpdate
+
+    img_idx -= 1
+    slice_key = str(img_idx)
+
+    fig_patch = Patch()
+    all_shapes = []
+
+    for annotation_class in all_annotation_class_store:
+        if not annotation_class["is_visible"]:
+            continue
+        if slice_key not in annotation_class["annotations"]:
+            continue
+
+        if mask_source == "sam3":
+            # Show ONLY SAM3 polygons
+            sam3_shapes = [
+                shape
+                for shape in annotation_class["annotations"][slice_key]
+                if shape.get("source") == "sam3"
+            ]
+            all_shapes.extend(sam3_shapes)
+        else:
+            # Show ONLY original boxes (and any manually drawn shapes without source tag)
+            original_shapes = [
+                shape
+                for shape in annotation_class["annotations"][slice_key]
+                if shape.get("source") != "sam3"
+            ]
+            all_shapes.extend(original_shapes)
+
+    fig_patch["layout"]["shapes"] = all_shapes
+    fig_patch["layout"][
+        "uirevision"
+    ] = mask_source  # Force update by changing uirevision
+
+    return fig_patch

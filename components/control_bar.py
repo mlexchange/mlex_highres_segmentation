@@ -503,6 +503,54 @@ def layout():
                                     color="#00313C",
                                     style={"width": "100%"},
                                 ),
+                                # ===== SAM3 AI REFINEMENT SECTION =====
+                                dmc.Space(h=20),
+                                dmc.Divider(
+                                    label="SAM3 AI Refinement",
+                                    labelPosition="center",
+                                    variant="solid",
+                                    color="gray",
+                                ),
+                                dmc.Space(h=10),
+                                dmc.Button(
+                                    "Refine by SAM3",
+                                    id="refine-by-sam3",
+                                    variant="outline",
+                                    color="indigo",
+                                    style={"width": "100%"},
+                                    leftIcon=DashIconify(icon="mdi:auto-fix", width=20),
+                                    disabled=True,
+                                ),
+                                dmc.Space(h=10),
+                                ControlItem(
+                                    "Training Mask Source",
+                                    "mask-source-label",
+                                    dmc.Select(
+                                        id="mask-source-selector",
+                                        data=[
+                                            {
+                                                "value": "annotations",
+                                                "label": "Manual Annotations",
+                                            },
+                                            {
+                                                "value": "sam3",
+                                                "label": "SAM3 Refined",
+                                                "disabled": True,
+                                            },
+                                        ],
+                                        value="annotations",
+                                        size="sm",
+                                        icon=DashIconify(icon="mdi:layers"),
+                                        styles={
+                                            "input": {"fontWeight": 500},
+                                        },
+                                    ),
+                                ),
+                                dcc.Store(
+                                    id="sam3-masks-store"
+                                ),  # Store SAM3 numpy masks
+                                dmc.Space(h=20),
+                                # ===== END SAM3 SECTION =====
                                 dmc.Modal(
                                     title="Data Management",
                                     id="data-management-modal",
@@ -941,6 +989,7 @@ def create_infra_state_details(
     prefect_ready=False,
     prefect_worker_ready=False,
     mlflow_ready=False,
+    sam3_ready=False,  # ✅ NEW parameter
     timestamp=None,
 ):
     not_ready_icon = "pajamas:warning-solid"
@@ -1000,6 +1049,13 @@ def create_infra_state_details(
                     icon=ready_icon if mlflow_ready else not_ready_icon,
                     color=ready_color if mlflow_ready else not_ready_color,
                     id="mlflow-ready",
+                ),
+                # ✅ NEW: SAM3 status
+                create_infra_state_status(
+                    "SAM3 (Inference)",
+                    icon=ready_icon if sam3_ready else not_ready_icon,
+                    color=ready_color if sam3_ready else not_ready_color,
+                    id="sam3-ready",
                 ),
             ],
             p=0,

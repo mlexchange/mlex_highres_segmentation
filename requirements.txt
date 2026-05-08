@@ -38,3 +38,6 @@ griffe >= 0.49.0, <1.0.0
 tiled_viewer==0.0.12
 mlflow==2.22.0
 mlex_utils[all] @ git+https://github.com/mlexchange/mlex_utils.git
+# SAM3 Dependencies
+Pillow==12.0.0
+opencv-python-headless==4.10.0.84

@@ -12,6 +12,7 @@ from mlex_utils.prefect_utils.core import (
 from components.control_bar import create_infra_state_details
 from utils.data_utils import tiled_datasets, tiled_masks, tiled_results
 from utils.plot_utils import generate_notification
+from utils.sam3_utils import check_sam3_ready
 
 TIMEZONE = os.getenv("TIMEZONE", "US/Pacific")
 FLOW_NAME = os.getenv("FLOW_NAME", "")
@@ -30,7 +31,7 @@ def check_infra_state(n_intervals):
 
     any_infra_down = False
 
-    # Tiled: Check if data, masks, and results are reachable (from_uri did not raise an exception)
+    # Tiled checks...
     tiled_data_ready = tiled_datasets.check_dataloader_ready()
     infra_state["tiled_data_ready"] = tiled_data_ready
     if not tiled_data_ready:
@@ -39,13 +40,12 @@ def check_infra_state(n_intervals):
     infra_state["tiled_masks_ready"] = tiled_masks_ready
     if not tiled_masks_ready:
         any_infra_down = True
-    # The segmentation application will make sure that all containers that are needed exist
     tiled_results_ready = tiled_results.check_dataloader_ready(base_uri_only=True)
     infra_state["tiled_results_ready"] = tiled_results_ready
     if not tiled_results_ready:
         any_infra_down = True
 
-    # Prefect: Check prefect API is reachable, and the worker is ready (flow is deployed and ready)
+    # Prefect checks...
     try:
         check_prefect_ready()
         infra_state["prefect_ready"] = True
@@ -59,7 +59,7 @@ def check_infra_state(n_intervals):
         any_infra_down = True
         infra_state["prefect_worker_ready"] = False
 
-    # MLFLOW: Check MLFlow is reachable
+    # MLFLOW check...
     try:
         mlflow_client = MLflowModelClient()
         infra_state["mlflow_ready"] = mlflow_client.check_mlflow_ready()
@@ -68,6 +68,15 @@ def check_infra_state(n_intervals):
     except Exception:
         any_infra_down = True
         infra_state["mlflow_ready"] = False
+
+    # ✅ NEW: SAM3 check
+    try:
+        infra_state["sam3_ready"] = check_sam3_ready()
+        if not infra_state["sam3_ready"]:
+            any_infra_down = True
+    except Exception:
+        any_infra_down = True
+        infra_state["sam3_ready"] = False
 
     if any_infra_down:
         infra_state["any_infra_down"] = True
@@ -99,6 +108,7 @@ def update_infra_state(infra_state):
         prefect_ready=infra_state["prefect_ready"],
         prefect_worker_ready=infra_state["prefect_worker_ready"],
         mlflow_ready=infra_state["mlflow_ready"],
+        sam3_ready=infra_state.get("sam3_ready", False),  # ✅ NEW
         timestamp=last_checked,
     )
 
