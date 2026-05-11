@@ -1048,3 +1048,25 @@ def validate_dilation_array(dilation_array):
     except ValueError:
         # If there's any error in parsing or validation, return False
         return "Provide a list of ints for dilation"
+
+
+# CHANGED: new callback to update model info image and link based on selected model
+MODEL_INFO_MAP = {
+    "DLSIA": ("/assets/dlsia.png", "https://dlsia.readthedocs.io/en/latest/"),
+    "dinov3": ("/assets/lightly.png", "https://github.com/lightly-ai/lightly"),
+}
+DEFAULT_MODEL_INFO = ("/assets/dlsia.png", "https://dlsia.readthedocs.io/en/latest/")
+
+
+@callback(
+    Output("model-info-image", "src"),
+    Output("model-reference-link", "href"),
+    Input("model-list", "value"),
+)
+def update_model_info(model_name):
+    if not model_name:
+        return DEFAULT_MODEL_INFO
+    for prefix, (img_src, href) in MODEL_INFO_MAP.items():
+        if model_name.startswith(prefix):
+            return img_src, href
+    return DEFAULT_MODEL_INFO
