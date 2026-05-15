@@ -1,3 +1,4 @@
+import argparse
 import json
 import logging
 import os
@@ -77,12 +78,24 @@ def migrate_all_algorithms(
         logger.error(f"Failed to load algorithms from JSON: {e}")
         return False
 
+    # Resolve logo paths relative to the assets directory before registering
+    assets_dir = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "assets"
+    )
+
     # Register each algorithm in MLflow
     success_count = 0
     skip_count = 0
     for algorithm in algorithms:
         try:
-            result = client.register_algorithm(algorithm, overwrite=overwrite)
+            # Resolve logo_path and pass as separate kwarg so the algorithm dict
+            # is never mutated and logo_path never appears in algorithm_config.json
+            logo_filename = algorithm.get("logo")
+            logo_path = os.path.join(assets_dir, logo_filename) if logo_filename else None
+
+            result = client.register_algorithm(
+                algorithm, overwrite=overwrite, logo_path=logo_path
+            )
             if result["status"] == "success":
                 logger.info(
                     f"Migrated {algorithm['model_name']} (version {result['version']})"
@@ -99,6 +112,10 @@ def migrate_all_algorithms(
             logger.error(
                 f"Error migrating {algorithm.get('model_name', 'unknown')}: {e}"
             )
+
+    # Reload once after all algorithms are registered so the cache reflects
+    # only the latest versions without intermediate re-downloads per algorithm
+    client.load_from_mlflow()
 
     logger.info(f"Migration completed: {success_count} migrated, {skip_count} skipped")
     return success_count > 0
@@ -125,6 +142,15 @@ def list_algorithms(tracking_uri=None, username=None, password=None):
 
 def main():
     """Main function to execute list and migrate commands"""
+    parser = argparse.ArgumentParser(description="Migrate algorithms to MLflow")
+    parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        default=False,
+        help="If set, register a new version even if the algorithm already exists in MLflow. Default: False.",
+    )
+    args = parser.parse_args()
+
     # Load environment variables
     load_dotenv()
 
@@ -140,7 +166,7 @@ def main():
     # Then, migrate algorithms from JSON
     logger.info("\nMigrating algorithms from JSON to MLflow...")
     migrate_all_algorithms(
-        overwrite=False,  # Don't overwrite existing algorithms by default
+        overwrite=args.overwrite,
         tracking_uri=tracking_uri,
         username=username,
         password=password,

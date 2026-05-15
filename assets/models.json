@@ -9,6 +9,7 @@
             "image_tag": "main",
             "source": "https://github.com/mlexchange/mlex_dlsia_segmentation",
             "is_gpu_enabled": true,
+            "logo": "dlsia.png",
             "application": [
                 "segmentation"
             ],
@@ -447,6 +448,7 @@
             "image_tag": "main",
             "source": "https://github.com/mlexchange/mlex_dlsia_segmentation_prototype",
             "is_gpu_enabled": true,
+            "logo": "dlsia.png",
             "application": [
                 "segmentation"
             ],
@@ -874,6 +876,7 @@
             "image_tag": "main",
             "source": "https://github.com/mlexchange/mlex_dlsia_segmentation_prototype",
             "is_gpu_enabled": true,
+            "logo": "dlsia.png",
             "application": [
                 "segmentation"
             ],
@@ -1309,6 +1312,7 @@
             "image_tag": "main",
             "source": "https://github.com/mlexchange/mlex_lightlytrain_segmentation_prototype",
             "is_gpu_enabled": true,
+            "logo": "lightly.png",
             "application": [
                 "segmentation"
             ],
@@ -1397,6 +1401,7 @@
             "image_tag": "main",
             "source": "https://github.com/mlexchange/mlex_lightlytrain_segmentation_prototype",
             "is_gpu_enabled": true,
+            "logo": "lightly.png",
             "application": [
                 "segmentation"
             ],
@@ -1485,6 +1490,7 @@
             "image_tag": "main",
             "source": "https://github.com/mlexchange/mlex_lightlytrain_segmentation_prototype",
             "is_gpu_enabled": true,
+            "logo": "lightly.png",
             "application": [
                 "segmentation"
             ],

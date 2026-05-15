@@ -1050,23 +1050,23 @@ def validate_dilation_array(dilation_array):
         return "Provide a list of ints for dilation"
 
 
-# CHANGED: new callback to update model info image and link based on selected model
-MODEL_INFO_MAP = {
-    "DLSIA": ("/assets/dlsia.png", "https://dlsia.readthedocs.io/en/latest/"),
-    "dinov3": ("/assets/lightly.png", "https://github.com/lightly-ai/lightly"),
-}
-DEFAULT_MODEL_INFO = ("/assets/dlsia.png", "https://dlsia.readthedocs.io/en/latest/")
-
-
+# CHANGED: load model logo and reference link dynamically from MLflow via mlflow_client
+# no fallback image — if no logo is available, None is returned and no image is shown
 @callback(
     Output("model-info-image", "src"),
+    Output("model-info-image", "style"),
     Output("model-reference-link", "href"),
     Input("model-list", "value"),
 )
 def update_model_info(model_name):
     if not model_name:
-        return DEFAULT_MODEL_INFO
-    for prefix, (img_src, href) in MODEL_INFO_MAP.items():
-        if model_name.startswith(prefix):
-            return img_src, href
-    return DEFAULT_MODEL_INFO
+        return None, {"display": "none"}, "#"
+    try:
+        model = models[model_name]
+        href = model.get("source", "#")
+        img_src = models.mlflow_client.get_logo_data_uri(model_name)
+        style = {"display": "block"} if img_src else {"display": "none"}
+        return img_src, style, href
+    except Exception as e:
+        print(f"DEBUG update_model_info error: {e}")
+        return None, {"display": "none"}, "#"
