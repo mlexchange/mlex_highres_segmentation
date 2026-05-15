@@ -7,8 +7,9 @@
             "owner": "mlexchange team",
             "image_name": "ghcr.io/mlexchange/mlex_dlsia_segmentation_prototype",
             "image_tag": "main",
-            "source": "https://github.com/mlexchange/mlex_dlsia_segmentation",
+            "source": "https://github.com/mlexchange/mlex_dlsia_segmentation_prototype",
             "is_gpu_enabled": true,
+            "logo": "dlsia.png",
             "application": [
                 "segmentation"
             ],
@@ -447,6 +448,7 @@
             "image_tag": "main",
             "source": "https://github.com/mlexchange/mlex_dlsia_segmentation_prototype",
             "is_gpu_enabled": true,
+            "logo": "dlsia.png",
             "application": [
                 "segmentation"
             ],
@@ -874,6 +876,7 @@
             "image_tag": "main",
             "source": "https://github.com/mlexchange/mlex_dlsia_segmentation_prototype",
             "is_gpu_enabled": true,
+            "logo": "dlsia.png",
             "application": [
                 "segmentation"
             ],
@@ -1298,6 +1301,273 @@
             "python_file_name": {
                 "train": "mlex_dlsia/main.py --train",
                 "inference": "mlex_dlsia/main.py"
+            }
+        },
+        {
+            "model_name": "dinov3/vits16-eomt",
+            "version": "0.1.0",
+            "type": "segmentation",
+            "owner": "mlexchange team",
+            "image_name": "ghcr.io/mlexchange/mlex_lightlytrain_segmentation_prototype",
+            "image_tag": "main",
+            "source": "https://github.com/mlexchange/mlex_lightlytrain_segmentation_prototype",
+            "is_gpu_enabled": true,
+            "logo": "lightly.png",
+            "application": [
+                "segmentation"
+            ],
+            "description": "DINOv3 ViTS16 EoMT pretrained model (no dataset fine-tuning)",
+            "gui_parameters": [
+            {
+                "type": "slider",
+                "name": "steps",
+                "title": "# Steps",
+                "param_key": "steps",
+                "value": 100,
+                "min": 100,
+                "max": 5000,
+                "step": 100,
+                "marks": [
+                    {"value": 100, "label": "100"},
+                    {"value": 1000, "label": "1000"},
+                    {"value": 2500, "label": "2500"},
+                    {"value": 5000, "label": "5000"}
+                ],
+                "comp_group": "train_model"
+            },
+            {
+                "type": "slider",
+                "name": "batch_size_train",
+                "title": "Training Batch Size",
+                "param_key": "batch_size_train",
+                "value": 1,
+                "min": 1,
+                "max": 32,
+                "step": 1,
+                "marks": [
+                    {"value": 1, "label": "1"},
+                    {"value": 8, "label": "8"},
+                    {"value": 16, "label": "16"},
+                    {"value": 32, "label": "32"}
+                ],
+                "comp_group": "train_model"
+            },
+            {
+                "type": "slider",
+                "name": "batch_size_val",
+                "title": "Validation Batch Size",
+                "param_key": "batch_size_val",
+                "value": 1,
+                "min": 1,
+                "max": 32,
+                "step": 1,
+                "marks": [
+                    {"value": 1, "label": "1"},
+                    {"value": 8, "label": "8"},
+                    {"value": 16, "label": "16"},
+                    {"value": 32, "label": "32"}
+                ],
+                "comp_group": "train_model"
+            },
+            {
+                "type": "slider",
+                "name": "batch_size_inference",
+                "title": "Inference Batch Size",
+                "param_key": "batch_size_inference",
+                "value": 1,
+                "min": 1,
+                "max": 32,
+                "step": 1,
+                "marks": [
+                    {"value": 1, "label": "1"},
+                    {"value": 8, "label": "8"},
+                    {"value": 16, "label": "16"},
+                    {"value": 32, "label": "32"}
+                ],
+                "comp_group": "prediction_model"
+            }
+            ],
+            "python_file_name": {
+                "train": "mlex_lightly/main.py --train",
+                "inference": "mlex_lightly/main.py"
+            }
+        },
+        {
+            "model_name": "dinov3/vits16-eomt-coco",
+            "version": "0.1.0",
+            "type": "segmentation",
+            "owner": "mlexchange team",
+            "image_name": "ghcr.io/mlexchange/mlex_lightlytrain_segmentation_prototype",
+            "image_tag": "main",
+            "source": "https://github.com/mlexchange/mlex_lightlytrain_segmentation_prototype",
+            "is_gpu_enabled": true,
+            "logo": "lightly.png",
+            "application": [
+                "segmentation"
+            ],
+            "description": "DINOv3 ViTS16 EoMT fine-tuned on COCO-Stuff",
+            "gui_parameters": [
+            {
+                "type": "slider",
+                "name": "steps",
+                "title": "# Steps",
+                "param_key": "steps",
+                "value": 100,
+                "min": 100,
+                "max": 5000,
+                "step": 100,
+                "marks": [
+                    {"value": 100, "label": "100"},
+                    {"value": 1000, "label": "1000"},
+                    {"value": 2500, "label": "2500"},
+                    {"value": 5000, "label": "5000"}
+                ],
+                "comp_group": "train_model"
+            },
+            {
+                "type": "slider",
+                "name": "batch_size_train",
+                "title": "Training Batch Size",
+                "param_key": "batch_size_train",
+                "value": 1,
+                "min": 1,
+                "max": 32,
+                "step": 1,
+                "marks": [
+                    {"value": 1, "label": "1"},
+                    {"value": 8, "label": "8"},
+                    {"value": 16, "label": "16"},
+                    {"value": 32, "label": "32"}
+                ],
+                "comp_group": "train_model"
+            },
+            {
+                "type": "slider",
+                "name": "batch_size_val",
+                "title": "Validation Batch Size",
+                "param_key": "batch_size_val",
+                "value": 1,
+                "min": 1,
+                "max": 32,
+                "step": 1,
+                "marks": [
+                    {"value": 1, "label": "1"},
+                    {"value": 8, "label": "8"},
+                    {"value": 16, "label": "16"},
+                    {"value": 32, "label": "32"}
+                ],
+                "comp_group": "train_model"
+            },
+            {
+                "type": "slider",
+                "name": "batch_size_inference",
+                "title": "Inference Batch Size",
+                "param_key": "batch_size_inference",
+                "value": 1,
+                "min": 1,
+                "max": 32,
+                "step": 1,
+                "marks": [
+                    {"value": 1, "label": "1"},
+                    {"value": 8, "label": "8"},
+                    {"value": 16, "label": "16"},
+                    {"value": 32, "label": "32"}
+                ],
+                "comp_group": "prediction_model"
+            }
+            ],
+            "python_file_name": {
+                "train": "mlex_lightly/main.py --train",
+                "inference": "mlex_lightly/main.py"
+            }
+        },
+        {
+            "model_name": "dinov3/vits16-eomt-cityscapes",
+            "version": "0.1.0",
+            "type": "segmentation",
+            "owner": "mlexchange team",
+            "image_name": "ghcr.io/mlexchange/mlex_lightlytrain_segmentation_prototype",
+            "image_tag": "main",
+            "source": "https://github.com/mlexchange/mlex_lightlytrain_segmentation_prototype",
+            "is_gpu_enabled": true,
+            "logo": "lightly.png",
+            "application": [
+                "segmentation"
+            ],
+            "description": "DINOv3 ViTS16 EoMT fine-tuned on Cityscapes",
+            "gui_parameters": [
+            {
+                "type": "slider",
+                "name": "steps",
+                "title": "# Steps",
+                "param_key": "steps",
+                "value": 100,
+                "min": 100,
+                "max": 5000,
+                "step": 100,
+                "marks": [
+                    {"value": 100, "label": "100"},
+                    {"value": 1000, "label": "1000"},
+                    {"value": 2500, "label": "2500"},
+                    {"value": 5000, "label": "5000"}
+                ],
+                "comp_group": "train_model"
+            },
+            {
+                "type": "slider",
+                "name": "batch_size_train",
+                "title": "Training Batch Size",
+                "param_key": "batch_size_train",
+                "value": 1,
+                "min": 1,
+                "max": 32,
+                "step": 1,
+                "marks": [
+                    {"value": 1, "label": "1"},
+                    {"value": 8, "label": "8"},
+                    {"value": 16, "label": "16"},
+                    {"value": 32, "label": "32"}
+                ],
+                "comp_group": "train_model"
+            },
+            {
+                "type": "slider",
+                "name": "batch_size_val",
+                "title": "Validation Batch Size",
+                "param_key": "batch_size_val",
+                "value": 1,
+                "min": 1,
+                "max": 32,
+                "step": 1,
+                "marks": [
+                    {"value": 1, "label": "1"},
+                    {"value": 8, "label": "8"},
+                    {"value": 16, "label": "16"},
+                    {"value": 32, "label": "32"}
+                ],
+                "comp_group": "train_model"
+            },
+            {
+                "type": "slider",
+                "name": "batch_size_inference",
+                "title": "Inference Batch Size",
+                "param_key": "batch_size_inference",
+                "value": 1,
+                "min": 1,
+                "max": 32,
+                "step": 1,
+                "marks": [
+                    {"value": 1, "label": "1"},
+                    {"value": 8, "label": "8"},
+                    {"value": 16, "label": "16"},
+                    {"value": 32, "label": "32"}
+                ],
+                "comp_group": "prediction_model"
+            }
+            ],
+            "python_file_name": {
+                "train": "mlex_lightly/main.py --train",
+                "inference": "mlex_lightly/main.py"
             }
         }
     ]

@@ -1048,3 +1048,25 @@ def validate_dilation_array(dilation_array):
     except ValueError:
         # If there's any error in parsing or validation, return False
         return "Provide a list of ints for dilation"
+
+
+# CHANGED: load model logo and reference link dynamically from MLflow via mlflow_client
+# no fallback image — if no logo is available, None is returned and no image is shown
+@callback(
+    Output("model-info-image", "src"),
+    Output("model-info-image", "style"),
+    Output("model-reference-link", "href"),
+    Input("model-list", "value"),
+)
+def update_model_info(model_name):
+    if not model_name:
+        return None, {"display": "none"}, "#"
+    try:
+        model = models[model_name]
+        href = model.get("source", "#")
+        img_src = models.mlflow_client.get_logo_data_uri(model_name)
+        style = {"display": "block"} if img_src else {"display": "none"}
+        return img_src, style, href
+    except Exception as e:
+        print(f"DEBUG update_model_info error: {e}")
+        return None, {"display": "none"}, "#"

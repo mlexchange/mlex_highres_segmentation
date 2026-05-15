@@ -606,13 +606,17 @@ def layout():
                                     "Model Info",
                                     "model-info",
                                     dmc.Anchor(
+                                        # CHANGED: src=None and style="display:none" initially;
+                                        # updated dynamically by update_model_info callback
                                         dmc.Image(
-                                            src="/assets/dlsia.png",
-                                            alt="dlsia-logo",
+                                            id="model-info-image",
+                                            src=None,
+                                            alt="model-logo",
                                             width=150,
+                                            style={"display": "none"},
                                         ),
-                                        id="dlsia-reference",
-                                        href="https://dlsia.readthedocs.io/en/latest/",
+                                        id="model-reference-link",
+                                        href="#",
                                         target="_blank",
                                         size="sm",
                                     ),
