@@ -91,7 +91,9 @@ def migrate_all_algorithms(
             # Resolve logo_path and pass as separate kwarg so the algorithm dict
             # is never mutated and logo_path never appears in algorithm_config.json
             logo_filename = algorithm.get("logo")
-            logo_path = os.path.join(assets_dir, logo_filename) if logo_filename else None
+            logo_path = (
+                os.path.join(assets_dir, logo_filename) if logo_filename else None
+            )
 
             result = client.register_algorithm(
                 algorithm, overwrite=overwrite, logo_path=logo_path
