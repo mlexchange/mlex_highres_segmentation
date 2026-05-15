@@ -7,7 +7,7 @@
             "owner": "mlexchange team",
             "image_name": "ghcr.io/mlexchange/mlex_dlsia_segmentation_prototype",
             "image_tag": "main",
-            "source": "https://github.com/mlexchange/mlex_dlsia_segmentation",
+            "source": "https://github.com/mlexchange/mlex_dlsia_segmentation_prototype",
             "is_gpu_enabled": true,
             "logo": "dlsia.png",
             "application": [
